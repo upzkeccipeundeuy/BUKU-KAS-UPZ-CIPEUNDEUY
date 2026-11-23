@@ -14,7 +14,7 @@ const demo = [
   {id:4,no_kwitansi:'004/UPZ/XI/2026',tanggal:'2026-11-16',kriteria:'Operasional',uraian:'Biaya administrasi',debet:0,kredit:350000}
 ];
 const items = [['Dashboard','▦'],['Profil','♙'],['Pemasukan','⊕'],['Pengeluaran','⊖'],['BKU','▤'],['Cetak Laporan','▧'],['Login','⇥']];
-let screen = 'Dashboard', month = '', rows = [], summary = [], session, simulated = false, loading = true, failure = '', generation = 0;
+let screen = 'Dashboard', month = '', searchTerm = '', rows = [], summary = [], session, simulated = false, loading = true, failure = '', generation = 0;
 const admin = () => simulated || session?.user?.id === ADMIN;
 const demoReceiptCounters = new Map();
 
@@ -134,6 +134,29 @@ function publicLedger(data, type) {
   return makeTable(columns,[...grouped].sort(([a],[b])=>b.localeCompare(a)).map(([date,r])=>'<tr><td>'+monthName.format(new Date(date))+'</td>'+
     (showDebet?'<td class="money">'+money(r.debet/100)+'</td>':'')+(showKredit?'<td class="money">'+money(r.kredit/100)+'</td>':'')+'</tr>').join(''));
 }
+function searchBox() {
+  return '<label class="search-field no-print"><span aria-hidden="true">⌕</span><input id="transactionSearch" type="search" placeholder="Cari transaksi, penerima, kwitansi…" value="'+esc(searchTerm)+'" aria-label="Cari transaksi"></label>';
+}
+function chart(data) {
+  const byMonth = new Map();
+  for(const row of data) {
+    const key = row.bulan.slice(0,7);
+    const item = byMonth.get(key) || {debet:0,kredit:0};
+    item.debet += Number(row.debet)||0;
+    item.kredit += Number(row.kredit)||0;
+    byMonth.set(key,item);
+  }
+  const points = [...byMonth.entries()].sort(([a],[b])=>a.localeCompare(b)).slice(-6);
+  if(!points.length) return '<section class="panel chart-panel"><div class="toolbar"><h2>Grafik Keuangan</h2><span class="muted">6 bulan terakhir</span></div><p class="empty">Belum ada data grafik.</p></section>';
+  const max = Math.max(1,...points.flatMap(([,v])=>[v.debet,v.kredit]));
+  return '<section class="panel chart-panel"><div class="toolbar"><div><h2>Grafik Keuangan</h2><p class="muted chart-subtitle">Perbandingan pemasukan dan pengeluaran bulanan</p></div><div class="chart-legend"><span><i class="legend-in"></i>Pemasukan</span><span><i class="legend-out"></i>Pengeluaran</span></div></div><div class="chart-bars">'+points.map(([key,v])=>'<div class="chart-month"><div class="bar-pair"><span class="bar bar-in" title="Pemasukan '+esc(money(v.debet))+'" style="height:'+Math.max(3,v.debet/max*100)+'%"></span><span class="bar bar-out" title="Pengeluaran '+esc(money(v.kredit))+'" style="height:'+Math.max(3,v.kredit/max*100)+'%"></span></div><small>'+esc(new Intl.DateTimeFormat("id-ID",{month:"short",timeZone:"UTC"}).format(new Date(key+"-01T00:00:00Z")))+'</small></div>').join('')+'</div></section>';
+}
+function matchesSearch(row) {
+  if(!searchTerm.trim()) return true;
+  const q=searchTerm.trim().toLocaleLowerCase('id');
+  return [row.no_kwitansi,row.penerima,row.tanggal,row.kriteria,row.uraian,row.debet,row.kredit]
+    .some(value=>String(value??'').toLocaleLowerCase('id').includes(q));
+}
 function render() {
   $('role').textContent = simulated?'Admin · Demo':admin()?'Administrator':'Akses Umum';
   $('status').hidden = !failure&&!simulated;
@@ -143,12 +166,12 @@ function render() {
     return '<button data-page="'+name+'" class="'+(screen===name?'active':'')+'" '+(screen===name?'aria-current="page"':'')+'><span aria-hidden="true">'+icon+'</span>'+label+'</button>';
   }).join('');
   const data = summary.filter(r=>!month||r.bulan.startsWith(month));
-  const list = rows.filter(r=>!month||r.tanggal.startsWith(month));
+  const list = rows.filter(r=>(!month||r.tanggal.startsWith(month))&&matchesSearch(r));
   let content;
   if(screen==='Dashboard') {
     const saldo = totals(summary)[2];
     content = '<div class="hero"><div class="eyebrow">'+(admin()?'DASHBOARD ADMIN':'DASHBOARD UMUM')+'</div><h1>Kas UPZ Cipeundeuy</h1><p>Ringkasan penerimaan, pengeluaran, dan saldo kas.</p><strong>Saldo kas keseluruhan · '+money(loading||failure?null:saldo)+'</strong></div>'+
-      cards(data)+'<div class="panel"><div class="toolbar"><h2>'+ (admin()?'Transaksi Terbaru':'Ringkasan Bulanan')+'</h2>'+filters()+'</div>'+
+      cards(data)+chart(data)+'<div class="panel"><div class="toolbar"><h2>'+ (admin()?'Transaksi Terbaru':'Ringkasan Bulanan')+'</h2>'+filters()+'</div>'+
       (admin()?ledger([...list].reverse().slice(0,8),false):publicLedger(data))+'</div>';
   } else if(screen==='Profil') {
     content = profilePage();
@@ -160,12 +183,13 @@ function render() {
     const type = screen==='Pemasukan'?'debet':screen==='Pengeluaran'?'kredit':'';
     const selection = type?list.filter(r=>Number(r[type])>0):list;
     content = '<section class="panel"><h1>'+esc(screen)+'</h1>'+
-      '<div class="toolbar no-print">'+filters()+
-      (admin()?'<button id="add">Tambah '+esc(type?screen:'Transaksi')+'</button>':'')+
+      '<div class="toolbar no-print">'+filters()+searchBox()+
+      (admin()?'<button id="add">＋ Tambah '+esc(type?screen:'Transaksi')+'</button>':'')+
       '</div>'+(admin()?ledger(selection,true):publicLedger(data,screen))+'</section>';
   }
   $('page').innerHTML = content;
   $('period')?.addEventListener('change',e=>{month=e.target.value;render();});
+  $('transactionSearch')?.addEventListener('input',e=>{const start=e.target.selectionStart;searchTerm=e.target.value;const field=e.target;const y=window.scrollY;render();const next=$('transactionSearch');next?.focus();next?.setSelectionRange(start,start);window.scrollTo(0,y);});
   $('all')?.addEventListener('click',()=>{month='';render();});
   $('print')?.addEventListener('click',()=>window.print());
   if(screen==='Cetak Laporan') bindReportFilters();
