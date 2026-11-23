@@ -13,7 +13,18 @@ const demo = [
   {id:3,no_kwitansi:'003/UPZ/XI/2026',tanggal:'2026-11-12',kriteria:'Penyaluran',uraian:'Penyaluran dana zakat',penerima:'Penerima contoh',debet:0,kredit:4250000},
   {id:4,no_kwitansi:'004/UPZ/XI/2026',tanggal:'2026-11-16',kriteria:'Operasional',uraian:'Biaya administrasi',debet:0,kredit:350000}
 ];
-const items = [['Dashboard','▦'],['Profil','♙'],['Pemasukan','⊕'],['Pengeluaran','⊖'],['BKU','▤'],['Cetak Laporan','▧'],['Login','⇥']];
+const ICON = {
+  Dashboard:'<path d="M3 11.5 12 4l9 7.5"/><path d="M5.5 10v9.5h13V10"/><path d="M10 19.5v-5h4v5"/>',
+  Profil:'<circle cx="12" cy="8" r="3.6"/><path d="M4.8 20c.9-3.7 3.8-5.6 7.2-5.6s6.3 1.9 7.2 5.6"/>',
+  Pemasukan:'<circle cx="12" cy="12" r="8.5"/><path d="M12 8v8M8 12h8"/>',
+  Pengeluaran:'<circle cx="12" cy="12" r="8.5"/><path d="M8 12h8"/>',
+  BKU:'<path d="M6 3.5h9.5L19 7v13.5H6z"/><path d="M15 3.5V7.5h4"/><path d="M9 12h7M9 15.5h7"/>',
+  'Cetak Laporan':'<path d="M7 9V3.5h10V9"/><rect x="4" y="9" width="16" height="8" rx="2"/><path d="M7 14h10v6.5H7z"/>',
+  Login:'<path d="M14 4.5h4.5a1.5 1.5 0 0 1 1.5 1.5v12a1.5 1.5 0 0 1-1.5 1.5H14"/><path d="M4 12h10M10.5 8.5 14 12l-3.5 3.5"/>',
+  Keluar:'<path d="M10 4.5H5.5A1.5 1.5 0 0 0 4 6v12a1.5 1.5 0 0 0 1.5 1.5H10"/><path d="M20 12H10M16.5 8.5 20 12l-3.5 3.5"/>'
+};
+const svgIcon = n => '<svg class="ico" viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">'+(ICON[n]||'')+'</svg>';
+const items = [['Dashboard'],['Profil'],['Pemasukan'],['Pengeluaran'],['BKU'],['Cetak Laporan'],['Login']];
 let screen = 'Dashboard', month = '', dashboardYear = today().slice(0,4), transactionSearch = '', transactionCategory = '', rows = [], summary = [], session, simulated = false, loading = true, failure = '', generation = 0;
 const admin = () => simulated || session?.user?.id === ADMIN;
 const demoReceiptCounters = new Map();
@@ -102,7 +113,7 @@ function totals(data) {
 function cards(data) {
   const values = totals(data);
   return '<div class="cards">'+['Total Pemasukan','Total Pengeluaran','Selisih Periode'].map((label,i)=>
-    '<div class="card"><div class="symbol" aria-hidden="true">'+['⊕','⊖','▤'][i]+'</div><small>'+label+'</small><strong>'+money(loading||failure?null:values[i])+'</strong></div>').join('')+'</div>';
+    '<div class="card '+['in','out','net'][i]+'"><div class="symbol" aria-hidden="true">'+svgIcon(['Pemasukan','Pengeluaran','BKU'][i])+'</div><small>'+label+'</small><strong>'+money(loading||failure?null:values[i])+'</strong></div>').join('')+'</div>';
 }
 function makeTable(headers, content) {
   return '<div class="scroll"><table><thead><tr>'+headers.map(h=>'<th>'+h+'</th>').join('')+'</tr></thead><tbody>'+
@@ -190,9 +201,9 @@ function render() {
   $('role').textContent = simulated?'Admin · Demo':admin()?'Administrator':'Akses Umum';
   $('status').hidden = !failure&&!simulated;
   $('status').textContent = failure || (simulated?'Mode demo · Seluruh perubahan hanya berlaku selama halaman ini terbuka.':'');
-  $('nav').innerHTML = items.map(([name,icon])=>{
+  $('nav').innerHTML = items.map(([name])=>{
     const label = name==='Login'&&admin()?'Keluar':name;
-    return '<button type="button" data-page="'+name+'" class="'+(screen===name?'active':'')+'" '+(screen===name?'aria-current="page"':'')+'><span class="nav-icon" aria-hidden="true">'+icon+'</span><span class="nav-label">'+label+'</span></button>';
+    return '<button type="button" data-page="'+name+'" class="'+(screen===name?'active':'')+'" '+(screen===name?'aria-current="page"':'')+'><span class="nav-icon" aria-hidden="true">'+svgIcon(name==='Login'&&admin()?'Keluar':name)+'</span><span class="nav-label">'+label+'</span></button>';
   }).join('');
   const data = summary.filter(r=>!month||r.bulan.startsWith(month));
   const list = rows.filter(r=>!month||r.tanggal.startsWith(month));
