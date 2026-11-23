@@ -119,64 +119,51 @@ async function buildReceipt(record, institution) {
   canvas.width=width*2;
   canvas.height=height*2;
   ctx.scale(2,2);
-  const ink='#18382c', green='#176b4a', pale='#edf6f0', line='#cbded2';
-  ctx.fillStyle='#f6faf7';
-  ctx.fillRect(0,0,width,height);
   ctx.fillStyle='white';
-  ctx.fillRect(14,14,width-28,height-28);
-  ctx.fillStyle=ink;
-  ctx.strokeStyle=line;
-  ctx.lineWidth=1.5;
+  ctx.fillRect(0,0,width,height);
+  ctx.fillStyle='black';
+  ctx.strokeStyle='black';
+  ctx.lineWidth=2;
   ctx.textBaseline='top';
   ctx.strokeRect(14,14,width-28,height-28);
-  ctx.fillStyle=green;
-  ctx.fillRect(14,14,width-28,9);
 
   function textRows(values,x,y,font,align='left',spacing=25) {
     ctx.font=font;
     ctx.textAlign=align;
     values.forEach((text,i)=>ctx.fillText(text,x,y+i*spacing));
   }
-  function separator(y) {
-    ctx.strokeStyle=line;ctx.lineWidth=1;
-    ctx.beginPath();ctx.moveTo(42,y);ctx.lineTo(width-42,y);ctx.stroke();
-  }
+  function separator(y) {ctx.beginPath();ctx.moveTo(14,y);ctx.lineTo(width-14,y);ctx.stroke();}
   if(logo) {
     const scale=Math.min(170/logo.width,112/logo.height);
     ctx.drawImage(logo,138-logo.width*scale/2,32,logo.width*scale,logo.height*scale);
   }
-  ctx.fillStyle=ink;
   textRows(nameLines,headerCenter,44,titleFont,'center',39);
-  ctx.fillStyle='#5d7568';
   textRows(addressLines,headerCenter,47+nameLines.length*39,subFont,'center',23);
   separator(headerEnd);
-  ctx.fillStyle=green;
-  textRows([incoming?'KWITANSI PENERIMAAN':'KWITANSI PEMBAYARAN'],500,headerEnd+13,'bold 30px Arial','center');
+  textRows([incoming?'KWITANSI PENERIMAAN':'KWITANSI PEMBAYARAN'],500,headerEnd+13,'bold 32px Arial','center');
   let y=headerEnd+65;
   for(const field of details) {
-    ctx.fillStyle='#526b5e';
-    textRows([field.label],left,y+7,'600 19px Arial');
-    textRows([':'],valueX-18,y+7,'600 19px Arial');
-    const rowHeight=Math.max(42,field.rows.length*25+16);
+    textRows([field.label],left,y+7,bodyFont);
+    textRows([':'],valueX-18,y+7,bodyFont);
+    const rowHeight=Math.max(38,field.rows.length*25+14);
     if(field.style) {
       const boxWidth=field.style==='amount'?350:right-valueX;
-      ctx.fillStyle=field.style==='amount'?pale:'#fbfdfb';
-      ctx.fillRect(valueX,y,boxWidth,rowHeight-6);
-      ctx.strokeStyle=field.style==='amount'?green:line;
-      ctx.lineWidth=field.style==='amount'?2:1;
+      if(field.style==='amount') {
+        ctx.fillStyle='#e3e3e3';
+        ctx.fillRect(valueX,y,boxWidth,rowHeight-6);
+        ctx.fillStyle='black';
+      }
+      ctx.lineWidth=1.3;
       ctx.strokeRect(valueX,y,boxWidth,rowHeight-6);
     }
-    ctx.fillStyle=field.style==='amount'?green:ink;
-    textRows(field.rows,valueX+12,y+8,field.style==='amount'?'bold italic 21px Arial':field.font);
+    textRows(field.rows,valueX+10,y+7,field.font);
     y+=rowHeight;
   }
   separator(detailsEnd);
   signatures.forEach((signature,i)=>{
     const x=[170,500,830][i];
-    ctx.fillStyle='#526b5e';
-    textRows([signature.top,signature.role],x,detailsEnd+14,'19px Arial','center');
+    textRows([signature.top,signature.role],x,detailsEnd+14,bodyFont,'center');
     ctx.beginPath();ctx.moveTo(x-110,detailsEnd+126);ctx.lineTo(x+110,detailsEnd+126);ctx.stroke();
-    ctx.fillStyle=ink;
     textRows(signature.name,x,detailsEnd+132,'bold 18px Arial','center',22);
   });
   const jpeg=await new Promise(resolve=>canvas.toBlob(resolve,'image/jpeg',0.94));
