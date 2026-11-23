@@ -290,3 +290,140 @@ img{max-width:100%}
 @media(prefers-reduced-motion:reduce){
   aside#sidebar nav button{transition:none}
 }
+
+
+/* =========================================================
+   UI POLISH 2026 — aksesibilitas, konsistensi, dan mobile UX
+   Lapisan presentasi saja; logika aplikasi tidak diubah.
+   ========================================================= */
+:root{
+  color-scheme:light;
+  --ink:#172b24;--muted:#64766d;--green:#176b4a;--green-deep:#103c2d;
+  --mint:#eaf5ee;--line:#e2ebe5;--paper:#fff;--canvas:#f4f7f5;
+  --gold:#d5b56e;--focus:#76b995;
+}
+html{scroll-behavior:smooth}
+body{background:var(--canvas);color:var(--ink);letter-spacing:-.006em}
+::selection{background:#cfe8d8;color:#103c2d}
+button,input,select,textarea{font:inherit}
+button{cursor:pointer}
+button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible,summary:focus-visible{
+  outline:3px solid #76b995;outline-offset:3px
+}
+header{position:sticky;top:0;z-index:20;box-shadow:0 2px 14px #153b2b08}
+.header-title{letter-spacing:-.02em}
+.layout{padding-top:30px;padding-bottom:54px}
+.hero{isolation:isolate}
+.hero>*{position:relative;z-index:1}
+.card,.panel{box-shadow:0 3px 14px #183d2d08}
+.card{min-width:0}
+.card strong{overflow-wrap:anywhere;font-variant-numeric:tabular-nums}
+.panel h2,.toolbar h2{color:#1b4031}
+.toolbar{row-gap:12px}
+.scroll{max-width:100%;overscroll-behavior-x:contain}
+table{font-variant-numeric:tabular-nums}
+tbody tr:last-child td{border-bottom:0}
+input,select,textarea{max-width:100%;min-height:42px}
+dialog{max-width:min(680px,calc(100vw - 24px));width:calc(100% - 24px);max-height:min(90dvh,850px);padding:24px}
+dialog::backdrop{background:#0b2119a8;backdrop-filter:blur(3px)}
+#status{padding:12px 16px;margin-bottom:18px;background:#fffaf0;color:#72531d}
+.profile-layout,.cards,.panel,.card{min-width:0}
+.profile-facts dd{overflow-wrap:anywhere}
+@media(min-width:901px){
+  aside{position:sticky;top:0;height:100dvh;overflow-y:auto}
+  .layout{padding-left:clamp(24px,3vw,46px);padding-right:clamp(24px,3vw,46px)}
+}
+@media(max-width:900px){
+  body{display:block;min-height:100dvh;padding-bottom:calc(76px + env(safe-area-inset-bottom))}
+  aside{display:block;position:static;height:auto;padding:0;background:transparent;box-shadow:none}
+  .brand,.foot{display:none}
+  nav{
+    position:fixed;z-index:50;left:0;right:0;bottom:0;
+    display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:3px;
+    padding:8px 7px calc(8px + env(safe-area-inset-bottom));
+    background:#fffffff2;border-top:1px solid #dce8e0;
+    box-shadow:0 -8px 28px #123c2d12;backdrop-filter:blur(16px);
+    overflow:visible
+  }
+  nav button{
+    min-width:0;min-height:52px;padding:6px 2px;border-radius:11px;
+    display:flex;flex-direction:column;justify-content:center;align-items:center;
+    gap:3px;text-align:center;font-size:10px;line-height:1.15;
+    color:#61756a;background:transparent;white-space:normal
+  }
+  nav button span{width:auto;font-size:19px;line-height:1.1}
+  nav button.active{background:#eaf5ee;color:#176b4a;box-shadow:inset 0 -3px var(--gold)}
+  nav button:hover{transform:none;background:#f0f6f2}
+  header{height:62px;padding:0 18px}
+  .layout{padding:20px 18px 30px}
+}
+@media(max-width:520px){
+  .cards{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+  .card{padding:14px;border-radius:15px}
+  .card .symbol{width:35px;height:35px}
+  .card small{font-size:12px}
+  .card strong{font-size:clamp(16px,4.2vw,22px);line-height:1.25}
+  .hero{padding:23px 20px}
+  .hero h1{font-size:clamp(26px,8vw,35px)}
+  .panel{padding:15px}
+  .layout{padding-left:12px;padding-right:12px}
+  header{padding:0 13px}
+  nav{padding-left:4px;padding-right:4px}
+  nav button{font-size:9px}
+}
+@media(max-width:360px){
+  nav{gap:1px}
+  nav button{font-size:8px}
+  .cards{grid-template-columns:1fr 1fr}
+}
+@media(prefers-reduced-motion:reduce){
+  *,*::before,*::after{scroll-behavior:auto!important;animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}
+}
+
+
+/* Professional Edition — annual analytics and transaction discovery */
+.analytics-panel{margin:0 0 22px;overflow:hidden}
+.analytics-toolbar{align-items:center;justify-content:space-between}
+.analytics-toolbar h2{margin:0}
+.analytics-toolbar p{margin:3px 0 0;font-size:13px}
+.year-select{display:flex;align-items:center;gap:9px;white-space:nowrap;font-weight:650}
+.year-select select{min-width:105px}
+.annual-stats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin:18px 0 12px}
+.annual-stats>div{display:grid;gap:5px;padding:14px 16px;border:1px solid var(--line);border-radius:13px;background:#f8fbf9;min-width:0}
+.annual-stats span{font-size:12px;color:var(--muted);font-weight:650}
+.annual-stats strong{font-size:clamp(15px,2vw,22px);font-variant-numeric:tabular-nums;overflow-wrap:anywhere;color:var(--green-dark)}
+.chart-legend{display:flex;gap:18px;align-items:center;font-size:12px;color:var(--muted);margin:18px 0 8px}
+.chart-legend span{display:inline-flex;gap:7px;align-items:center}
+.chart-legend i{width:9px;height:9px;border-radius:3px;display:inline-block}
+.legend-income{background:#21845b}.legend-expense{background:#d6ad59}
+.annual-chart{height:190px;display:grid;grid-template-columns:repeat(12,minmax(0,1fr));gap:clamp(3px,1vw,12px);align-items:end;padding:10px 4px 0;border-bottom:1px solid var(--line)}
+.chart-month{height:100%;display:flex;flex-direction:column;justify-content:flex-end;align-items:center;gap:8px;min-width:0}
+.chart-pair{height:calc(100% - 23px);width:100%;display:flex;align-items:flex-end;justify-content:center;gap:3px}
+.chart-bar{display:block;width:min(34%,15px);min-height:0;border-radius:5px 5px 1px 1px;transition:height .25s ease}
+.chart-bar.income{background:linear-gradient(180deg,#39a878,#176b4a)}
+.chart-bar.expense{background:linear-gradient(180deg,#edcf8c,#c99c43)}
+.chart-month small{font-size:11px;color:var(--muted);white-space:nowrap}
+.chart-footnote{font-size:11px;color:var(--muted);margin:12px 0 0}
+.transaction-filters{display:flex;gap:12px;align-items:end;flex-wrap:wrap;margin:0 0 16px;padding:14px;border:1px solid var(--line);border-radius:13px;background:#f8fbf9}
+.transaction-filters label{display:grid;gap:5px;font-size:12px;font-weight:650}
+.transaction-filters .search-field{flex:1;min-width:min(100%,240px)}
+.transaction-filters input,.transaction-filters select{width:100%;background:#fff}
+.profile-layout .profile-facts>div{padding:9px 11px;border:1px solid var(--line);border-radius:10px;background:#fbfdfb}
+.profile-layout .profile-facts dd{font-weight:600}
+.profile-layout .institution{align-items:center}
+.bku-report .letterhead{border-bottom:3px double #174d37}
+.bku-report .letterhead strong{color:#174d37}
+@media(max-width:640px){
+  .analytics-toolbar{align-items:flex-start;flex-direction:column}
+  .annual-stats{grid-template-columns:1fr;gap:8px}
+  .annual-stats>div{grid-template-columns:1fr auto;align-items:center}
+  .annual-chart{height:155px;gap:2px}
+  .chart-month small{font-size:9px}
+  .chart-pair{gap:2px}
+  .chart-bar{width:38%}
+  .transaction-filters{display:grid;grid-template-columns:1fr}
+  .transaction-filters .search-field{min-width:0}
+}
+@media print{
+  .analytics-panel,.transaction-filters{display:none!important}
+}

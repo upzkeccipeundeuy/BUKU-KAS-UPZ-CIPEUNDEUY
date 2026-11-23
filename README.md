@@ -1,45 +1,47 @@
-# BKU UPZ Cipeundeuy
+# BKU UPZ Cipeundeuy — Professional Edition
 
-Aplikasi Buku Kas Umum untuk UPZ Kecamatan Cipeundeuy. Paket ini memuat dashboard umum dan admin, profil lembaga, transaksi pemasukan dan pengeluaran, kwitansi PDF, dan laporan A4 potret dengan periode bulanan atau tahunan.
+Aplikasi Buku Kas Umum UPZ Kecamatan Cipeundeuy berbasis HTML, CSS, dan JavaScript dengan Supabase sebagai backend.
 
-## Unggah ke GitHub
+## Pembaruan Professional Edition
 
-1. Ekstrak ZIP.
-2. Unggah isi hasil ekstraksi ke root repositori GitHub sehingga `index.html` berada langsung di root.
-3. Jika ingin menayangkan aplikasi melalui GitHub Pages, buka **Settings → Pages**. Pilih **Deploy from a branch**, lalu pilih **main** dan **/(root)**.
+- Dashboard statistik tahunan dengan grafik perbandingan pemasukan dan pengeluaran per bulan.
+- Ringkasan total pemasukan, pengeluaran, dan saldo bersih berdasarkan tahun yang dipilih.
+- Pencarian transaksi admin berdasarkan nomor kwitansi, nama, tanggal, kriteria, dan uraian.
+- Filter transaksi berdasarkan kategori.
+- Penyempurnaan kop laporan cetak/PDF dengan alamat, nomor telepon (jika diisi pada profil), email, logo, dan tanda tangan pengurus.
+- Penyempurnaan tampilan profil lembaga dan informasi pengurus.
+- Navigasi responsif, khususnya pada perangkat ponsel.
+- Perbaikan struktur dokumen HTML dan metadata halaman.
 
-Aplikasi memakai HTML, CSS, dan JavaScript biasa. Tidak ada pemasangan paket atau proses build. Untuk pengujian lokal, layani isi folder melalui server HTTP statis. Penayangan di GitHub Pages memberi pengunjung akses ke dashboard umum. Login Supabase tetap mengontrol akses admin dan rincian transaksi.
+## Upload ke GitHub
 
-## Supabase
+1. Unduh dan ekstrak ZIP.
+2. Unggah seluruh isi folder ini ke root repositori GitHub (pastikan `index.html` langsung berada di root).
+3. Buka **Settings → Pages**.
+4. Pilih **Deploy from a branch**, branch `main`, folder `/(root)`, lalu simpan.
+5. Tunggu deployment selesai dan buka alamat GitHub Pages.
 
-Paket ini sudah memakai URL proyek, publishable key, dan ID admin yang digunakan aplikasi. Jika memakai proyek Supabase yang sama dan seluruh fitur sudah berjalan, lewati pemasangan SQL. Data transaksi dan profil tetap dibaca dari Supabase.
+Aplikasi tidak memerlukan proses build atau instalasi dependency. Untuk pengujian lokal, jalankan menggunakan server HTTP statis.
 
-Untuk proyek Supabase baru:
+## Supabase dan keamanan
 
-1. Buat akun admin di **Authentication → Users**. Isi URL proyek, publishable key, dan ID akun tersebut pada konstanta `PROJECT`, `KEY`, dan `ADMIN` di `app.js`.
-2. Ganti UUID admin pada `setup-akses-supabase.sql` dan `setup-profil-supabase.sql` dengan ID yang sama.
-3. Jalankan file berikut di **SQL Editor** sesuai urutan.
-   - `setup-skema-supabase.sql` membuat tabel transaksi dan view BKU.
-   - `setup-akses-supabase.sql` mengatur akses admin dan ringkasan umum.
-   - `setup-profil-supabase.sql` membuat penyimpanan profil dan susunan pengurus.
-   - `setup-kwitansi-supabase.sql` mengaktifkan nomor kwitansi otomatis.
-4. Masuk memakai akun admin. Untuk mencoba dengan data contoh, pilih **Login → Coba Admin Demo**.
+Konfigurasi Supabase yang sudah ada pada `app.js` dipertahankan agar aplikasi tetap mengarah ke proyek sebelumnya. Jika menggunakan proyek Supabase berbeda, sesuaikan URL, publishable/anon key, dan UUID admin.
 
-Gunakan hanya publishable key di kode frontend. Simpan service role key dan kata sandi di luar repositori.
+- Jangan pernah memasukkan `service_role` key atau secret server ke frontend/GitHub.
+- Pastikan Row Level Security (RLS) aktif.
+- Kebijakan akses publik sebaiknya hanya mengizinkan ringkasan yang memang aman dipublikasikan.
+- Uji login admin, akses publik, tambah/edit/hapus transaksi, profil, kwitansi, dan laporan setelah deployment.
 
+## Struktur berkas
 
-## Penyegaran tampilan UI
+- `index.html` — kerangka halaman.
+- `style.css` — desain, responsivitas, grafik, dan tampilan cetak.
+- `app.js` — dashboard, statistik, navigasi, transaksi, dan koneksi Supabase.
+- `profile.js` — profil lembaga dan susunan pengurus.
+- `receipt.js` — pembuatan kwitansi PDF.
+- `report.js` — filter dan penyusunan laporan untuk cetak/simpan PDF.
+- `CATATAN-REDESAIN-UI.md` — ringkasan perubahan dan saran pengembangan.
 
-Paket ini menyertakan penyegaran tampilan tanpa mengubah struktur database atau alur transaksi:
-- Sidebar hijau profesional untuk layar desktop.
-- Navigasi drawer dengan tombol menu pada ponsel, termasuk tombol tutup, backdrop, dan tombol Escape.
-- Kartu ringkasan, panel, tombol, tabel, dan formulir dengan jarak serta kontras yang lebih konsisten.
-- Tata letak responsif untuk ponsel kecil, tablet, dan desktop.
-- Fokus keyboard dan preferensi reduced-motion tetap diperhatikan.
+## Catatan kompatibilitas
 
-Untuk memperbarui GitHub, unggah seluruh isi folder `BUKU-KAS-UPZ-CIPEUNDEUY-main` ke repositori (timpa file lama). Jangan menghapus atau mengganti konfigurasi Supabase yang sudah digunakan.
-
-
-## Navigasi menu bawah untuk HP
-
-Pada layar berukuran tablet/ponsel (lebar sampai 900px), navigasi berubah menjadi bottom navigation tetap di bagian bawah layar. Setiap menu menampilkan ikon dan label, menu aktif diberi penanda hijau, dan area konten diberi ruang bawah agar tidak tertutup navigasi. Pada desktop, sidebar kiri tetap digunakan. Navigasi mengikuti safe-area perangkat dan tetap memakai menu serta alur halaman aplikasi yang sudah ada.
+Perubahan ini tidak mengubah struktur tabel database, autentikasi, maupun endpoint Supabase. Skrip SQL setup tidak terdapat di arsip sumber yang diterima, sehingga tidak dibuat atau dimasukkan ke paket ini. Jika proyek Supabase Anda telah berjalan dengan skema lama, gunakan skema tersebut seperti sebelumnya.

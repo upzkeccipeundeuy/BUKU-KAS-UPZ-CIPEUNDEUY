@@ -78,11 +78,12 @@ function reportPage() {
   const date=formatReportDate(reportPrintDate||currentDate);
   const address=info.alamat || 'Jl. Raya Cipeundeuy No. 260 Cipeundeuy – Subang 41272';
   const email=info.email || 'upzkeccipeundeuy1@gmail.com';
+  const phone=info.telepon ? 'Telp. '+info.telepon : '';
   return '<section class="panel bku-report"><div class="toolbar no-print">'+reportFilters()+
     '<button id="print" '+(!hasData||profileState==='loading'?'disabled':'')+'>Cetak / Simpan PDF</button></div>'+
     '<div class="letterhead '+(logo?'has-logo':'')+'">'+(logo?'<img src="'+esc(logo)+'" alt="Logo lembaga">':'')+
     '<div><strong>BAZNAS KABUPATEN SUBANG<br>UNIT PENGUMPUL ZAKAT (UPZ)<br>KECAMATAN CIPEUNDEUY</strong>'+
-    '<div class="letter-contact">'+esc(address)+'<br>Email '+esc(email)+'</div></div></div>'+
+    '<div class="letter-contact">'+esc(address)+(phone?'<br>'+esc(phone):'')+'<br>Email '+esc(email)+'</div></div></div>'+
     '<div class="report-title"><h1>'+title+'</h1><p>Periode '+esc(period)+(simulated?' · Data demo':'')+'</p></div>'+
     table+
     '<dl class="report-totals">'+
