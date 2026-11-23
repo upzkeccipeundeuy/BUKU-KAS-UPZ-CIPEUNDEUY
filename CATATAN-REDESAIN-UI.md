@@ -1,31 +1,24 @@
-# Catatan Pengembangan — Professional Edition
+# Paket Redesign UI — BKU UPZ Cipeundeuy
 
-## Yang ditambahkan
-1. Statistik tahunan berdasarkan ringkasan transaksi Supabase yang tersedia.
-2. Grafik batang pemasukan dan pengeluaran per bulan.
-3. Ringkasan total pemasukan, pengeluaran, dan saldo bersih per tahun.
-4. Pencarian transaksi admin berdasarkan nomor kwitansi, penerima/sumber dana, tanggal, kriteria, dan uraian.
-5. Filter kategori transaksi.
-6. Nomor telepon lembaga ditampilkan di kop laporan jika tersedia di profil.
-7. Metadata dan struktur HTML utama dirapikan.
+Paket ini berisi penyegaran tampilan antarmuka untuk aplikasi BKU UPZ Cipeundeuy.
 
-## Yang dipertahankan
-- Konfigurasi koneksi Supabase yang sudah ada.
-- Login dan pembatasan admin.
-- Alur tambah, edit, dan hapus transaksi.
-- Halaman profil dan susunan pengurus.
-- Kwitansi PDF dan laporan cetak/simpan PDF.
+## Isi perubahan
+- Identitas visual hijau premium dengan aksen emas.
+- Sidebar desktop lebih rapi dan tetap terlihat saat halaman digulir.
+- Navigasi HP lebih nyaman digeser dan tetap berada di bagian atas.
+- Dashboard, kartu ringkasan, panel, tabel, formulir, dan dialog diberi konsistensi visual.
+- Perbaikan responsif untuk layar kecil, termasuk kartu ringkasan dua kolom.
+- Fokus keyboard lebih terlihat dan dukungan preferensi reduced motion.
+- Metadata judul, deskripsi, dan warna tema browser diperbarui.
 
-## Pengujian yang dilakukan
-- Pemeriksaan sintaks JavaScript dengan `node --check` untuk `app.js`, `profile.js`, `receipt.js`, dan `report.js`.
-- Pemeriksaan struktur file paket dan HTML.
+## Cara memasang
+1. Unduh dan ekstrak ZIP.
+2. Cadangkan folder aplikasi lama terlebih dahulu.
+3. Ganti file `style.css` dan `index.html` di repositori/hosting dengan versi dari paket ini.
+4. Jangan mengganti `app.js`, `profile.js`, `receipt.js`, `report.js`, atau konfigurasi Supabase.
+5. Commit/push perubahan, lalu muat ulang aplikasi. Jika tampilan lama masih muncul, lakukan hard refresh atau bersihkan cache browser.
 
-## Hal yang perlu diuji setelah upload
-- Dashboard publik dan admin dengan data Supabase asli.
-- Pergantian tahun pada statistik.
-- Pencarian dan filter kategori pada halaman transaksi.
-- Simpan transaksi dan penghapusan.
-- Cetak laporan PDF, termasuk logo dan nomor telepon jika diisi.
-- Hak akses publik/admin melalui kebijakan RLS Supabase.
-
-Catatan: data transaksi tidak dimigrasikan atau diubah. Grafik memakai ringkasan transaksi yang disediakan backend. Paket sumber tidak menyertakan skrip SQL, sehingga skema Supabase tidak diubah.
+## Catatan penting
+- Perubahan ini hanya pada lapisan UI/presentasi.
+- Tidak mengubah tabel, data transaksi, autentikasi, kebijakan akses, atau konfigurasi Supabase.
+- Fitur yang sudah ada tetap mengikuti kode aplikasi saat ini.
