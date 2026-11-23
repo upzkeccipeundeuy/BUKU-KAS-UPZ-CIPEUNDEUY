@@ -60,3 +60,119 @@
   .bku-report .report-signatures { font-size:9pt; margin-top:8mm; }
   .bku-report .report-signatures strong { margin-top:12mm; }
 }
+
+
+/* ==========================================================
+   UI REDESIGN PACK — UPZ CIPEUNDEUY
+   Presentation layer only. No database or transaction logic.
+   ========================================================== */
+:root{
+  --ui-brand:#155b40;
+  --ui-brand-strong:#0e3829;
+  --ui-accent:#d6b66f;
+  --ui-page:#f3f7f4;
+  --ui-border:#e3ebe6;
+  --ui-shadow:0 12px 32px rgba(18,55,39,.07);
+}
+html{scroll-behavior:smooth}
+body{background:var(--ui-page);color:#1a3027}
+aside{
+  position:sticky;top:0;height:100vh;min-height:620px;
+  background:linear-gradient(165deg,#164b37 0%,#0d2e23 100%);
+  border-right:1px solid rgba(255,255,255,.08)
+}
+.brand{min-height:58px}
+.brand-logo{box-shadow:0 5px 18px rgba(0,0,0,.16)}
+nav button{min-height:46px;letter-spacing:.005em}
+nav button:focus-visible,button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible{
+  outline:3px solid rgba(214,182,111,.65);outline-offset:2px
+}
+main{min-width:0}
+header{
+  position:sticky;top:0;z-index:5;
+  border-bottom:1px solid rgba(220,232,224,.9);
+  box-shadow:0 3px 14px rgba(20,55,39,.035)
+}
+.layout{width:100%}
+#status{box-shadow:var(--ui-shadow)}
+.hero{
+  isolation:isolate;
+  background:
+    radial-gradient(circle at 88% 12%,rgba(214,182,111,.22),transparent 24%),
+    linear-gradient(115deg,#103b2b 0%,#176347 68%,#2b7654 100%);
+}
+.hero:before{
+  content:"";position:absolute;z-index:-1;width:230px;height:230px;
+  right:8%;bottom:-180px;border:1px solid rgba(255,255,255,.14);
+  border-radius:50%;box-shadow:0 0 0 28px rgba(255,255,255,.035),0 0 0 58px rgba(255,255,255,.025)
+}
+.cards{align-items:stretch}
+.card{position:relative;overflow:hidden;min-width:0}
+.card:after{
+  content:"";position:absolute;width:90px;height:90px;right:-42px;top:-42px;
+  border-radius:50%;background:rgba(23,107,74,.045)
+}
+.card strong{overflow-wrap:anywhere}
+.panel{box-shadow:var(--ui-shadow)}
+.panel h1,.panel h2{color:#193d2e}
+.toolbar{align-items:center}
+.toolbar label{min-width:150px}
+.scroll{max-width:100%;background:#fff}
+table{min-width:650px}
+.bku-report table{min-width:0}
+tbody tr:last-child td{border-bottom:0}
+button{min-height:40px}
+button:active{transform:translateY(0)}
+dialog{max-width:min(560px,94vw);max-height:90dvh;overflow:auto}
+dialog::backdrop{backdrop-filter:blur(3px)}
+dialog form{min-width:0}
+dialog .toolbar{display:flex;flex-wrap:wrap}
+.profile-layout{gap:20px}
+.profile-layout .panel{box-shadow:var(--ui-shadow)}
+.institution-photo{box-shadow:inset 0 0 0 1px var(--ui-border)}
+.officer-entry{box-shadow:0 3px 12px rgba(18,55,39,.035)}
+.bku-month{box-shadow:0 4px 15px rgba(18,55,39,.035)}
+.bku-month summary{transition:background .18s ease}
+.bku-month summary:hover{background:#e8f2ec}
+.empty{white-space:normal}
+@media(max-width:900px){
+  body{display:block}
+  aside{position:sticky;top:0;z-index:10;height:auto;min-height:0;padding:10px 14px 8px}
+  .brand{padding:2px 5px 8px}
+  nav{scrollbar-width:thin;scrollbar-color:#668d79 transparent}
+  nav button{flex:0 0 auto}
+  header{position:relative;padding:0 18px}
+  .layout{padding:20px}
+}
+@media(max-width:640px){
+  .cards{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+  .card{padding:14px;border-radius:15px}
+  .card .symbol{width:36px;height:36px;margin-bottom:7px}
+  .card small{font-size:11px;line-height:1.35}
+  .card strong{font-size:clamp(16px,4.5vw,22px);line-height:1.25}
+  .hero{padding:23px 20px}
+  .hero h1{font-size:29px}
+  .hero>strong{font-size:13px;line-height:1.5}
+  .layout{padding:14px 11px 24px}
+  .panel{padding:15px;border-radius:15px}
+  .toolbar{gap:9px}
+  .toolbar label{width:100%}
+  .toolbar input,.toolbar select{width:100%}
+  .toolbar>button{flex:1}
+  .scroll{border-radius:11px}
+  table{font-size:13px}
+  th,td{padding:11px 9px}
+  .institution{gap:14px}
+  .report-signatures{gap:8px}
+}
+@media(max-width:380px){
+  nav button{padding:9px 10px;font-size:12px}
+  .cards{grid-template-columns:1fr}
+  .hero h1{font-size:26px}
+}
+@media(prefers-reduced-motion:reduce){
+  *,*::before,*::after{scroll-behavior:auto!important;transition:none!important;animation:none!important}
+}
+@media print{
+  aside,header{position:static}
+}
