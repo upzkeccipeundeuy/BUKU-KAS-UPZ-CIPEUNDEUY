@@ -121,6 +121,21 @@ function ledger(list, actions, numbered=false) {
       '<button class="secondary" data-receipt="'+esc(r.id)+'">Unduh Kwitansi PDF</button>'+
       (screen==='Pemasukan'||screen==='Pengeluaran'?' <button class="danger" data-delete="'+esc(r.id)+'">Hapus</button>':'')+'</td>':'')+'</tr>').join(''));
 }
+function bkuMonthly(data, transactions) {
+  // Sort month summaries chronologically (January first), not newest first.
+  const months = [...data].sort((a,b)=>String(a.bulan).localeCompare(String(b.bulan)));
+  if(!months.length) return makeTable(['Bulan','Pemasukan','Pengeluaran'],[]);
+  return '<div class="bku-month-list">'+months.map((m,index)=>{
+    const key=String(m.bulan).slice(0,7);
+    const detail=transactions.filter(r=>String(r.tanggal).slice(0,7)===key)
+      .sort((a,b)=>String(a.tanggal).localeCompare(String(b.tanggal))||Number(a.id)-Number(b.id));
+    const monthLabel=monthName.format(new Date(String(m.bulan)+'T00:00:00Z'));
+    const detailsHtml=admin() ? (detail.length ? ledger(detail,false,true) : '<p class="muted">Tidak ada rincian transaksi pada bulan ini.</p>')
+      : '<p class="muted bku-public-note">Rincian transaksi belum tersedia pada akses umum. Login admin untuk melihat rincian transaksi.</p>';
+    return '<details class="bku-month" '+(index===0?'':'')+'><summary><span class="bku-month-name">'+esc(monthLabel)+'</span><span class="bku-month-total"><span>Masuk '+money(m.debet)+'</span><span>Keluar '+money(m.kredit)+'</span></span></summary><div class="bku-month-detail">'+detailsHtml+'</div></details>';
+  }).join('')+'</div>';
+}
+
 function publicLedger(data, type) {
   const grouped = new Map();
   for(const r of data) {
@@ -156,6 +171,10 @@ function render() {
     content = '<section class="panel login"><h1>Login Admin</h1><p class="muted">Gunakan akun yang terdaftar di Supabase Auth.</p><form id="login"><label>Email<input type="email" name="email" autocomplete="username" required></label><label>Kata sandi<input type="password" name="password" autocomplete="current-password" required></label><div id="loginError" role="alert"></div><button>Masuk</button><button type="button" class="secondary" id="demo">Coba Admin Demo</button></form></section>';
   } else if(screen==='Cetak Laporan') {
     content = reportPage();
+  } else if(screen==='BKU') {
+    content = '<section class="panel bku-panel"><div class="bku-heading"><h1>BKU</h1><p class="muted">Ringkasan kas dan rincian transaksi per bulan, dimulai dari Januari.</p></div>'+
+      '<div class="toolbar no-print">'+filters()+'</div>'+
+      '<div class="bku-month-list">'+bkuMonthly(data,list)+'</div></section>';
   } else {
     const type = screen==='Pemasukan'?'debet':screen==='Pengeluaran'?'kredit':'';
     const selection = type?list.filter(r=>Number(r[type])>0):list;

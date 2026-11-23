@@ -15,3 +15,15 @@
 .annual-detail{margin-top:24px}
 .annual-detail h2{font-size:1rem;margin:0 0 10px;color:inherit}
 @media print{.annual-detail{margin-top:12mm}.annual-detail h2{font-size:12pt;margin-bottom:4mm}.annual-detail table{font-size:8.5pt}.annual-detail th,.annual-detail td{padding:3px 2px}.annual-detail{break-inside:auto}}
+
+/* BKU monthly accordion */
+.bku-heading h1{margin-bottom:.25rem}.bku-month-list{display:grid;gap:.75rem;margin-top:1rem}
+.bku-month{border:1px solid var(--border,#dce7df);border-radius:14px;overflow:hidden;background:var(--surface,#fff)}
+.bku-month summary{display:flex;align-items:center;justify-content:space-between;gap:1rem;padding:1rem 1.1rem;cursor:pointer;list-style:none;background:#f0f6f2}
+.bku-month summary::-webkit-details-marker{display:none}.bku-month summary:after{content:'⌄';font-size:1.2rem;color:#176b4a;order:3}
+.bku-month[open] summary:after{content:'⌃'}
+.bku-month-name{font-weight:700;text-transform:capitalize;color:#214337;min-width:150px}
+.bku-month-total{display:flex;gap:1.5rem;flex-wrap:wrap;font-size:.92rem;font-weight:600}
+.bku-month-detail{padding:1rem;overflow-x:auto}.bku-month-detail .scroll{max-width:100%}
+.bku-month-detail table{min-width:700px}.bku-public-note{padding:.75rem;background:#f8faf9;border-radius:10px}
+@media(max-width:650px){.bku-month summary{align-items:flex-start;flex-wrap:wrap}.bku-month-name{width:100%}.bku-month-total{gap:.75rem;font-size:.85rem}.bku-month-detail{padding:.5rem}}
