@@ -331,6 +331,18 @@ $('page').addEventListener('click',event=>{
   else downloadReceipt(record,button);
 });
 
+const menuToggle = $('menuToggle');
+const navBackdrop = $('navBackdrop');
+function setNavigationOpen(open) {
+  document.body.classList.toggle('nav-open',open);
+  menuToggle?.setAttribute('aria-expanded',String(open));
+  menuToggle?.setAttribute('aria-label',open?'Tutup menu navigasi':'Buka menu navigasi');
+}
+menuToggle?.addEventListener('click',()=>setNavigationOpen(!document.body.classList.contains('nav-open')));
+navBackdrop?.addEventListener('click',()=>setNavigationOpen(false));
+document.addEventListener('keydown',event=>{
+  if(event.key==='Escape') setNavigationOpen(false);
+});
 $('nav').addEventListener('click',event=>{
   const button=event.target.closest('[data-page]');
   if(!button) return;

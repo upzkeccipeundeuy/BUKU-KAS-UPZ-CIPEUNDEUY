@@ -26,3 +26,15 @@ Untuk proyek Supabase baru:
 4. Masuk memakai akun admin. Untuk mencoba dengan data contoh, pilih **Login → Coba Admin Demo**.
 
 Gunakan hanya publishable key di kode frontend. Simpan service role key dan kata sandi di luar repositori.
+
+
+## Penyegaran tampilan UI
+
+Paket ini menyertakan penyegaran tampilan tanpa mengubah struktur database atau alur transaksi:
+- Sidebar hijau profesional untuk layar desktop.
+- Navigasi drawer dengan tombol menu pada ponsel, termasuk tombol tutup, backdrop, dan tombol Escape.
+- Kartu ringkasan, panel, tombol, tabel, dan formulir dengan jarak serta kontras yang lebih konsisten.
+- Tata letak responsif untuk ponsel kecil, tablet, dan desktop.
+- Fokus keyboard dan preferensi reduced-motion tetap diperhatikan.
+
+Untuk memperbarui GitHub, unggah seluruh isi folder `BUKU-KAS-UPZ-CIPEUNDEUY-main` ke repositori (timpa file lama). Jangan menghapus atau mengganti konfigurasi Supabase yang sudah digunakan.
