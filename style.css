@@ -27,3 +27,36 @@
 .bku-month-detail{padding:1rem;overflow-x:auto}.bku-month-detail .scroll{max-width:100%}
 .bku-month-detail table{min-width:700px}.bku-public-note{padding:.75rem;background:#f8faf9;border-radius:10px}
 @media(max-width:650px){.bku-month summary{align-items:flex-start;flex-wrap:wrap}.bku-month-name{width:100%}.bku-month-total{gap:.75rem;font-size:.85rem}.bku-month-detail{padding:.5rem}}
+
+/* PRINT REPORT REFINEMENT: balanced table widths, readable text, landscape page */
+@media print {
+  @page { size: A4 landscape; margin: 10mm 9mm; }
+  .bku-report { width:100%; font-family: Arial, Helvetica, sans-serif; font-size:9pt; }
+  .bku-report .letterhead { padding:3mm 2mm 4mm; border-bottom:3px double #111; }
+  .bku-report .letterhead.has-logo { grid-template-columns:24mm minmax(0,1fr); gap:5mm; }
+  .bku-report .letterhead img { height:20mm; width:24mm; }
+  .bku-report .letterhead strong { font-size:14pt; line-height:1.2; }
+  .bku-report .letter-contact { font-size:8.5pt; margin-top:2mm; }
+  .bku-report .report-title { margin:5mm 0 4mm; }
+  .bku-report .report-title h1 { font-size:13pt; }
+  .bku-report .report-title p { font-size:9pt; margin:1mm 0; }
+  .bku-report .scroll { overflow:visible !important; border:0; border-radius:0; width:100%; }
+  .bku-report table { width:100% !important; table-layout:fixed; border-collapse:collapse; white-space:normal !important; font-size:8pt !important; }
+  .bku-report th,.bku-report td { padding:2.2mm 1.5mm !important; border:0.6pt solid #555 !important; vertical-align:top; overflow-wrap:anywhere; word-break:normal; }
+  .bku-report th { background:#e9e9e9 !important; color:#111 !important; text-align:left; }
+  .bku-report table th:nth-child(1),.bku-report table td:nth-child(1) { width:4%; text-align:center; }
+  .bku-report table th:nth-child(2),.bku-report table td:nth-child(2) { width:12%; }
+  .bku-report table th:nth-child(3),.bku-report table td:nth-child(3) { width:13%; }
+  .bku-report table th:nth-child(4),.bku-report table td:nth-child(4) { width:9%; }
+  .bku-report table th:nth-child(5),.bku-report table td:nth-child(5) { width:10%; }
+  .bku-report table th:nth-child(6),.bku-report table td:nth-child(6) { width:23%; }
+  .bku-report table th:nth-child(7),.bku-report table td:nth-child(7),.bku-report table th:nth-child(8),.bku-report table td:nth-child(8),.bku-report table th:nth-child(9),.bku-report table td:nth-child(9) { width:9.66%; }
+  .bku-report td.money { white-space:normal !important; text-align:right; font-size:7.5pt; font-variant-numeric:tabular-nums; }
+  .bku-report tr { break-inside:avoid; page-break-inside:avoid; }
+  .bku-report thead { display:table-header-group; }
+  .bku-report .annual-detail { margin-top:6mm; }
+  .bku-report .annual-detail h2 { font-size:10pt; margin-bottom:3mm; }
+  .bku-report .report-totals { font-size:9pt; margin-top:5mm; max-width:75mm; }
+  .bku-report .report-signatures { font-size:9pt; margin-top:8mm; }
+  .bku-report .report-signatures strong { margin-top:12mm; }
+}
