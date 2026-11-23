@@ -1,18 +1,31 @@
-# Catatan Penyegaran UI — BKU UPZ Cipeundeuy
+# Catatan Pengembangan — Professional Edition
 
-Penyegaran ini berfokus pada keterbacaan, konsistensi visual, dan pengalaman mobile.
+## Yang ditambahkan
+1. Statistik tahunan berdasarkan ringkasan transaksi Supabase yang tersedia.
+2. Grafik batang pemasukan dan pengeluaran per bulan.
+3. Ringkasan total pemasukan, pengeluaran, dan saldo bersih per tahun.
+4. Pencarian transaksi admin berdasarkan nomor kwitansi, penerima/sumber dana, tanggal, kriteria, dan uraian.
+5. Filter kategori transaksi.
+6. Nomor telepon lembaga ditampilkan di kop laporan jika tersedia di profil.
+7. Metadata dan struktur HTML utama dirapikan.
 
-## Rekomendasi pengembangan berikutnya
-1. Tambahkan grafik arus kas bulanan dan komposisi pemasukan/pengeluaran, dengan label dan rentang tanggal yang jelas.
-2. Tambahkan pencarian transaksi, filter kategori, dan filter rentang tanggal.
-3. Beri status transaksi yang mudah dikenali serta konfirmasi sebelum menghapus data.
-4. Tambahkan empty state yang informatif, skeleton saat memuat, dan pesan error dengan tombol coba lagi.
-5. Pastikan semua tombol memiliki label aksesibel dan setiap formulir menampilkan validasi dekat kolom terkait.
-6. Sediakan halaman bantuan singkat tentang sumber data, waktu pembaruan, dan kontak pengelola.
-7. Lakukan audit RLS Supabase dan uji akses memakai akun publik serta admin terpisah.
+## Yang dipertahankan
+- Konfigurasi koneksi Supabase yang sudah ada.
+- Login dan pembatasan admin.
+- Alur tambah, edit, dan hapus transaksi.
+- Halaman profil dan susunan pengurus.
+- Kwitansi PDF dan laporan cetak/simpan PDF.
 
-## Batas perubahan paket ini
-- Perubahan utama ada di `style.css` dan metadata `index.html`.
-- File JavaScript dan alur data tidak diubah.
-- Tidak ada perubahan database, autentikasi, atau kebijakan Supabase.
-- Skrip SQL tidak tersedia dalam arsip sumber yang diterima.
+## Pengujian yang dilakukan
+- Pemeriksaan sintaks JavaScript dengan `node --check` untuk `app.js`, `profile.js`, `receipt.js`, dan `report.js`.
+- Pemeriksaan struktur file paket dan HTML.
+
+## Hal yang perlu diuji setelah upload
+- Dashboard publik dan admin dengan data Supabase asli.
+- Pergantian tahun pada statistik.
+- Pencarian dan filter kategori pada halaman transaksi.
+- Simpan transaksi dan penghapusan.
+- Cetak laporan PDF, termasuk logo dan nomor telepon jika diisi.
+- Hak akses publik/admin melalui kebijakan RLS Supabase.
+
+Catatan: data transaksi tidak dimigrasikan atau diubah. Grafik memakai ringkasan transaksi yang disediakan backend. Paket sumber tidak menyertakan skrip SQL, sehingga skema Supabase tidak diubah.
