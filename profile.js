@@ -62,21 +62,23 @@ function profilePage() {
   const photo = profileImage(info.foto);
   const canEdit = admin() && profileState === 'ready';
   const facts = profileFields.slice(1,4).filter(([key]) => info[key])
-    .map(([key,label])=>'<div><dt>'+label+'</dt><dd>'+esc(info[key])+'</dd></div>').join('');
+    .map(([key,label])=>'<div class="profile-fact"><dt>'+label+'</dt><dd>'+esc(info[key])+'</dd></div>').join('');
   const officers = profile.pengurus.map((entry,index)=>'<tr><td>'+(index+1)+'</td><td>'+
     esc(entry.jabatan)+'</td><td>'+esc(entry.nama)+'</td></tr>').join('');
-  return '<div class="profile-layout"><div><h1>Profil Lembaga</h1></div>'+
-    (profileState==='loading'?'<p role="status">Memuat profil…</p>':'')+
-    (profileState==='error'?'<p class="muted">Profil tersimpan belum dapat dimuat.'+
+  return '<div class="profile-layout profile-page">'+
+    '<div class="profile-heading"><div><span class="eyebrow profile-eyebrow">INFORMASI LEMBAGA</span><h1>Profil Lembaga</h1>'+
+    '<p class="muted">Identitas dan susunan pengurus UPZ Kecamatan Cipeundeuy.</p></div></div>'+
+    (profileState==='loading'?'<p class="profile-state" role="status">Memuat profil…</p>':'')+
+    (profileState==='error'?'<p class="profile-state profile-state-error">Profil tersimpan belum dapat dimuat.'+
       (admin()?' Jalankan <a href="setup-profil-supabase.sql" download>setup-profil-supabase.sql</a> di Supabase SQL Editor, lalu buka lagi menu Profil.':'')+'</p>':'')+
-    '<section class="panel"><div class="toolbar"><h2>Identitas Lembaga</h2>'+
-    (canEdit?'<button id="editProfile">Edit Identitas</button>':'')+'</div>'+
+    '<section class="panel profile-card profile-institution"><div class="toolbar profile-card-heading"><div><span class="profile-kicker">PROFIL ORGANISASI</span><h2>Identitas Lembaga</h2></div>'+
+    (canEdit?'<button id="editProfile" class="profile-action">Edit Identitas</button>':'')+'</div>'+
     '<div class="institution"><div class="institution-photo">'+(photo?'<img src="'+esc(photo)+'" alt="Foto atau logo '+esc(info.nama)+'">':'<span aria-hidden="true">▤</span>')+
-    '</div><div><h3>'+esc(info.nama)+'</h3><p class="institution-description">'+esc(info.deskripsi || '')+'</p>'+
-    (facts?'<dl class="profile-facts">'+facts+'</dl>':'')+'</div></div></section>'+
-    '<section class="panel"><div class="toolbar"><h2>Susunan Pengurus</h2>'+
-    (canEdit?'<button id="editOfficers">Edit Pengurus</button>':'')+'</div>'+
-    (officers?makeTable(['No.','Jabatan','Nama'],officers):'<p class="muted">Susunan pengurus belum tersedia.</p>')+'</section></div>';
+    '</div><div class="institution-content"><h3>'+esc(info.nama)+'</h3><p class="institution-description">'+esc(info.deskripsi || '')+'</p>'+
+    (facts?'<dl class="profile-facts">'+facts+'</dl>':'<p class="muted profile-no-facts">Informasi kontak belum dilengkapi.</p>')+'</div></div></section>'+
+    '<section class="panel profile-card profile-officers"><div class="toolbar profile-card-heading"><div><span class="profile-kicker">STRUKTUR ORGANISASI</span><h2>Susunan Pengurus</h2></div>'+
+    (canEdit?'<button id="editOfficers" class="profile-action">Edit Pengurus</button>':'')+'</div>'+
+    (officers?makeTable(['No.','Jabatan','Nama'],officers):'<p class="muted profile-empty">Susunan pengurus belum tersedia.</p>')+'</section></div>';
 }
 
 function editInstitution() {
