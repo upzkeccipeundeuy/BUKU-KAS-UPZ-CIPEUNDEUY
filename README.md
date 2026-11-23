@@ -1,45 +1,50 @@
 # BKU UPZ Cipeundeuy
 
-Aplikasi Buku Kas Umum untuk UPZ Kecamatan Cipeundeuy. Paket ini memuat dashboard umum dan admin, profil lembaga, transaksi pemasukan dan pengeluaran, kwitansi PDF, dan laporan A4 potret dengan periode bulanan atau tahunan.
+Aplikasi Buku Kas Umum UPZ Kecamatan Cipeundeuy berbasis HTML, CSS, dan JavaScript. Paket ini mencakup dashboard publik, autentikasi admin melalui Supabase, profil lembaga, transaksi pemasukan/pengeluaran, kwitansi, dan laporan.
 
-## Unggah ke GitHub
+## Pembaruan tampilan
 
-1. Ekstrak ZIP.
-2. Unggah isi hasil ekstraksi ke root repositori GitHub sehingga `index.html` berada langsung di root.
-3. Jika ingin menayangkan aplikasi melalui GitHub Pages, buka **Settings → Pages**. Pilih **Deploy from a branch**, lalu pilih **main** dan **/(root)**.
+- Identitas visual hijau tua dengan aksen emas dan permukaan terang.
+- Sidebar tetap pada desktop; navigasi bawah tetap pada ponsel/tablet.
+- Kartu ringkasan lebih mudah dipindai, angka menggunakan tabular numerals.
+- Panel, tabel, formulir, dialog, dan tombol memiliki gaya yang konsisten.
+- Tata letak responsif untuk ponsel kecil hingga desktop.
+- Fokus keyboard terlihat, dukungan `prefers-reduced-motion`, dan safe-area perangkat.
+- Area header tetap terlihat saat halaman digulir.
 
-Aplikasi memakai HTML, CSS, dan JavaScript biasa. Tidak ada pemasangan paket atau proses build. Untuk pengujian lokal, layani isi folder melalui server HTTP statis. Penayangan di GitHub Pages memberi pengunjung akses ke dashboard umum. Login Supabase tetap mengontrol akses admin dan rincian transaksi.
+Perubahan tampilan berada di `style.css` dan metadata di `index.html`. Logika transaksi, laporan, kwitansi, profil, serta integrasi Supabase tidak sengaja diubah.
 
-## Supabase
+## Upload ke GitHub
 
-Paket ini sudah memakai URL proyek, publishable key, dan ID admin yang digunakan aplikasi. Jika memakai proyek Supabase yang sama dan seluruh fitur sudah berjalan, lewati pemasangan SQL. Data transaksi dan profil tetap dibaca dari Supabase.
+1. Ekstrak ZIP ini.
+2. Unggah **seluruh isi folder** ke root repositori GitHub, sehingga `index.html` berada langsung di root.
+3. Buka **Settings → Pages**.
+4. Pada **Build and deployment**, pilih **Deploy from a branch**.
+5. Pilih branch `main` dan folder `/(root)`, lalu simpan.
+6. Tunggu proses deployment selesai dan buka URL GitHub Pages yang diberikan.
 
-Untuk proyek Supabase baru:
+Tidak diperlukan proses build atau instalasi dependency. Untuk pengujian lokal, jalankan folder melalui server HTTP statis (bukan membuka `index.html` sebagai `file://`).
 
-1. Buat akun admin di **Authentication → Users**. Isi URL proyek, publishable key, dan ID akun tersebut pada konstanta `PROJECT`, `KEY`, dan `ADMIN` di `app.js`.
-2. Ganti UUID admin pada `setup-akses-supabase.sql` dan `setup-profil-supabase.sql` dengan ID yang sama.
-3. Jalankan file berikut di **SQL Editor** sesuai urutan.
-   - `setup-skema-supabase.sql` membuat tabel transaksi dan view BKU.
-   - `setup-akses-supabase.sql` mengatur akses admin dan ringkasan umum.
-   - `setup-profil-supabase.sql` membuat penyimpanan profil dan susunan pengurus.
-   - `setup-kwitansi-supabase.sql` mengaktifkan nomor kwitansi otomatis.
-4. Masuk memakai akun admin. Untuk mencoba dengan data contoh, pilih **Login → Coba Admin Demo**.
+## Konfigurasi Supabase
 
-Gunakan hanya publishable key di kode frontend. Simpan service role key dan kata sandi di luar repositori.
+Aplikasi menggunakan konfigurasi proyek Supabase yang sudah ada di `app.js` (`PROJECT`, `KEY`, dan `ADMIN`). Jika repositori ini menggunakan proyek yang sama dan aplikasi sebelumnya telah berjalan, konfigurasi tidak perlu diganti.
 
+Jika menggunakan proyek Supabase baru:
+- Buat akun admin di Supabase Authentication.
+- Sesuaikan URL proyek, publishable/anon key, dan UUID admin di `app.js`.
+- Siapkan tabel, view/RPC, kebijakan RLS, dan struktur profil/kwitansi sesuai kebutuhan kode aplikasi. Skrip SQL skema **tidak disertakan** dalam ZIP ini; gunakan skrip dari proyek Supabase yang sudah ada atau siapkan skema yang cocok sebelum deployment.
 
-## Penyegaran tampilan UI
+**Keamanan:** hanya gunakan publishable/anon key di frontend. Jangan pernah menaruh `service_role` key, password, atau secret server di GitHub. Pastikan Row Level Security (RLS) aktif dan kebijakan publik hanya membuka ringkasan yang memang aman ditampilkan.
 
-Paket ini menyertakan penyegaran tampilan tanpa mengubah struktur database atau alur transaksi:
-- Sidebar hijau profesional untuk layar desktop.
-- Navigasi drawer dengan tombol menu pada ponsel, termasuk tombol tutup, backdrop, dan tombol Escape.
-- Kartu ringkasan, panel, tombol, tabel, dan formulir dengan jarak serta kontras yang lebih konsisten.
-- Tata letak responsif untuk ponsel kecil, tablet, dan desktop.
-- Fokus keyboard dan preferensi reduced-motion tetap diperhatikan.
+## Struktur berkas
 
-Untuk memperbarui GitHub, unggah seluruh isi folder `BUKU-KAS-UPZ-CIPEUNDEUY-main` ke repositori (timpa file lama). Jangan menghapus atau mengganti konfigurasi Supabase yang sudah digunakan.
+- `index.html` — kerangka halaman.
+- `style.css` — seluruh gaya dan responsivitas UI.
+- `app.js` — navigasi, dashboard, transaksi, dan koneksi Supabase.
+- `profile.js` — profil lembaga dan susunan pengurus.
+- `receipt.js` — kwitansi.
+- `report.js` — penyusunan dan pencetakan laporan.
 
+## Catatan
 
-## Navigasi menu bawah untuk HP
-
-Pada layar berukuran tablet/ponsel (lebar sampai 900px), navigasi berubah menjadi bottom navigation tetap di bagian bawah layar. Setiap menu menampilkan ikon dan label, menu aktif diberi penanda hijau, dan area konten diberi ruang bawah agar tidak tertutup navigasi. Pada desktop, sidebar kiri tetap digunakan. Navigasi mengikuti safe-area perangkat dan tetap memakai menu serta alur halaman aplikasi yang sudah ada.
+Paket ini adalah aplikasi frontend statis. Data transaksi dan autentikasi tetap bergantung pada konfigurasi serta kebijakan Supabase. Uji dashboard publik, login admin, tambah/edit transaksi, profil, cetak kwitansi, dan laporan setelah deployment.
