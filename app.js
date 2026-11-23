@@ -155,7 +155,7 @@ function render() {
   $('status').textContent = failure || (simulated?'Mode demo · Seluruh perubahan hanya berlaku selama halaman ini terbuka.':'');
   $('nav').innerHTML = items.map(([name,icon])=>{
     const label = name==='Login'&&admin()?'Keluar':name;
-    return '<button data-page="'+name+'" class="'+(screen===name?'active':'')+'" '+(screen===name?'aria-current="page"':'')+'><span aria-hidden="true">'+icon+'</span>'+label+'</button>';
+    return '<button type="button" data-page="'+name+'" class="'+(screen===name?'active':'')+'" '+(screen===name?'aria-current="page"':'')+'><span class="nav-icon" aria-hidden="true">'+icon+'</span><span class="nav-label">'+label+'</span></button>';
   }).join('');
   const data = summary.filter(r=>!month||r.bulan.startsWith(month));
   const list = rows.filter(r=>!month||r.tanggal.startsWith(month));

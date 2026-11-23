@@ -240,3 +240,53 @@ img{max-width:100%}
 @media(prefers-reduced-motion:reduce){
   aside#sidebar,.nav-backdrop{transition:none}
 }
+
+
+/* Mobile-first bottom navigation */
+.menu-toggle{display:none!important}
+@media(max-width:900px){
+  body{display:block;min-height:100vh;padding-bottom:76px}
+  aside#sidebar{
+    display:block;position:fixed;z-index:50;inset:auto 0 0;width:100%;height:auto;min-height:0;
+    padding:7px 5px calc(7px + env(safe-area-inset-bottom));margin:0;
+    background:rgba(255,255,255,.97);backdrop-filter:blur(16px);
+    border-top:1px solid #dfe9e3;box-shadow:0 -8px 28px rgba(18,55,39,.10)
+  }
+  aside#sidebar .brand,aside#sidebar .foot{display:none}
+  aside#sidebar nav{
+    display:flex;flex-direction:row;align-items:stretch;justify-content:space-between;
+    gap:2px;width:100%;overflow:visible;padding:0;margin:0
+  }
+  aside#sidebar nav button{
+    flex:1 1 0;min-width:0;min-height:54px;padding:6px 1px 5px;
+    display:flex;flex-direction:column;justify-content:center;align-items:center;gap:3px;
+    border-radius:10px;background:transparent;color:#718178;white-space:normal;
+    text-align:center;box-shadow:none;transform:none;font-size:9px;line-height:1.1
+  }
+  aside#sidebar nav button .nav-icon{
+    display:grid;place-items:center;width:auto;font-size:19px;line-height:1.1
+  }
+  aside#sidebar nav button .nav-label{
+    display:block;max-width:100%;font-size:9px;font-weight:650;
+    overflow-wrap:anywhere;line-height:1.1
+  }
+  aside#sidebar nav button.active{
+    color:#176b4a;background:#e8f5ee;box-shadow:none
+  }
+  aside#sidebar nav button.active .nav-icon{transform:translateY(-1px)}
+  header{position:sticky;top:0;z-index:20;height:62px;padding:0 16px}
+  .layout{padding:18px 16px 24px}
+}
+@media(max-width:480px){
+  body{padding-bottom:72px}
+  aside#sidebar{padding-left:3px;padding-right:3px}
+  aside#sidebar nav{gap:1px}
+  aside#sidebar nav button{min-height:52px;padding-left:0;padding-right:0}
+  aside#sidebar nav button .nav-icon{font-size:18px}
+  aside#sidebar nav button .nav-label{font-size:8.5px;letter-spacing:-.02em}
+  header{height:58px;padding:0 12px}
+  .layout{padding:14px 11px 20px}
+}
+@media(prefers-reduced-motion:reduce){
+  aside#sidebar nav button{transition:none}
+}

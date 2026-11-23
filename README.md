@@ -38,3 +38,8 @@ Paket ini menyertakan penyegaran tampilan tanpa mengubah struktur database atau 
 - Fokus keyboard dan preferensi reduced-motion tetap diperhatikan.
 
 Untuk memperbarui GitHub, unggah seluruh isi folder `BUKU-KAS-UPZ-CIPEUNDEUY-main` ke repositori (timpa file lama). Jangan menghapus atau mengganti konfigurasi Supabase yang sudah digunakan.
+
+
+## Navigasi menu bawah untuk HP
+
+Pada layar berukuran tablet/ponsel (lebar sampai 900px), navigasi berubah menjadi bottom navigation tetap di bagian bawah layar. Setiap menu menampilkan ikon dan label, menu aktif diberi penanda hijau, dan area konten diberi ruang bawah agar tidak tertutup navigasi. Pada desktop, sidebar kiri tetap digunakan. Navigasi mengikuti safe-area perangkat dan tetap memakai menu serta alur halaman aplikasi yang sudah ada.
