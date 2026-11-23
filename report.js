@@ -66,7 +66,7 @@ function reportPage() {
   const closing=hasData
     ? admin()&&list.length ? Number(list.at(-1).saldo) : Math.round((opening+movement)*100)/100
     : null;
-  const title=admin()?'Laporan Buku Kas Umum':'Laporan Ringkasan Kas';
+  const title=admin()?(reportPeriod==='year'?'Laporan Buku Kas Umum Tahun '+esc(selectedYear):'Laporan Buku Kas Umum'):'Laporan Ringkasan Kas';
   const period=reportPeriod==='month'?monthName.format(new Date(startDate)):reportPeriod==='year'?selectedYear:'Semua periode';
   const openingLabel=reportPeriod==='year'?'Sisa saldo tahun lalu':'Sisa saldo bulan lalu';
   const openingRow={tanggal:startDate,uraian:openingLabel,saldo:opening};
@@ -75,9 +75,6 @@ function reportPage() {
     : makeTable(['Uraian','Pemasukan','Pengeluaran','Saldo'],
       hasData?(startDate?'<tr><td>'+openingLabel+'</td><td class="money">—</td><td class="money">—</td><td class="money">'+money(opening)+'</td></tr>':'')+
       '<tr><td>Mutasi periode</td><td class="money">'+money(debet)+'</td><td class="money">'+money(kredit)+'</td><td class="money">'+money(closing)+'</td></tr>':'');
-  const annualDetail=reportPeriod==='year'&&hasData&&list.length?
-    '<div class="annual-detail"><h2>Rincian Transaksi Tahun '+esc(selectedYear)+'</h2>'+
-    ledger(list.map(row=>({...row,tanggal:formatReportDate(row.tanggal)})),false,true)+'</div>':'';
   const date=formatReportDate(reportPrintDate||currentDate);
   const address=info.alamat || 'Jl. Raya Cipeundeuy No. 260 Cipeundeuy – Subang 41272';
   const email=info.email || 'upzkeccipeundeuy1@gmail.com';
@@ -87,7 +84,7 @@ function reportPage() {
     '<div><strong>BAZNAS KABUPATEN SUBANG<br>UNIT PENGUMPUL ZAKAT (UPZ)<br>KECAMATAN CIPEUNDEUY</strong>'+
     '<div class="letter-contact">'+esc(address)+'<br>Email '+esc(email)+'</div></div></div>'+
     '<div class="report-title"><h1>'+title+'</h1><p>Periode '+esc(period)+(simulated?' · Data demo':'')+'</p></div>'+
-    table+annualDetail+
+    table+
     '<dl class="report-totals">'+
     [['Total Pemasukan',hasData?debet:null],['Total Pengeluaran',hasData?kredit:null],['Saldo Akhir',closing]]
       .map(([label,value])=>'<div><dt>'+label+'</dt><dd>'+money(value)+'</dd></div>').join('')+'</dl>'+
