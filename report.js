@@ -75,6 +75,9 @@ function reportPage() {
     : makeTable(['Uraian','Pemasukan','Pengeluaran','Saldo'],
       hasData?(startDate?'<tr><td>'+openingLabel+'</td><td class="money">—</td><td class="money">—</td><td class="money">'+money(opening)+'</td></tr>':'')+
       '<tr><td>Mutasi periode</td><td class="money">'+money(debet)+'</td><td class="money">'+money(kredit)+'</td><td class="money">'+money(closing)+'</td></tr>':'');
+  const annualDetail=reportPeriod==='year'&&hasData&&list.length?
+    '<div class="annual-detail"><h2>Rincian Transaksi Tahun '+esc(selectedYear)+'</h2>'+
+    ledger(list.map(row=>({...row,tanggal:formatReportDate(row.tanggal)})),false,true)+'</div>':'';
   const date=formatReportDate(reportPrintDate||currentDate);
   const address=info.alamat || 'Jl. Raya Cipeundeuy No. 260 Cipeundeuy – Subang 41272';
   const email=info.email || 'upzkeccipeundeuy1@gmail.com';
@@ -84,7 +87,7 @@ function reportPage() {
     '<div><strong>BAZNAS KABUPATEN SUBANG<br>UNIT PENGUMPUL ZAKAT (UPZ)<br>KECAMATAN CIPEUNDEUY</strong>'+
     '<div class="letter-contact">'+esc(address)+'<br>Email '+esc(email)+'</div></div></div>'+
     '<div class="report-title"><h1>'+title+'</h1><p>Periode '+esc(period)+(simulated?' · Data demo':'')+'</p></div>'+
-    table+
+    table+annualDetail+
     '<dl class="report-totals">'+
     [['Total Pemasukan',hasData?debet:null],['Total Pengeluaran',hasData?kredit:null],['Saldo Akhir',closing]]
       .map(([label,value])=>'<div><dt>'+label+'</dt><dd>'+money(value)+'</dd></div>').join('')+'</dl>'+
