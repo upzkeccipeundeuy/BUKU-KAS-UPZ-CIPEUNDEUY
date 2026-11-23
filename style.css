@@ -525,3 +525,27 @@ nav button .nav-icon .ico{width:22px;height:22px}
   aside#sidebar nav button .nav-label{font-size:9px}
   .hero>strong{font-size:12px}
 }
+
+
+/* Kop surat laporan: semua teks rata tengah, baris 2 satu baris */
+.bku-report .letterhead,.bku-report .letterhead>div,.bku-report .letter-contact{text-align:center}
+.bku-report .letterhead strong{display:block}
+.bku-report .lh-line{display:block}
+.bku-report .lh-nowrap{white-space:nowrap}
+.bku-report .letterhead strong{font-size:clamp(11px,3.3vw,22px)}
+.bku-report .letterhead.has-logo{grid-template-columns:100px 1fr}
+@media(max-width:600px){.bku-report .letterhead.has-logo{grid-template-columns:1fr}}
+
+/* Ringkasan total: satu baris */
+.bku-report .report-totals{display:flex;flex-wrap:nowrap;justify-content:space-between;gap:12px;max-width:none;width:100%;margin:14px 0 0}
+.bku-report .report-totals>div{display:flex;flex-direction:row;justify-content:flex-start;align-items:baseline;gap:6px;padding:4px 0;white-space:nowrap}
+.bku-report .report-totals dt:after{content:":"}
+.bku-report .report-totals dt,.bku-report .report-totals dd{margin:0;font-size:13px}
+@media(max-width:640px){.bku-report .report-totals{overflow-x:auto}.bku-report .report-totals dt,.bku-report .report-totals dd{font-size:11px}}
+@media print{
+  .bku-report .letterhead.has-logo{grid-template-columns:24mm minmax(0,1fr)}
+  .bku-report .letterhead>div{padding-right:24mm}
+  .bku-report .letterhead strong{font-size:14pt}
+  .bku-report .report-totals{display:flex!important;max-width:none!important;width:100%;font-size:9pt;justify-content:space-between}
+  .bku-report .report-totals dt,.bku-report .report-totals dd{font-size:9pt}
+}

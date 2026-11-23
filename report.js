@@ -82,7 +82,7 @@ function reportPage() {
   return '<section class="panel bku-report"><div class="toolbar no-print">'+reportFilters()+
     '<button id="print" '+(!hasData||profileState==='loading'?'disabled':'')+'>Cetak / Simpan PDF</button></div>'+
     '<div class="letterhead '+(logo?'has-logo':'')+'">'+(logo?'<img src="'+esc(logo)+'" alt="Logo lembaga">':'')+
-    '<div><strong>BAZNAS KABUPATEN SUBANG<br>UNIT PENGUMPUL ZAKAT (UPZ)<br>KECAMATAN CIPEUNDEUY</strong>'+
+    '<div><strong><span class="lh-line">BAZNAS KABUPATEN SUBANG</span><span class="lh-line lh-nowrap">UNIT PENGUMPUL ZAKAT (UPZ) KECAMATAN CIPEUNDEUY</span></strong>'+
     '<div class="letter-contact">'+esc(address)+(phone?'<br>'+esc(phone):'')+'<br>Email '+esc(email)+'</div></div></div>'+
     '<div class="report-title"><h1>'+title+'</h1><p>Periode '+esc(period)+(simulated?' · Data demo':'')+'</p></div>'+
     table+
