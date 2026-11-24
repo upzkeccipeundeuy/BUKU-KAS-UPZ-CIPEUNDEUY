@@ -25,6 +25,8 @@ const ICON = {
 };
 const svgIcon = n => '<svg class="ico" viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">'+(ICON[n]||'')+'</svg>';
 const items = [['Dashboard'],['Profil'],['Pemasukan'],['Pengeluaran'],['BKU'],['Cetak Laporan'],['Login']];
+const bkuGroup = ['BKU','Pemasukan','Pengeluaran'];
+let bkuOpen = false;
 let screen = 'Dashboard', month = '', dashboardYear = today().slice(0,4), transactionSearch = '', transactionCategory = '', rows = [], summary = [], session, simulated = false, loading = true, failure = '', generation = 0;
 const admin = () => simulated || session?.user?.id === ADMIN;
 const demoReceiptCounters = new Map();
@@ -99,6 +101,7 @@ async function refresh() {
 
 function go(name) {
   screen=name;
+  if(bkuGroup.includes(name)) bkuOpen=true;
   if(name==='Profil'||name==='Cetak Laporan') loadProfile();
   else render();
 }
@@ -208,9 +211,18 @@ function render() {
   $('role').textContent = simulated?'Admin · Demo':admin()?'Administrator':'Akses Umum';
   $('status').hidden = !failure&&!simulated;
   $('status').textContent = failure || (simulated?'Mode demo · Seluruh perubahan hanya berlaku selama halaman ini terbuka.':'');
+  const navButton = (name,label,iconName,extra='')=>'<button type="button" data-page="'+name+'" class="'+(screen===name?'active':'')+extra+'" '+(screen===name?'aria-current="page"':'')+'><span class="nav-icon" aria-hidden="true">'+svgIcon(iconName)+'</span><span class="nav-label">'+label+'</span></button>';
+  const inBku = bkuGroup.includes(screen);
   $('nav').innerHTML = items.map(([name])=>{
+    if(name==='Pemasukan'||name==='Pengeluaran') return '';
+    if(name==='BKU') {
+      return '<button type="button" id="bkuParent" class="nav-parent'+(inBku?' in-group':'')+(bkuOpen?' open':'')+'" aria-expanded="'+bkuOpen+'" aria-controls="bkuSub"><span class="nav-icon" aria-hidden="true">'+svgIcon('BKU')+'</span><span class="nav-label">BKU</span><span class="nav-chevron" aria-hidden="true"></span></button>'+
+        '<div class="nav-sub'+(bkuOpen?' show':'')+'" id="bkuSub">'+
+        '<button type="button" data-page="BKU" class="'+(screen==='BKU'?'active':'')+'" '+(screen==='BKU'?'aria-current="page"':'')+'><span class="nav-icon" aria-hidden="true">'+svgIcon('BKU')+'</span><span class="nav-label"><span class="lbl-desk">Ringkasan</span><span class="lbl-mob">BKU</span></span></button>'+
+        navButton('Pemasukan','Pemasukan','Pemasukan')+navButton('Pengeluaran','Pengeluaran','Pengeluaran')+'</div>';
+    }
     const label = name==='Login'&&admin()?'Keluar':name;
-    return '<button type="button" data-page="'+name+'" class="'+(screen===name?'active':'')+'" '+(screen===name?'aria-current="page"':'')+'><span class="nav-icon" aria-hidden="true">'+svgIcon(name==='Login'&&admin()?'Keluar':name)+'</span><span class="nav-label">'+label+'</span></button>';
+    return navButton(name,label,name==='Login'&&admin()?'Keluar':name);
   }).join('');
   const data = summary.filter(r=>!month||r.bulan.startsWith(month));
   const list = rows.filter(r=>!month||r.tanggal.startsWith(month));
@@ -227,7 +239,7 @@ function render() {
   } else if(screen==='Cetak Laporan') {
     content = reportPage();
   } else if(screen==='BKU') {
-    content = '<section class="panel bku-panel"><div class="bku-heading"><h1>BKU</h1><p class="muted">Ringkasan kas dan rincian transaksi per bulan, dimulai dari Januari.</p></div>'+
+    content = '<section class="panel bku-panel"><div class="bku-heading"><p class="crumb">BKU / Ringkasan</p><h1>BKU</h1><p class="muted">Ringkasan kas dan rincian transaksi per bulan, dimulai dari Januari.</p></div>'+
       '<div class="toolbar no-print">'+filters()+'</div>'+
       '<div class="bku-month-list">'+bkuMonthly(data,list)+'</div></section>';
   } else {
@@ -237,7 +249,7 @@ function render() {
       const matches=!query||[r.no_kwitansi,r.penerima,r.tanggal,r.kriteria,r.uraian].some(value=>String(value||'').toLocaleLowerCase('id').includes(query));
       return matches&&(!transactionCategory||r.kriteria===transactionCategory);
     });
-    content = '<section class="panel"><h1>'+esc(screen)+'</h1>'+
+    content = '<section class="panel"><p class="crumb">BKU / '+esc(screen)+'</p><h1>'+esc(screen)+'</h1>'+
       '<div class="toolbar no-print">'+filters()+
       (admin()?'<button id="add">Tambah '+esc(type?screen:'Transaksi')+'</button>':'')+
       '</div>'+(admin()?transactionFilters(type?list.filter(r=>Number(r[type])>0):list)+ledger(selection,true):publicLedger(data,screen))+'</section>';
@@ -407,6 +419,14 @@ document.addEventListener('keydown',event=>{
   if(event.key==='Escape') setNavigationOpen(false);
 });
 $('nav').addEventListener('click',event=>{
+  const parent=event.target.closest('#bkuParent');
+  if(parent) {
+    bkuOpen=!bkuOpen;
+    parent.classList.toggle('open',bkuOpen);
+    parent.setAttribute('aria-expanded',String(bkuOpen));
+    $('bkuSub')?.classList.toggle('show',bkuOpen);
+    return;
+  }
   const button=event.target.closest('[data-page]');
   if(!button) return;
   if(button.dataset.page==='Login'&&admin()) {
