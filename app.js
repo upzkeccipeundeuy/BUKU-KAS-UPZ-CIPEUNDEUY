@@ -2,6 +2,36 @@ const PROJECT = 'https://bpavltvdhantbwmoeabx.supabase.co';
 const KEY = 'sb_publishable_xpARKQZVCB8mcwVJnOGxYA_yEetsBUM';
 const ADMIN = '09a92d1b-8f35-4459-95e7-cf54a202296b';
 const $ = id => document.getElementById(id);
+/* ---------- Komponen UI: toast, dialog konfirmasi, keadaan kosong, skeleton ---------- */
+function toast(message,type='ok') {
+  const box=$('toasts'); if(!box) return;
+  const el=document.createElement('div');
+  el.className='toast '+type; el.setAttribute('role',type==='error'?'alert':'status');
+  el.innerHTML='<span class="toast-ico" aria-hidden="true">'+(type==='error'?'!':'✓')+'</span><span></span>';
+  el.lastChild.textContent=message;
+  box.appendChild(el);
+  setTimeout(()=>{el.classList.add('out');setTimeout(()=>el.remove(),250);},type==='error'?6000:3200);
+}
+function confirmDialog(title,message,okLabel='Hapus') {
+  return new Promise(resolve=>{
+    const d=$('confirmDlg');
+    if(!d||!d.showModal) return resolve(confirm(title+'\n\n'+message));
+    d.innerHTML='<form method="dialog" class="confirm-box"><div class="confirm-ico" aria-hidden="true">!</div><h2></h2><p></p>'+
+      '<div class="confirm-actions"><button value="cancel" class="secondary">Batal</button><button value="ok" class="danger-solid"></button></div></form>';
+    d.querySelector('h2').textContent=title;
+    d.querySelector('p').textContent=message;
+    d.querySelector('.danger-solid').textContent=okLabel;
+    d.onclose=()=>resolve(d.returnValue==='ok');
+    d.returnValue='cancel';
+    d.showModal();
+  });
+}
+const emptyIcon='<svg viewBox="0 0 24 24" width="30" height="30" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 7.5 12 4l8 3.5v9L12 20l-8-3.5z"/><path d="M4 7.5 12 11l8-3.5M12 11v9"/></svg>';
+const emptyState=(title,text='')=>'<div class="empty-state"><span class="empty-ico">'+emptyIcon+'</span><strong>'+title+'</strong>'+(text?'<p>'+text+'</p>':'')+'</div>';
+const skeletonRows=(n=4)=>'<div class="skeleton-list" aria-busy="true" aria-label="Memuat data">'+Array.from({length:n},()=>'<div class="sk-row"><i class="sk sk-w40"></i><i class="sk sk-w20"></i><i class="sk sk-w100"></i></div>').join('')+'</div>';
+const friendlyError='Data belum dapat dimuat. Periksa koneksi internet Anda, lalu muat ulang halaman.';
+let phExpanded={Perhimpunan:false,Pendistribusian:false};
+
 const rupiah = new Intl.NumberFormat('id-ID', {style:'currency',currency:'IDR',minimumFractionDigits:0,maximumFractionDigits:2});
 const monthName = new Intl.DateTimeFormat('id-ID',{month:'long',year:'numeric',timeZone:'UTC'});
 const today = () => new Date().toLocaleDateString('sv-SE',{timeZone:'Asia/Jakarta'});
@@ -123,7 +153,8 @@ async function refresh() {
     }
   } catch(error) {
     if(stamp!==generation) return;
-    failure = 'Data Supabase gagal dimuat. '+error.message;
+    console.error(error);
+    failure = friendlyError;
   } finally {
     if(stamp===generation) {loading=false;render();}
   }
@@ -147,27 +178,47 @@ function totals(data) {
   const k = data.reduce((sum,r)=>sum+Math.round(Number(r.kredit)*100),0)/100;
   return [d,k,Math.round((d-k)*100)/100];
 }
-function cards(data, labels=['Total Pemasukan','Total Pengeluaran','Selisih Periode']) {
+function monthTrend(data,key) {
+  const by=new Map();
+  for(const r of data) {const m=String(r.bulan).slice(0,7); by.set(m,(by.get(m)||0)+Number(r[key]||0));}
+  const ms=[...by.keys()].sort();
+  if(!ms.length) return '';
+  const cur=by.get(ms.at(-1)), prev=ms.length>1?by.get(ms.at(-2)):0;
+  const label=new Intl.DateTimeFormat('id-ID',{month:'short',year:'numeric',timeZone:'UTC'}).format(new Date(ms.at(-1)+'-01T00:00:00Z'));
+  let delta='';
+  if(prev>0) {const pct=Math.round((cur-prev)/prev*100); delta=' <em class="delta '+(pct>=0?'up':'down')+'">'+(pct>=0?'▲':'▼')+' '+Math.abs(pct)+'%</em> dari bulan lalu';}
+  return '<span class="card-sub">'+label+': '+money(cur)+delta+'</span>';
+}
+function cards(data, labels=['Total Pemasukan','Total Pengeluaran','Selisih Periode'], trend=false) {
   const values = totals(data);
   return '<div class="cards">'+labels.map((label,i)=>
-    '<div class="card '+['in','out','net'][i]+'"><div class="symbol" aria-hidden="true">'+svgIcon(['Pemasukan','Pengeluaran','BKU'][i])+'</div><small>'+label+'</small><strong>'+money(loading||failure?null:values[i])+'</strong></div>').join('')+'</div>';
+    '<div class="card '+['in','out','net'][i]+'"><div class="symbol" aria-hidden="true">'+svgIcon(['Pemasukan','Pengeluaran','BKU'][i])+'</div><small>'+label+'</small><strong'+(loading?' class="sk-text"':'')+'>'+money(loading||failure?null:values[i])+'</strong>'+(trend&&!loading&&!failure?(i<2?monthTrend(data,['debet','kredit'][i]):'<span class="card-sub">Pemasukan dikurangi pengeluaran</span>'):'')+'</div>').join('')+'</div>';
 }
-function makeTable(headers, content) {
-  return '<div class="scroll"><table><thead><tr>'+headers.map(h=>'<th>'+h+'</th>').join('')+'</tr></thead><tbody>'+
-    (content || '<tr><td class="empty" colspan="'+headers.length+'">'+(loading?'Memuat data…':failure?'Data belum tersedia.':'Belum ada transaksi pada periode ini.')+'</td></tr>')+'</tbody></table></div>';
+function makeTable(headers, content, cls='') {
+  return '<div class="scroll"><table'+(cls?' class="'+cls+'"':'')+'><thead><tr>'+headers.map(h=>'<th>'+h+'</th>').join('')+'</tr></thead><tbody>'+
+    (content || '<tr><td class="empty" colspan="'+headers.length+'">'+(loading?skeletonRows(4):failure?emptyState('Data belum tersedia','Silakan coba lagi beberapa saat.'):emptyState('Belum ada transaksi','Tidak ada transaksi pada periode ini.'))+'</td></tr>')+'</tbody></table></div>';
 }
 function ledger(list, actions, numbered=false) {
   const columns = ['No Kwitansi','Penerima','Tanggal','Kriteria','Uraian','Debet','Kredit','Saldo'];
   if(numbered) columns.unshift('No.');
   if(actions) columns.push('Tindakan');
   let sequence=0;
-  return makeTable(columns,list.map(r=>'<tr>'+
+  const lab=i=>' data-label="'+columns[i]+'"';
+  const badge=v=>{const t=String(v??'');const k=/zakat/i.test(t)?'zakat':/infak|infaq|sedekah/i.test(t)?'infak':/salur|distribusi/i.test(t)?'salur':/operasional/i.test(t)?'ops':'lain';return t?'<span class="badge b-'+k+'">'+esc(t)+'</span>':'—';};
+  const amt=(v,cls)=>Number(v)>0?'<td class="money '+cls+'">'+money(v)+'</td>':'<td class="money zero">—</td>';
+  return makeTable(columns,list.map(r=>{
+    let i=numbered?1:0;
+    return '<tr>'+
     (numbered?'<td class="report-sequence">'+(r.id == null?'—':++sequence)+'</td>':'')+
-    [r.no_kwitansi,r.penerima,r.tanggal,r.kriteria,r.uraian].map(v=>'<td>'+esc(v)+'</td>').join('')+
-    [r.debet,r.kredit,r.saldo].map(v=>'<td class="money">'+money(v)+'</td>').join('')+
+    '<td'+lab(i++)+'>'+esc(r.no_kwitansi)+'</td><td'+lab(i++)+'>'+esc(r.penerima)+'</td><td'+lab(i++)+'>'+esc(r.tanggal)+'</td>'+
+    '<td'+lab(i++)+'>'+(actions?badge(r.kriteria):esc(r.kriteria))+'</td><td'+lab(i++)+'>'+esc(r.uraian)+'</td>'+
+    (actions?amt(r.debet,'in').replace('<td','<td'+lab(i++)):'<td class="money">'+money(r.debet)+'</td>')+
+    (actions?amt(r.kredit,'out').replace('<td','<td'+lab(i++)):'<td class="money">'+money(r.kredit)+'</td>')+
+    '<td class="money"'+(actions?lab(i++):'')+'>'+money(r.saldo)+'</td>'+
     (actions?'<td class="receipt-actions"><button class="secondary" data-edit="'+esc(r.id)+'">Edit</button> '+
       '<button class="secondary" data-receipt="'+esc(r.id)+'">Unduh Kwitansi PDF</button>'+
-      (screen==='Pemasukan'||screen==='Pengeluaran'?' <button class="danger" data-delete="'+esc(r.id)+'">Hapus</button>':'')+'</td>':'')+'</tr>').join(''));
+      (screen==='Pemasukan'||screen==='Pengeluaran'?' <button class="danger" data-delete="'+esc(r.id)+'">Hapus</button>':'')+'</td>':'')+'</tr>';
+  }).join(''),actions?'ledger-table':'');
 }
 function bkuMonthly(data, transactions) {
   // Sort month summaries chronologically (January first), not newest first.
@@ -198,7 +249,7 @@ function publicLedger(data, type) {
     (showDebet?'<td class="money">'+money(r.debet/100)+'</td>':'')+(showKredit?'<td class="money">'+money(r.kredit/100)+'</td>':'')+'</tr>').join(''));
 }
 
-function annualDashboard() {
+function annualDashboard(compact=false) {
   const years=[...new Set(summary.map(row=>String(row.bulan).slice(0,4)).filter(Boolean))].sort();
   const selected=years.includes(dashboardYear)?dashboardYear:(years.at(-1)||dashboardYear);
   dashboardYear=selected;
@@ -219,9 +270,9 @@ function annualDashboard() {
   const options=years.map(year=>'<option value="'+year+'" '+(year===selected?'selected':'')+'>'+year+'</option>').join('');
   return '<section class="panel analytics-panel"><div class="toolbar analytics-toolbar"><div><h2>Statistik Keuangan Tahunan</h2><p class="muted">Perbandingan pemasukan dan pengeluaran per bulan</p></div>'+
     '<label class="year-select">Tahun <select id="dashboardYear">'+options+'</select></label></div>'+
-    '<div class="annual-stats"><div><span>Total pemasukan</span><strong>'+money(loading||failure?null:income)+'</strong></div>'+
+    (compact?'':'<div class="annual-stats"><div><span>Total pemasukan</span><strong>'+money(loading||failure?null:income)+'</strong></div>'+
     '<div><span>Total pengeluaran</span><strong>'+money(loading||failure?null:expense)+'</strong></div>'+
-    '<div><span>Saldo bersih</span><strong>'+money(loading||failure?null:income-expense)+'</strong></div></div>'+
+    '<div><span>Saldo bersih</span><strong>'+money(loading||failure?null:income-expense)+'</strong></div></div>')+
     '<div class="chart-legend"><span><i class="legend-income"></i>Pemasukan</span><span><i class="legend-expense"></i>Pengeluaran</span></div>'+
     '<div class="annual-chart" role="img" aria-label="Grafik batang perbandingan pemasukan dan pengeluaran tahun '+selected+'">'+bars+'</div>'+
     '<p class="chart-footnote">Grafik menggunakan ringkasan transaksi yang tersedia pada sistem.</p></section>';
@@ -237,7 +288,7 @@ function transactionFilters(list) {
 const PH_COMPONENTS = [['zakat_fitrah','Zakat Fitrah'],['bis_ramadhan','BIS Ramadhan'],['zakat_mal','Zakat Mal'],['infak_umum','Infak Umum'],['fidyah','Fidyah']];
 function phDashCard(kind, year) {
   const S=phState[kind], K=PH_KINDS[kind], tone=kind==='Perhimpunan'?'in':'out';
-  const list=S.rows.filter(r=>String(r.tahun)===year).sort((x,y)=>String(x.nama_upz).localeCompare(String(y.nama_upz),'id'));
+  const list=S.rows.filter(r=>String(r.tahun)===year).sort((x,y)=>phJumlah(y)-phJumlah(x)||String(x.nama_upz).localeCompare(String(y.nama_upz),'id'));
   const total=list.reduce((sum,r)=>sum+phJumlah(r),0);
   const jiwa=list.reduce((sum,r)=>sum+Number(r.jumlah_jiwa||0),0);
   const beras=list.reduce((sum,r)=>sum+Number(r.beras_kg||0),0);
@@ -245,18 +296,18 @@ function phDashCard(kind, year) {
   const clean=v=>{const t=String(v??'').trim();return /^[.\-–—_\s]*$/.test(t)?'':t;};
   const head='<div class="dash-ph-head"><span class="symbol" aria-hidden="true">'+svgIcon(kind)+'</span><div><h2>Kartu '+kind+'</h2><p class="muted">'+(kind==='Perhimpunan'?'Dana zakat yang dikumpulkan':'Dana zakat yang disalurkan')+' · Tahun '+esc(year)+'</p></div><button type="button" class="secondary dash-ph-link" data-goto="'+kind+'">Kelola</button></div>';
   let body;
-  if(S.loading) body='<p class="empty">Memuat data…</p>';
-  else if(S.failure) body='<p class="empty" role="alert">Data '+kind.toLowerCase()+' gagal dimuat.</p>';
-  else if(!list.length) body='<p class="empty">Belum ada data '+kind.toLowerCase()+' untuk tahun '+esc(year)+'.</p>';
+  if(S.loading) body=skeletonRows(5);
+  else if(S.failure) body=emptyState('Data '+kind.toLowerCase()+' gagal dimuat','Periksa koneksi internet Anda.');
+  else if(!list.length) body=emptyState('Belum ada data '+kind.toLowerCase(),'Belum ada data untuk tahun '+esc(year)+'.');
   else body='<div class="dash-ph-total"><small>Total '+(kind==='Perhimpunan'?'pengumpulan':'pendistribusian')+'</small><strong>'+money(total)+'</strong>'+
     '<span>'+angka.format(jiwa)+' jiwa · '+angka.format(beras)+' kg beras · '+list.length+' UPZ desa/kelurahan</span></div>'+
-    '<h3 class="dash-ph-sub">Rincian per desa/kelurahan</h3><ul class="dash-desa-list">'+list.map(r=>{
+    '<h3 class="dash-ph-sub">Rincian per desa/kelurahan</h3><ul class="dash-desa-list">'+(phExpanded[kind]?list:list.slice(0,3)).map((r,idx)=>{
       const rt=clean(r.rt), rw=clean(r.rw);
       const place=[clean(r.alamat_kp),(rt||rw)?'RT '+(rt||'-')+'/RW '+(rw||'-'):''].filter(Boolean).join(' · ');
       const chips=PH_COMPONENTS.filter(([key])=>Number(r[key]||0)>0).map(([key,label])=>'<div><dt>'+label+'</dt><dd>'+money(Number(r[key]))+'</dd></div>').join('');
-      return '<li class="dash-desa"><div class="dash-desa-top"><div><strong>'+esc(r.nama_upz)+'</strong><small>'+esc(place)+(place?' · ':'')+angka.format(Number(r.jumlah_jiwa||0))+' jiwa'+(Number(r.beras_kg||0)>0?' · '+angka.format(Number(r.beras_kg))+' kg beras':'')+'</small></div><b>'+money(phJumlah(r))+'</b></div>'+
+      return '<li class="dash-desa"><div class="dash-desa-top"><span class="dash-rank">'+(idx+1)+'</span><div><strong>'+esc(r.nama_upz)+'</strong><small>'+esc(place)+(place?' · ':'')+angka.format(Number(r.jumlah_jiwa||0))+' jiwa'+(Number(r.beras_kg||0)>0?' · '+angka.format(Number(r.beras_kg))+' kg beras':'')+'</small></div><b>'+money(phJumlah(r))+'</b></div>'+
         '<div class="dash-bar-row"><div class="dash-bar"><i style="width:'+Math.max(phJumlah(r)?3:0,phJumlah(r)/peak*100)+'%"></i></div><span class="dash-pct">'+(total?Math.round(phJumlah(r)/total*100):0)+'%</span></div>'+(chips?'<dl class="dash-chips">'+chips+'</dl>':'')+'</li>';
-    }).join('')+'</ul>';
+    }).join('')+'</ul>'+(list.length>3?'<button type="button" class="secondary dash-more" data-more="'+kind+'">'+(phExpanded[kind]?'Tampilkan lebih sedikit':'Lihat semua ('+list.length+' desa/kelurahan)')+'</button>':'');
   return '<article class="panel dash-ph-card '+tone+'">'+head+body+'</article>';
 }
 function phDashboard() {
@@ -378,9 +429,9 @@ function phPage(kind) {
     (canEdit?'<div class="toolbar"><button type="button" class="secondary" data-ph-edit="'+esc(r.id)+'">Edit</button><button type="button" class="danger" data-ph-delete="'+esc(r.id)+'">Hapus</button></div>':'')+'</article>').join('')+
     '<article class="ph-card ph-total"><h3>Jumlah Rp.</h3><p><strong>'+money(grand)+'</strong></p><p class="muted">'+n(total.jumlah_jiwa)+' jiwa · beras '+n(total.beras_kg)+' kg</p></article></div>';
   let content;
-  if(S.loading) content = '<p class="empty">Memuat data…</p>';
+  if(S.loading) content = skeletonRows(6);
   else if(S.failure) content = '<p class="empty" role="alert">Data '+K.empty+' gagal dimuat. '+esc(S.failure)+sql+'</p>';
-  else if(!list.length) content = '<p class="empty">Belum ada data '+K.empty+' untuk tahun '+esc(year)+'.'+(canEdit?' Klik “Tambah UPZ desa” untuk mengisi.':'')+'</p>';
+  else if(!list.length) content = emptyState('Belum ada data '+K.empty,'Belum ada data untuk tahun '+esc(year)+'.'+(canEdit?' Klik “Tambah UPZ desa” untuk mengisi.':''));
   else content = table+cards;
   const printForm = !S.loading&&!S.failure ? phPrintForm(kind,list,year,total,grand) : '';
   return '<section class="panel ph-panel"><div class="ph-heading"><p class="crumb">'+kind+'</p><h1>'+K.heading+'</h1><p class="muted">'+K.sub+' · Tahun '+esc(year)+'</p></div>'+
@@ -441,6 +492,7 @@ async function savePh(kind, record, body) {
     S.year=String(body.tahun);
     $('modal').close();
     await loadPh(kind);
+    toast('Data berhasil disimpan.');
   } catch(error) {
     const notice=$('phError');
     if(/duplicate key/i.test(error.message)) notice.textContent='UPZ dengan nama itu sudah ada pada tahun '+body.tahun+'.';
@@ -452,7 +504,7 @@ async function savePh(kind, record, body) {
 
 async function deletePh(kind,record) {
   if(!admin()) return;
-  if(!confirm('Hapus data '+record.nama_upz+' tahun '+record.tahun+'?\n\nData yang dihapus tidak dapat dikembalikan.')) return;
+  if(!await confirmDialog('Hapus data '+record.nama_upz+'?','Data tahun '+record.tahun+' akan dihapus dan tidak dapat dikembalikan.')) return;
   try {
     if(simulated) {
       const index=K.demo.findIndex(r=>r.id===record.id);
@@ -463,7 +515,8 @@ async function deletePh(kind,record) {
     }
     if($('modal').open) $('modal').close();
     await loadPh(kind);
-  } catch(error) {alert('Data gagal dihapus. '+error.message);}
+    toast('Data berhasil dihapus.');
+  } catch(error) {toast('Data gagal dihapus. '+error.message,'error');}
 }
 
 function bkuTabs() {
@@ -500,12 +553,13 @@ function render() {
     phDashEnsure();
     const saldo = totals(summary)[2];
     content = '<div class="hero"><div class="eyebrow">'+(admin()?'DASHBOARD ADMIN':'DASHBOARD UMUM')+'</div><h1>Kas UPZ Cipeundeuy</h1><p>Ringkasan penerimaan, pengeluaran, dan saldo kas.</p><strong>Saldo kas keseluruhan · '+money(loading||failure?null:saldo)+'</strong>'+heroExtras()+'</div>'+
-      cards(summary,['Total Pemasukan','Total Pengeluaran','Saldo Kas'])+
+      cards(summary,['Total Pemasukan','Total Pengeluaran','Saldo Kas'],true)+
+      annualDashboard(true)+
       phDashboard();
   } else if(screen==='Profil') {
     content = profilePage();
   } else if(screen==='Login') {
-    content = '<section class="panel login"><h1>Login Admin</h1><p class="muted">Gunakan akun yang terdaftar di Supabase Auth.</p><form id="login"><label>Email<input type="email" name="email" autocomplete="username" required></label><label>Kata sandi<input type="password" name="password" autocomplete="current-password" required></label><div id="loginError" role="alert"></div><button>Masuk</button><button type="button" class="secondary" id="demo">Coba Admin Demo</button></form></section>';
+    content = '<div class="login-shell"><div class="login-side"><img src="logo-baznas.png" alt="" width="72" height="72"><h2>BKU UPZ Cipeundeuy</h2><p>Sistem informasi buku kas umum yang transparan dan akuntabel.</p><blockquote>“Ambillah zakat dari sebagian harta mereka…”<small>QS. At-Taubah: 103</small></blockquote></div><section class="panel login"><h1>Login Admin</h1><p class="muted">Gunakan akun yang terdaftar di Supabase Auth.</p><form id="login"><label>Email<input type="email" name="email" autocomplete="username" required></label><label>Kata sandi<input type="password" name="password" autocomplete="current-password" required></label><div id="loginError" role="alert"></div><button>Masuk</button><button type="button" class="secondary" id="demo">Coba Admin Demo</button></form></section></div>';
   } else if(PH_KINDS[screen]) {
     content = phPage(screen);
   } else if(screen==='Form C2A') {
@@ -547,6 +601,7 @@ function render() {
     phReportDate=e.target.value;
     const t=$('phDatePrint');if(t)t.textContent='Dilaporkan tanggal : '+phLongDate(phReportDate);
   });
+  document.querySelectorAll('[data-more]').forEach(b=>b.addEventListener('click',()=>{phExpanded[b.dataset.more]=!phExpanded[b.dataset.more];render();}));
   document.querySelectorAll('[data-goto]').forEach(b=>b.addEventListener('click',()=>go(b.dataset.goto)));
   if(screen==='Cetak Laporan') bindReportFilters();
   if(screen==='Profil') bindProfile();
@@ -639,6 +694,7 @@ async function save(record, body) {
     }
     $('modal').close();
     await refresh();
+    toast('Transaksi berhasil disimpan.');
   } catch(error) {
     const notice=$('entryError');
     if(error.message.includes('bku_simpan_transaksi')) {
@@ -654,7 +710,7 @@ async function deleteTransaction(record,button,fromDialog=false) {
   const id=String(record.id);
   if(!admin() || deletingTransactions.has(id)) return;
   const description=record.no_kwitansi || record.uraian || record.tanggal;
-  if(!confirm('Hapus transaksi '+description+' sebesar '+money(Number(record.debet)||Number(record.kredit))+'?\n\nTransaksi yang dihapus tidak dapat dikembalikan.')) return;
+  if(!await confirmDialog('Hapus transaksi ini?',description+' sebesar '+money(Number(record.debet)||Number(record.kredit))+' akan dihapus dan tidak dapat dikembalikan.')) return;
   deletingTransactions.add(id);
   const controls=fromDialog?[...$('entry').querySelectorAll('button')].filter(control=>!control.disabled):[button];
   controls.forEach(control=>control.disabled=true);
@@ -674,10 +730,11 @@ async function deleteTransaction(record,button,fromDialog=false) {
     }
     if(fromDialog) modal.close();
     await refresh();
+    toast('Transaksi berhasil dihapus.');
   } catch(error) {
     const notice='Transaksi gagal dihapus. '+error.message;
     if(fromDialog) $('entryError').textContent=notice;
-    else alert(notice);
+    else toast(notice,'error');
   } finally {
     deletingTransactions.delete(id);
     if(fromDialog) modal.removeEventListener('cancel',preventClose);

@@ -912,3 +912,146 @@ aside nav .nav-label .lbl-desk,aside nav .nav-label .lbl-mob{width:auto;font-siz
   .layout .hero+.cards .card strong{margin:2px 0 0;align-self:start;font-size:clamp(22px,2vw,28px)}
 }
 @media(max-width:600px){.layout .hero+.cards .card:last-child{grid-column:1/-1}}
+
+
+/* ==========================================================
+   TAHAP 2 — Design tokens, tipografi, komponen UI baru
+   (aturan di bagian ini adalah acuan terakhir; ubah di sini)
+   ========================================================== */
+:root{
+  --font:'Inter','Segoe UI',Roboto,system-ui,-apple-system,sans-serif;
+  --muted:#566b61;
+  --radius-sm:10px;--radius:16px;--radius-lg:22px;
+  --shadow-sm:0 2px 8px #153b2b0a;--shadow-md:0 10px 28px #153b2b14;
+  --ok:#1a7a54;--warn:#b7791f;--danger:#b4413b;
+  --t-xs:12px;--t-sm:14px;--t-md:16px;--t-lg:20px;--t-xl:28px;
+}
+html,body,button,input,select,textarea{font-family:var(--font)}
+body{font-size:var(--t-md);-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
+.money,.card strong,.dash-ph-total strong,.dash-desa-top b,td.money{font-variant-numeric:tabular-nums}
+h1,h2,h3{letter-spacing:-.02em}
+
+/* Fokus keyboard yang jelas */
+:focus-visible{outline:3px solid #58a17b;outline-offset:2px;border-radius:8px}
+button:focus-visible,select:focus-visible,input:focus-visible{outline-offset:1px}
+
+/* Logo sidebar */
+.brand #brandFallback{color:#193527}
+.brand-logo{background:#fff}
+
+/* ---------- Kartu ringkasan: tren bulanan ---------- */
+.card-sub{display:block;grid-column:2;margin-top:4px;font-size:12px;color:var(--muted);line-height:1.4}
+.card-sub .delta{font-style:normal;font-weight:700;padding:1px 6px;border-radius:99px;margin-left:2px}
+.card-sub .delta.up{background:#e3f4ea;color:#17744f}
+.card-sub .delta.down{background:#fdecea;color:#a23c37}
+.card:not(:has(.symbol))>.card-sub{grid-column:auto}
+@media(max-width:1023px){.card-sub{grid-column:auto}}
+
+/* ---------- Grafik pada dashboard ---------- */
+.analytics-panel{margin:22px 0 0;padding:22px 24px}
+.analytics-panel .toolbar{margin-bottom:6px}
+.analytics-panel .chart-legend{margin:10px 0 6px}
+.annual-chart{height:210px;background:
+  repeating-linear-gradient(to top,transparent 0,transparent calc(25% - 1px),#edf2ef calc(25% - 1px),#edf2ef 25%)}
+.chart-bar{width:min(36%,18px)}
+.chart-bar.income{background:linear-gradient(180deg,#39a878,#176b4a)}
+.chart-month:hover .chart-bar{filter:brightness(1.1)}
+.chart-month small{font-weight:600}
+.dash-ph-toolbar{margin-top:30px}
+
+/* ---------- Daftar desa: peringkat + tombol lihat semua ---------- */
+.dash-desa-top{align-items:center}
+.dash-desa-top>div{flex:1;min-width:0}
+.dash-rank{flex:none;display:grid;place-items:center;width:26px;height:26px;border-radius:50%;background:#e8f5ee;color:#176b4a;font-size:12px;font-weight:800}
+.dash-ph-card.out .dash-rank{background:#fbf3df;color:#8a6a1f}
+.dash-more{width:100%;justify-content:center;padding:10px 14px;font-size:var(--t-sm)}
+
+/* ---------- Tabel transaksi ---------- */
+.badge{display:inline-block;padding:3px 10px;border-radius:99px;font-size:12px;font-weight:700;white-space:nowrap}
+.b-zakat{background:#e3f4ea;color:#17744f}
+.b-infak{background:#e6f0fb;color:#2d5f93}
+.b-salur{background:#fbf0d9;color:#8a6a1f}
+.b-ops{background:#f1ecf8;color:#5f4a8b}
+.b-lain{background:#eef2f0;color:#47594f}
+td.money.in{color:#17744f;font-weight:700}
+td.money.out{color:#a23c37;font-weight:700}
+td.money.zero{color:#9aaba2}
+.scroll:has(.ledger-table){max-height:72vh}
+.scroll th{position:sticky;top:0;z-index:2}
+tbody tr:nth-child(even){background:#fbfdfc}
+.receipt-actions{white-space:nowrap}
+
+@media screen and (max-width:700px){
+  .scroll:has(.ledger-table){max-height:none;border:0;overflow:visible}
+  .ledger-table,.ledger-table tbody,.ledger-table tr,.ledger-table td{display:block;width:100%;min-width:0;white-space:normal}
+  .ledger-table thead{display:none}
+  .ledger-table tr{margin:0 0 12px;padding:12px 14px;border:1px solid var(--line);border-radius:14px;background:#fff!important;box-shadow:var(--shadow-sm)}
+  .ledger-table td{display:flex;justify-content:space-between;gap:14px;padding:6px 0;border:0;text-align:right}
+  .ledger-table td:before{content:attr(data-label);flex:none;color:var(--muted);font-weight:600;text-align:left}
+  .ledger-table td.receipt-actions{display:flex;flex-wrap:wrap;justify-content:flex-end;gap:8px;padding-top:10px;margin-top:4px;border-top:1px solid var(--line)}
+  .ledger-table td.receipt-actions:before{display:none}
+}
+
+/* ---------- Keadaan kosong & skeleton ---------- */
+.empty-state{display:grid;justify-items:center;gap:6px;padding:34px 16px;text-align:center;color:var(--muted)}
+.empty-state .empty-ico{display:grid;place-items:center;width:56px;height:56px;border-radius:18px;background:var(--mint);color:var(--green);margin-bottom:6px}
+.empty-state strong{color:#234438;font-size:var(--t-md)}
+.empty-state p{margin:0;font-size:var(--t-sm);max-width:36ch}
+td.empty:has(.empty-state){padding:0}
+
+.sk,.sk-text{position:relative;overflow:hidden;background:#e7eeea;color:transparent!important;border-radius:8px}
+.sk{display:block;height:14px}
+.sk-text{display:inline-block;min-width:150px;border-radius:8px}
+.sk:after,.sk-text:after{content:"";position:absolute;inset:0;transform:translateX(-100%);
+  background:linear-gradient(90deg,transparent,#ffffffb0,transparent);animation:shimmer 1.3s infinite}
+@keyframes shimmer{to{transform:translateX(100%)}}
+.skeleton-list{display:grid;gap:12px;padding:6px 0}
+.sk-row{display:grid;gap:8px;padding:14px;border:1px solid var(--line);border-radius:13px;background:#fbfdfc}
+.sk-w40{width:40%}.sk-w20{width:20%}.sk-w100{width:100%;height:8px}
+
+/* ---------- Toast ---------- */
+#toasts{position:fixed;z-index:200;right:20px;bottom:20px;display:grid;gap:10px;max-width:min(380px,calc(100vw - 32px));pointer-events:none}
+.toast{display:flex;align-items:flex-start;gap:12px;padding:13px 16px;border-radius:14px;background:#12362a;color:#fff;
+  box-shadow:0 14px 34px #0a241a40;font-size:var(--t-sm);line-height:1.45;pointer-events:auto;animation:toastIn .25s ease both}
+.toast.out{animation:toastOut .25s ease both}
+.toast.error{background:#7d2b27}
+.toast-ico{flex:none;display:grid;place-items:center;width:22px;height:22px;border-radius:50%;background:#ffffff26;font-weight:800;font-size:13px}
+@keyframes toastIn{from{opacity:0;transform:translateY(10px)}}
+@keyframes toastOut{to{opacity:0;transform:translateY(10px)}}
+@media(max-width:900px){#toasts{bottom:84px;left:16px;right:16px;max-width:none}}
+
+/* ---------- Dialog konfirmasi ---------- */
+#confirmDlg{width:min(420px,92vw);padding:0;border:0;border-radius:20px;box-shadow:0 24px 80px #102f2855}
+#confirmDlg::backdrop{background:#102f286a;backdrop-filter:blur(2px)}
+.confirm-box{display:grid;gap:10px;padding:26px;justify-items:center;text-align:center}
+.confirm-ico{display:grid;place-items:center;width:48px;height:48px;border-radius:50%;background:#fdecea;color:#a23c37;font-size:24px;font-weight:800}
+.confirm-box h2{margin:4px 0 0;font-size:var(--t-lg)}
+.confirm-box p{margin:0;color:var(--muted);font-size:var(--t-sm)}
+.confirm-actions{display:flex;gap:10px;margin-top:12px;width:100%}
+.confirm-actions button{flex:1;padding:11px 14px}
+button.danger-solid{background:var(--danger);color:#fff;box-shadow:none}
+
+/* ---------- Halaman login dua kolom ---------- */
+.login-shell{display:grid;grid-template-columns:1fr 1fr;max-width:900px;margin:24px auto;border-radius:24px;overflow:hidden;
+  box-shadow:var(--shadow-md);border:1px solid var(--line);background:#fff}
+.login-side{display:flex;flex-direction:column;justify-content:center;gap:12px;padding:40px 36px;color:#fff;position:relative;overflow:hidden;
+  background:linear-gradient(150deg,#103b2b,#176347 70%,#2b7654)}
+.login-side:after{content:"";position:absolute;width:260px;height:260px;right:-90px;bottom:-90px;border-radius:50%;
+  border:1px solid #ffffff2e;box-shadow:0 0 0 26px #ffffff0d,0 0 0 56px #ffffff08}
+.login-side img{background:#fff;border-radius:18px;padding:6px;object-fit:contain}
+.login-side h2{margin:6px 0 0;font-size:24px;letter-spacing:-.03em}
+.login-side p{margin:0;color:#d5e8dc}
+.login-side blockquote{margin:14px 0 0;padding:14px 16px;border-radius:14px;background:#ffffff14;border:1px solid #ffffff26;font-style:italic;font-size:14px;line-height:1.6;position:relative;z-index:1}
+.login-side blockquote small{display:block;margin-top:6px;font-style:normal;font-weight:700;color:#cceba8}
+.login-shell .login{margin:0;max-width:none;border:0;border-radius:0;box-shadow:none;display:flex;flex-direction:column;justify-content:center;padding:40px 36px}
+@media(max-width:760px){
+  .login-shell{grid-template-columns:1fr;margin:8px auto}
+  .login-side{padding:26px 24px}.login-side blockquote{display:none}
+  .login-shell .login{padding:26px 22px}
+}
+
+/* ---------- Gerak & cetak ---------- */
+@media(prefers-reduced-motion:reduce){
+  .sk:after,.sk-text:after{animation:none}.toast{animation:none}
+}
+@media print{#toasts,#confirmDlg{display:none!important}}

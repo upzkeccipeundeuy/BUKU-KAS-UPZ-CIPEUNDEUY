@@ -29,3 +29,11 @@
 - Hak akses publik/admin melalui kebijakan RLS Supabase.
 
 Catatan: data transaksi tidak dimigrasikan atau diubah. Grafik memakai ringkasan transaksi yang disediakan backend. Paket sumber tidak menyertakan skrip SQL, sehingga skema Supabase tidak diubah.
+
+## Pembaruan tampilan (November 2026)
+- Font Inter dimuat dari Google Fonts; token desain (warna, radius, bayangan, ukuran huruf) ada di bagian "TAHAP 2" paling bawah `style.css`.
+- Dashboard: kartu ringkasan dengan tren bulanan, grafik pemasukan/pengeluaran per bulan, daftar desa diurutkan (3 teratas + "Lihat semua").
+- Tabel transaksi (admin): lencana kategori, nominal berwarna, header tetap, tampilan kartu di HP.
+- Komponen baru: toast, dialog konfirmasi hapus, skeleton pemuatan, keadaan kosong, halaman login dua kolom.
+- Perbaikan bug: kutipan di hero tidak lagi terkena gaya sidebar.
+- `style (1).css` dihapus (tidak dipakai).

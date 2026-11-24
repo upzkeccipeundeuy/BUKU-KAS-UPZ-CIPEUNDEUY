@@ -57,7 +57,7 @@ async function loadPrivateContacts() {
 
 function updateBrandLogo() {
   const logo = $('brandLogo');
-  const source = profileImage(profile.identitas.foto);
+  const source = profileImage(profile.identitas.foto) || 'logo-baznas.png';
   if(source) {
     if(logo.getAttribute('src') !== source) logo.src = source;
   } else {
