@@ -19,6 +19,7 @@ const ICON = {
   Pemasukan:'<circle cx="12" cy="12" r="8.5"/><path d="M12 8v8M8 12h8"/>',
   Perhimpunan:'<circle cx="9" cy="8" r="3.2"/><path d="M3.5 19c.6-3.2 2.8-5 5.5-5s4.9 1.8 5.5 5"/><circle cx="17" cy="9" r="2.5"/><path d="M16 14.2c2.3.2 4 1.7 4.5 4.3"/>',
   Pendistribusian:'<path d="M12 3.5v9"/><path d="M8.5 9.5 12 13l3.5-3.5"/><path d="M4 14v3.5A2.5 2.5 0 0 0 6.5 20h11a2.5 2.5 0 0 0 2.5-2.5V14"/>',
+  'Rekap Laporan':'<path d="M4.5 20V10M10 20V4.5M15.5 20v-7M21 20H3"/><path d="M18.5 8.5v-3M17 7h3"/>',
   Pengeluaran:'<circle cx="12" cy="12" r="8.5"/><path d="M8 12h8"/>',
   BKU:'<path d="M6 3.5h9.5L19 7v13.5H6z"/><path d="M15 3.5V7.5h4"/><path d="M9 12h7M9 15.5h7"/>',
   'Cetak Laporan':'<path d="M7 9V3.5h10V9"/><rect x="4" y="9" width="16" height="8" rx="2"/><path d="M7 14h10v6.5H7z"/>',
@@ -26,7 +27,7 @@ const ICON = {
   Keluar:'<path d="M10 4.5H5.5A1.5 1.5 0 0 0 4 6v12a1.5 1.5 0 0 0 1.5 1.5H10"/><path d="M20 12H10M16.5 8.5 20 12l-3.5 3.5"/>'
 };
 const svgIcon = n => '<svg class="ico" viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">'+(ICON[n]||'')+'</svg>';
-const items = [['Dashboard'],['Profil'],['Perhimpunan'],['Pendistribusian'],['Pemasukan'],['Pengeluaran'],['BKU'],['Cetak Laporan'],['Login']];
+const items = [['Dashboard'],['Profil'],['Perhimpunan'],['Pendistribusian'],['Rekap Laporan'],['Pemasukan'],['Pengeluaran'],['BKU'],['Cetak Laporan'],['Login']];
 const bkuGroup = ['BKU','Pemasukan','Pengeluaran','Cetak Laporan'];
 let bkuOpen = false;
 
@@ -130,6 +131,7 @@ function go(name) {
   if(bkuGroup.includes(name)) bkuOpen=true;
   if(name==='Profil'||name==='Cetak Laporan') loadProfile();
   else if(PH_KINDS[name]) loadPh(name);
+  else if(name==='Rekap Laporan') {loadPh('Pendistribusian');loadPh('Perhimpunan');}
   else render();
 }
 function filters() {
@@ -453,6 +455,8 @@ function render() {
     content = '<section class="panel login"><h1>Login Admin</h1><p class="muted">Gunakan akun yang terdaftar di Supabase Auth.</p><form id="login"><label>Email<input type="email" name="email" autocomplete="username" required></label><label>Kata sandi<input type="password" name="password" autocomplete="current-password" required></label><div id="loginError" role="alert"></div><button>Masuk</button><button type="button" class="secondary" id="demo">Coba Admin Demo</button></form></section>';
   } else if(PH_KINDS[screen]) {
     content = phPage(screen);
+  } else if(screen==='Rekap Laporan') {
+    content = rekapPage();
   } else if(screen==='Cetak Laporan') {
     content = bkuTabs()+reportPage();
   } else if(screen==='BKU') {
@@ -489,6 +493,7 @@ function render() {
   });
   document.querySelectorAll('[data-goto]').forEach(b=>b.addEventListener('click',()=>go(b.dataset.goto)));
   if(screen==='Cetak Laporan') bindReportFilters();
+  if(screen==='Rekap Laporan') bindRekap();
   $('login')?.addEventListener('submit',login);
   $('demo')?.addEventListener('click',()=>{simulated=true;screen='Dashboard';loadProfile();refresh();});
   $('add')?.addEventListener('click',()=>edit());

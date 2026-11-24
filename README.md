@@ -61,3 +61,12 @@ Sama seperti Perhimpunan (rekap per UPZ desa/kelurahan, filter tahun, baris juml
 
 - Jalankan `setup-pendistribusian-supabase.sql` sekali di Supabase SQL Editor untuk membuat tabel `pendistribusian` beserta kebijakan RLS-nya.
 - Form cetak A2 (Perhimpunan) dan B2 (Pendistribusian) memakai kop logo BAZNAS (`logo-baznas.png`), nama Ketua UPZ dari menu Profil, dan nama Camat yang diisi manual sebelum cetak.
+
+## Menu Rekap Laporan
+
+Tabel rekap pengumpulan dan pendistribusian per jenis dana (Zakat Fitrah, BIS Ramadhan, Zakat Mal Ramadhan, Infak Umum, Fidyah) dan per tingkat (DKM/RT/RW, Desa/Kelurahan, Kecamatan, Kabupaten). Berkas: `rekap.js`.
+
+- **Total Pengumpulan** dijumlahkan otomatis dari menu Perhimpunan pada tahun yang dipilih.
+- **Jumlah Rp.** = Total Pengumpulan × persentase, dibulatkan ke rupiah. Kolom putih dapat diubah (tersimpan di peramban), kolom abu-abu tidak berlaku.
+- Persentase bawaan mengikuti format; kolom Kecamatan dan Kabupaten BIS Ramadhan dikosongkan agar diisi manual. Peringatan muncul jika total persentase satu jenis dana belum 100%.
+- Cetak A4 landscape mengikuti form C2A Kecamatan: kop BAZNAS, Jumlah Muzaki (jiwa Perhimpunan) dan Jumlah Mustahik (jiwa Pendistribusian) otomatis, Ketua UPZ dari Profil, Camat diisi manual.
