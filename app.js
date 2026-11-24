@@ -131,6 +131,7 @@ async function refresh() {
 
 function go(name) {
   screen=name;
+  loadPrivateContacts();
   if(bkuGroup.includes(name)) bkuOpen=true;
   if(rekapGroup.includes(name)) rekapOpen=true;
   if(name==='Profil'||name==='Cetak Laporan') loadProfile();
@@ -347,7 +348,7 @@ function phPrintForm(kind, list, year, total, grand) {
     '<tr><th rowspan="2">NO</th><th rowspan="2">NAMA UPZ<br>DESA/KELURAHAN</th><th colspan="3">ALAMAT</th><th rowspan="2">JUMLAH<br>JIWA<br>(Orang)</th><th colspan="6">'+K.group+'</th></tr>'+
     '<tr><th>Kp/Dsn/Blok</th><th>RT</th><th>RW</th><th>Zakat Fitrah<br>(Rp) / Beras<br>(3,5 L/2,8 kg)</th><th>BIS<br>Ramadhan<br>(Rp)</th><th>Zakat Mal Rp.</th><th>Infak Umum<br>Rp.</th><th>Fidyah Rp.</th><th>Jumlah Rp.</th></tr></thead>'+
     '<tbody>'+rowsHtml+blank+totalRow+'</tbody></table>'+
-    '<div class="phf-sign"><div class="phf-left">Mengetahui,<br>Camat Cipeundeuy<div class="phf-name" id="phCamatPrint">'+(phCamat.trim()?esc(phCamat.trim()):'')+'</div></div>'+
+    '<div class="phf-sign"><div class="phf-left">Mengetahui,<br>Camat Cipeundeuy<div class="phf-name" id="phCamatPrint">'+esc(camatName())+'</div></div>'+
     '<div class="phf-right"><span id="phDatePrint">Dilaporkan tanggal : '+esc(reportDate)+'</span><br>Ketua UPZ,<div class="phf-name">'+e(ketua)+'</div></div></div></div>';
 }
 
@@ -382,7 +383,7 @@ function phPage(kind) {
   const printForm = !S.loading&&!S.failure ? phPrintForm(kind,list,year,total,grand) : '';
   return '<section class="panel ph-panel"><div class="ph-heading"><p class="crumb">'+kind+'</p><h1>'+K.heading+'</h1><p class="muted">'+K.sub+' · Tahun '+esc(year)+'</p></div>'+
     '<div class="toolbar no-print"><label class="ph-year">Tahun <select id="phYear">'+years.map(y=>'<option value="'+esc(y)+'" '+(y===year?'selected':'')+'>'+esc(y)+'</option>').join('')+'</select></label>'+
-    '<label class="ph-year">Nama Camat <input id="phCamat" maxlength="100" placeholder="Isi sebelum cetak" value="'+esc(phCamat)+'"></label>'+
+    '<label class="ph-year">Nama Camat <input id="phCamat" maxlength="100" placeholder="Isi sebelum cetak" value="'+esc(phCamat||profileOfficer('camat'))+'"></label>'+
     '<label class="ph-year">Tanggal laporan <input id="phReportDate" type="date" max="9999-12-31" value="'+esc(phReportDate||today())+'"></label>'+
     '<span class="ph-tools"><button type="button" class="secondary" id="phPrint">Cetak Form '+K.form+'</button>'+(canEdit?'<button type="button" id="phAdd">Tambah UPZ desa</button>':'')+'</span></div>'+content+printForm+'</section>';
 }
@@ -537,7 +538,7 @@ function render() {
   $('phYear')?.addEventListener('change',e=>{phState[screen].year=e.target.value;render();});
   $('phAdd')?.addEventListener('click',()=>editPh());
   $('phPrint')?.addEventListener('click',()=>window.print());
-  $('phCamat')?.addEventListener('input',e=>{phCamat=e.target.value;const t=$('phCamatPrint');if(t)t.textContent=phCamat.trim();});
+  $('phCamat')?.addEventListener('input',e=>{phCamat=e.target.value;const t=$('phCamatPrint');if(t)t.textContent=camatName();});
   $('phReportDate')?.addEventListener('input',e=>{
     if(!e.target.value) return;
     phReportDate=e.target.value;
@@ -545,6 +546,7 @@ function render() {
   });
   document.querySelectorAll('[data-goto]').forEach(b=>b.addEventListener('click',()=>go(b.dataset.goto)));
   if(screen==='Cetak Laporan') bindReportFilters();
+  if(screen==='Profil') bindProfile();
   if(screen==='Form C2A') bindRekap();
   if(screen==='Form C2B') bindRekapC2B();
   $('login')?.addEventListener('submit',login);

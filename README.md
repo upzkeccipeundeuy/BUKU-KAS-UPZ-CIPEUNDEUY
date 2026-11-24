@@ -72,3 +72,10 @@ Tabel rekap pengumpulan dan pendistribusian per jenis dana (Zakat Fitrah, BIS Ra
 - Cetak A4 landscape mengikuti form C2A Kecamatan: kop BAZNAS, Jumlah Muzaki (jiwa Perhimpunan) dan Jumlah Mustahik (jiwa Pendistribusian) otomatis, Ketua UPZ dari Profil, Camat diisi manual.
 
 - **Persentase dikelola admin.** Jalankan `setup-rekap-persen-supabase.sql` sekali di Supabase SQL Editor. Persentase Form C2A dan C2B tersimpan di tabel `rekap_persen`; publik hanya melihat, hanya admin yang dapat mengubah.
+
+## Menu Profil (pembaruan)
+
+- Tambahan identitas: wilayah kerja, jam layanan, nomor WhatsApp (tombol "Hubungi via WhatsApp"), tautan peta (otomatis dari alamat bila kosong), visi dan misi, nomor SK, periode kepengurusan, dan rekening penyaluran zakat dengan tombol Salin. Data ini tersimpan di kolom `identitas` yang sudah ada, tanpa mengubah tabel.
+- Susunan pengurus: jumlah baris bebas, dapat diurutkan (↑ ↓), dan dapat diisi jabatan **Camat**. Nama Camat otomatis terisi pada formulir cetak A2, B2, C2A, dan C2B (masih bisa diganti manual).
+- **Nomor HP pengurus bersifat privat**: disimpan di tabel `profil_pengurus_privat` yang hanya dapat dibaca admin. Jalankan `setup-profil-lanjutan-supabase.sql` sekali di Supabase SQL Editor. Form C2A dan C2B memakai HP Ketua saat admin yang mencetak; untuk publik dipakai nomor telepon lembaga.
+- Keterangan "Terakhir diperbarui" otomatis diisi setiap profil disimpan.

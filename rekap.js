@@ -160,7 +160,7 @@ function rekapPage() {
   const e = v => v==null ? '' : esc(v);
   const reportDate = phLongDate(phReportDate || today());
   const toolbar = '<div class="toolbar no-print"><label class="ph-year">Tahun <select id="rkYear">'+years.map(y=>'<option value="'+esc(y)+'" '+(y===year?'selected':'')+'>'+esc(y)+'</option>').join('')+'</select></label>'+
-    '<label class="ph-year">Nama Camat <input id="phCamat" maxlength="100" placeholder="Isi sebelum cetak" value="'+esc(phCamat)+'"></label>'+
+    '<label class="ph-year">Nama Camat <input id="phCamat" maxlength="100" placeholder="Isi sebelum cetak" value="'+esc(phCamat||profileOfficer('camat'))+'"></label>'+
     '<label class="ph-year">Tanggal laporan <input id="phReportDate" type="date" max="9999-12-31" value="'+esc(phReportDate||today())+'"></label>'+
     '<span class="ph-tools">'+(admin()?'<button type="button" class="secondary" id="rkReset">Persentase bawaan</button>':'')+'<button type="button" id="phPrint">Cetak Rekap</button></span></div>';
   const note = '<p class="muted no-print rk-note">Total pengumpulan dijumlahkan dari menu Perhimpunan tahun '+esc(year)+'. '+(admin()?'Persentase pada kolom putih dapat diubah dan tersimpan di server. <span id="rkSaveStatus" role="status"></span>':'Persentase dikelola oleh admin.')+(rkPctFailure?' <b>'+esc(rkPctFailure)+'</b>':'')+'</p>';
@@ -168,12 +168,13 @@ function rekapPage() {
   const P = phState.Pendistribusian;
   const muzaki = rkNum(sumJiwa(S.rows));
   const mustahik = P.failure ? '-' : rkNum(sumJiwa(P.rows));
-  const phone = info.telepon ? ' / '+e(info.telepon) : '';
+  const hpKetua = officerPhone('ketua') || info.telepon;
+  const phone = hpKetua ? ' / '+e(hpKetua) : '';
   const kop = '<div class="ph-form rk-kop" aria-hidden="true"><div class="phf-tag">form C2A Kecamatan</div><div class="rk-kop-grid"><img src="logo-baznas.png" alt="">'+
     '<div class="rk-title">LAPORAN PENGUMPULAN DAN PENDISTRIBUSIAN<br>DANA ZAKAT FITRAH, BIS RAMADHAN, ZAKAT MAL, INFAK UMUM DAN FIDYAH<br>TAHUN '+phHijriYear(year)+' H / '+esc(year)+' M<br><b>(WAJIB DISAMPAIKAN KEPADA BAZNAS KABUPATEN SUBANG)</b></div>'+
     '<dl class="rk-meta"><dt>Kecamatan</dt><dd>: CIPEUNDEUY</dd><dt>Nama/No. HP Ketua UPZ</dt><dd>: '+e(ketua).toUpperCase()+phone+'</dd>'+
     '<dt>Jumlah Muzaki</dt><dd>: '+muzaki+'</dd><dt>Jumlah Mustahik</dt><dd>: '+mustahik+'</dd></dl></div></div>';
-  const sign = '<div class="ph-form rk-sign" aria-hidden="true"><div class="phf-sign"><div class="phf-left">Mengetahui,<br>Camat Cipeundeuy<div class="phf-name" id="phCamatPrint">'+(phCamat.trim()?esc(phCamat.trim()):'')+'</div></div>'+
+  const sign = '<div class="ph-form rk-sign" aria-hidden="true"><div class="phf-sign"><div class="phf-left">Mengetahui,<br>Camat Cipeundeuy<div class="phf-name" id="phCamatPrint">'+esc(camatName())+'</div></div>'+
     '<div class="phf-right"><span id="phDatePrint">Dilaporkan tanggal : '+esc(reportDate)+'</span><br>Ketua UPZ,<div class="phf-name">'+e(ketua)+'</div></div></div></div>';
   return '<section class="panel ph-panel rk-panel">'+rekapTabs()+heading+toolbar+note+kop+'<div class="scroll rk-wrap">'+rekapTable(cell)+'</div>'+
     '<div id="rkWarn" class="rk-warn no-print" role="status">'+(admin()?rkWarnHtml(warn):'')+'</div>'+sign+'</section>';
@@ -283,12 +284,13 @@ function rekapC2BPage() {
   if(S.failure) return '<section class="panel ph-panel rk-panel">'+rekapTabs()+heading+'<p class="empty" role="alert">Data perhimpunan gagal dimuat. '+esc(S.failure)+'</p></section>';
   const p = c2bState();
   const ketua = profileOfficer('ketua');
-  const phone = (profile.identitas||{}).telepon ? ' / '+esc(profile.identitas.telepon) : '';
+  const hpKetua = officerPhone('ketua') || (profile.identitas||{}).telepon;
+  const phone = hpKetua ? ' / '+esc(hpKetua) : '';
   const e = v => v==null ? '' : esc(v);
   const reportDate = phLongDate(phReportDate || today());
   const toolbar = '<div class="toolbar no-print"><label class="ph-year">Tahun <select id="rkYear">'+years.map(y=>'<option value="'+esc(y)+'" '+(y===year?'selected':'')+'>'+esc(y)+'</option>').join('')+'</select></label>'+
     (admin()?'<label class="ph-year">Bagian UPZ (%) <input id="c2bPool" type="number" min="0" max="100" step="0.1" inputmode="decimal" value="'+(p.pool==null?'':p.pool)+'"></label>':'')+
-    '<label class="ph-year">Nama Camat <input id="phCamat" maxlength="100" placeholder="Isi sebelum cetak" value="'+esc(phCamat)+'"></label>'+
+    '<label class="ph-year">Nama Camat <input id="phCamat" maxlength="100" placeholder="Isi sebelum cetak" value="'+esc(phCamat||profileOfficer('camat'))+'"></label>'+
     '<label class="ph-year">Tanggal laporan <input id="phReportDate" type="date" max="9999-12-31" value="'+esc(phReportDate||today())+'"></label>'+
     '<span class="ph-tools">'+(admin()?'<button type="button" class="secondary" id="c2bReset">Persentase bawaan</button>':'')+'<button type="button" id="phPrint">Cetak C2B</button></span></div>';
   const note = '<p class="muted no-print rk-note">Pengumpulan diterima UPZ = total BIS Ramadhan menu Perhimpunan tahun '+esc(year)+' × bagian UPZ (bawaan 35%). '+(admin()?'Persentase pada kolom putih dapat diubah dan tersimpan di server. <span id="rkSaveStatus" role="status"></span>':'Persentase dikelola oleh admin.')+(rkPctFailure?' <b>'+esc(rkPctFailure)+'</b>':'')+'</p>';
@@ -296,7 +298,7 @@ function rekapC2BPage() {
     '<div class="rk-title">RENCANA PROGRAM PENDISTRIBUSIAN<br>DANA INFAK TERIKAT BIS RAMADHAN<br>TAHUN '+phHijriYear(year)+' H / '+esc(year)+' M<br><b>(WAJIB DISAMPAIKAN KEPADA BAZNAS KABUPATEN SUBANG)</b></div>'+
     '<dl class="rk-meta"><dt>Kecamatan</dt><dd>: Cipeundeuy</dd><dt>Nama/No. HP Ketua UPZ</dt><dd>: '+e(ketua)+phone+'</dd>'+
     '<dt data-c2b="lbl:pool">'+esc(cell['lbl:pool'])+'</dt><dd>: Rp. <span data-c2b="pool">'+esc(cell.pool)+'</span></dd><dt>Rencana Pendistribusian</dt><dd>: Rp. <span data-c2b="sum">'+esc(cell.sum)+'</span></dd></dl></div></div>';
-  const sign = '<div class="ph-form rk-sign" aria-hidden="true"><div class="phf-sign"><div class="phf-left">Mengetahui,<br>Camat Cipeundeuy<div class="phf-name" id="phCamatPrint">'+(phCamat.trim()?esc(phCamat.trim()):'')+'</div></div>'+
+  const sign = '<div class="ph-form rk-sign" aria-hidden="true"><div class="phf-sign"><div class="phf-left">Mengetahui,<br>Camat Cipeundeuy<div class="phf-name" id="phCamatPrint">'+esc(camatName())+'</div></div>'+
     '<div class="phf-right"><span id="phDatePrint">Dilaporkan tanggal : '+esc(reportDate)+'</span><br>Ketua UPZ,<div class="phf-name">'+e(ketua)+'</div></div></div></div>';
   return '<section class="panel ph-panel rk-panel">'+rekapTabs()+heading+toolbar+note+kop+'<div class="scroll rk-wrap">'+c2bTable(cell)+'</div>'+
     '<div id="c2bWarn" class="rk-warn no-print" role="status">'+(admin()?rkWarnHtml(warn):'')+'</div>'+sign+'</section>';
