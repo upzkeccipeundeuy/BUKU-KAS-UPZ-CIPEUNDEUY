@@ -233,6 +233,46 @@ function transactionFilters(list) {
     categories.map(value=>'<option value="'+esc(value)+'" '+(transactionCategory===value?'selected':'')+'>'+esc(value)+'</option>').join('')+
     '</select></label></div>';
 }
+const PH_COMPONENTS = [['zakat_fitrah','Zakat Fitrah'],['bis_ramadhan','BIS Ramadhan'],['zakat_mal','Zakat Mal'],['infak_umum','Infak Umum'],['fidyah','Fidyah']];
+function phDashCard(kind, year) {
+  const S=phState[kind], K=PH_KINDS[kind], tone=kind==='Perhimpunan'?'in':'out';
+  const list=S.rows.filter(r=>String(r.tahun)===year).sort((x,y)=>String(x.nama_upz).localeCompare(String(y.nama_upz),'id'));
+  const total=list.reduce((sum,r)=>sum+phJumlah(r),0);
+  const jiwa=list.reduce((sum,r)=>sum+Number(r.jumlah_jiwa||0),0);
+  const beras=list.reduce((sum,r)=>sum+Number(r.beras_kg||0),0);
+  const peak=Math.max(1,...list.map(phJumlah));
+  const head='<div class="dash-ph-head"><span class="symbol" aria-hidden="true">'+svgIcon(kind)+'</span><div><h2>Kartu '+kind+'</h2><p class="muted">'+(kind==='Perhimpunan'?'Dana zakat yang dikumpulkan':'Dana zakat yang disalurkan')+' · Tahun '+esc(year)+'</p></div></div>';
+  let body;
+  if(S.loading) body='<p class="empty">Memuat data…</p>';
+  else if(S.failure) body='<p class="empty" role="alert">Data '+kind.toLowerCase()+' gagal dimuat.</p>';
+  else if(!list.length) body='<p class="empty">Belum ada data '+kind.toLowerCase()+' untuk tahun '+esc(year)+'.</p>';
+  else body='<div class="dash-ph-total"><small>Total '+(kind==='Perhimpunan'?'pengumpulan':'pendistribusian')+'</small><strong>'+money(total)+'</strong>'+
+    '<span>'+angka.format(jiwa)+' jiwa · '+angka.format(beras)+' kg beras · '+list.length+' UPZ desa/kelurahan</span></div>'+
+    '<h3 class="dash-ph-sub">Rincian per desa/kelurahan</h3><ul class="dash-desa-list">'+list.map(r=>{
+      const place=[r.alamat_kp,(r.rt||r.rw)?'RT '+(r.rt||'-')+'/RW '+(r.rw||'-'):''].filter(Boolean).join(' · ');
+      const chips=PH_COMPONENTS.filter(([key])=>Number(r[key]||0)>0).map(([key,label])=>'<div><dt>'+label+'</dt><dd>'+money(Number(r[key]))+'</dd></div>').join('');
+      return '<li class="dash-desa"><div class="dash-desa-top"><div><strong>'+esc(r.nama_upz)+'</strong><small>'+esc(place)+(place?' · ':'')+angka.format(Number(r.jumlah_jiwa||0))+' jiwa'+(Number(r.beras_kg||0)>0?' · '+angka.format(Number(r.beras_kg))+' kg beras':'')+'</small></div><b>'+money(phJumlah(r))+'</b></div>'+
+        '<div class="dash-bar"><i style="width:'+Math.max(phJumlah(r)?3:0,phJumlah(r)/peak*100)+'%"></i></div>'+(chips?'<dl class="dash-chips">'+chips+'</dl>':'')+'</li>';
+    }).join('')+'</ul>';
+  return '<article class="panel dash-ph-card '+tone+'">'+head+body+'<button type="button" class="secondary dash-ph-link" data-goto="'+kind+'">Kelola '+kind+'</button></article>';
+}
+function phDashboard() {
+  const P=phState.Perhimpunan, D=phState.Pendistribusian;
+  const now=today().slice(0,4);
+  const years=[...new Set([...P.rows.map(r=>String(r.tahun)),...D.rows.map(r=>String(r.tahun)),now])].sort().reverse();
+  const year=years.includes(P.year)?P.year:(P.rows.length?String(P.rows[0].tahun):now);
+  P.year=D.year=year;
+  return '<div class="toolbar dash-ph-toolbar"><div><h2>Perhimpunan dan Pendistribusian</h2><p class="muted">Rincian per UPZ desa/kelurahan</p></div>'+
+    '<label class="year-select">Tahun <select id="dashPhYear">'+years.map(y=>'<option value="'+y+'" '+(y===year?'selected':'')+'>'+y+'</option>').join('')+'</select></label></div>'+
+    '<div class="dash-ph-grid">'+phDashCard('Perhimpunan',year)+phDashCard('Pendistribusian',year)+'</div>';
+}
+function phDashEnsure() {
+  const key=simulated?'demo':(session?.user?.id||'public');
+  for(const kind of ['Perhimpunan','Pendistribusian']) {
+    const S=phState[kind];
+    if(S.dashKey!==key && !S.loading) {S.dashKey=key; setTimeout(()=>loadPh(kind),0);}
+  }
+}
 function heroExtras() {
   const updated=new Intl.DateTimeFormat('id-ID',{day:'numeric',month:'long',year:'numeric'}).format(new Date());
   return '<div class="hero-actions"><button type="button" data-goto="Pemasukan">Lihat Pemasukan</button><button type="button" data-goto="Pengeluaran">Lihat Pengeluaran</button><button type="button" data-goto="Cetak Laporan">Cetak Laporan</button></div>'+
@@ -454,10 +494,10 @@ function render() {
   const list = rows.filter(r=>!month||r.tanggal.startsWith(month));
   let content;
   if(screen==='Dashboard') {
+    phDashEnsure();
     const saldo = totals(summary)[2];
     content = '<div class="hero"><div class="eyebrow">'+(admin()?'DASHBOARD ADMIN':'DASHBOARD UMUM')+'</div><h1>Kas UPZ Cipeundeuy</h1><p>Ringkasan penerimaan, pengeluaran, dan saldo kas.</p><strong>Saldo kas keseluruhan · '+money(loading||failure?null:saldo)+'</strong>'+heroExtras()+'</div>'+
-      cards(data)+annualDashboard()+'<div class="panel"><div class="toolbar"><h2>'+ (admin()?'Transaksi Terbaru':'Ringkasan Bulanan')+'</h2>'+filters()+'</div>'+
-      (admin()?ledger([...list].reverse().slice(0,8),false):publicLedger(data))+'</div>';
+      phDashboard();
   } else if(screen==='Profil') {
     content = profilePage();
   } else if(screen==='Login') {
@@ -488,6 +528,7 @@ function render() {
   }
   $('page').innerHTML = content;
   $('period')?.addEventListener('change',e=>{month=e.target.value;render();});
+  $('dashPhYear')?.addEventListener('change',e=>{phState.Perhimpunan.year=phState.Pendistribusian.year=e.target.value;render();});
   $('dashboardYear')?.addEventListener('change',e=>{dashboardYear=e.target.value;render();});
   $('transactionSearch')?.addEventListener('change',e=>{transactionSearch=e.target.value;render();});
   $('transactionCategory')?.addEventListener('change',e=>{transactionCategory=e.target.value;render();});
