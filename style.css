@@ -549,3 +549,60 @@ nav button .nav-icon .ico{width:22px;height:22px}
   .bku-report .report-totals{display:flex!important;max-width:none!important;width:100%;font-size:9pt;justify-content:space-between}
   .bku-report .report-totals dt,.bku-report .report-totals dd{font-size:9pt}
 }
+
+
+/* ==========================================================
+   Tampilan desktop saja (>=1024px) — HP tidak terpengaruh
+   ========================================================== */
+.hero-actions,.hero-updated,.hero-quote{display:none}
+
+@media(min-width:1024px){
+  body{font-variant-numeric:tabular-nums}
+
+  /* Hero: tombol aksi, info pembaruan, kutipan di sisi kanan */
+  .hero{padding-right:min(40%,460px)}
+  .hero-actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:18px;position:relative;z-index:1}
+  .hero-actions button{background:#ffffff1c;border:1px solid #ffffff30;color:#fff;box-shadow:none;padding:9px 16px;font-size:14px}
+  .hero-actions button:hover{background:#cceba8;color:#14392b;filter:none}
+  .hero-updated{display:block;margin:14px 0 0;font-size:12.5px;color:#b9d6c6;position:relative;z-index:1}
+  .hero-quote{display:block;position:absolute;right:40px;top:50%;transform:translateY(-50%);width:min(34%,380px);
+    padding:22px 24px;border-radius:18px;background:#ffffff12;border:1px solid #ffffff22;
+    backdrop-filter:blur(4px);z-index:1;background-image:linear-gradient(135deg,#c9a65b22,transparent 60%)}
+  .hero-quote span{display:block;font:700 54px/0.6 Georgia,serif;color:var(--gold);height:26px}
+  .hero-quote p{margin:6px 0 10px;font-size:15.5px;line-height:1.6;color:#eef7f1;font-style:italic}
+  .hero-quote small{color:#cceba8;font-weight:700;letter-spacing:.05em}
+
+  /* Kartu ringkasan: garis aksen atas + hover lebih tegas */
+  .card{border-top:3px solid var(--accent,#176b4a);overflow:hidden;position:relative}
+  .card.in{--accent:#1a9a68}
+  .card.out{--accent:#d99a2b}
+  .card.net{--accent:#3b78b5}
+  .card:hover{transform:translateY(-4px);box-shadow:0 14px 32px #15432d1f}
+  .card strong{font-size:clamp(24px,2.3vw,32px)}
+
+  /* Sidebar: garis emas saat hover, label tidak patah */
+  nav button{position:relative;white-space:nowrap}
+  nav button:hover:not(.active){box-shadow:inset 3px 0 #c9a65b88}
+  nav button[data-page="Login"]{margin-top:10px;border-top:1px solid #ffffff18;border-radius:0 0 12px 12px;padding-top:16px}
+  nav button .nav-label{white-space:nowrap}
+
+  /* Panel & grafik */
+  .panel{transition:box-shadow .2s ease}
+  .panel:hover{box-shadow:0 10px 28px #153b2b12}
+  .chart-bar{transition:filter .15s ease,transform .15s ease;transform-origin:bottom}
+  .chart-bar:hover{filter:brightness(1.12);transform:scaleY(1.02)}
+  @keyframes barGrow{from{transform:scaleY(0)}to{transform:scaleY(1)}}
+  .chart-bar{animation:barGrow .7s cubic-bezier(.2,.8,.2,1) both}
+
+  /* Tabel lebih nyaman dibaca */
+  tbody tr{transition:background .15s ease}
+  tbody tr:hover{background:#f1f8f4}
+  th{position:sticky;top:0;font-size:13px;letter-spacing:.02em}
+
+  /* Pill akses di header */
+  .pill{display:inline-flex;align-items:center;gap:7px;padding:7px 14px}
+  .pill:before{content:"";width:8px;height:8px;border-radius:50%;background:#1a9a68;box-shadow:0 0 0 3px #1a9a6826}
+}
+@media(min-width:1024px) and (prefers-reduced-motion:reduce){
+  .chart-bar{animation:none}.card,.chart-bar{transition:none}
+}

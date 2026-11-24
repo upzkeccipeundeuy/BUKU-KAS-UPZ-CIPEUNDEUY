@@ -197,6 +197,13 @@ function transactionFilters(list) {
     categories.map(value=>'<option value="'+esc(value)+'" '+(transactionCategory===value?'selected':'')+'>'+esc(value)+'</option>').join('')+
     '</select></label></div>';
 }
+function heroExtras() {
+  const updated=new Intl.DateTimeFormat('id-ID',{day:'numeric',month:'long',year:'numeric'}).format(new Date());
+  return '<div class="hero-actions"><button type="button" data-goto="Pemasukan">Lihat Pemasukan</button><button type="button" data-goto="Pengeluaran">Lihat Pengeluaran</button><button type="button" data-goto="Cetak Laporan">Cetak Laporan</button></div>'+
+    '<p class="hero-updated">Diperbarui: '+updated+'</p>'+
+    '<aside class="hero-quote" aria-hidden="true"><span>“</span><p>Ambillah zakat dari sebagian harta mereka, guna membersihkan dan menyucikan mereka.</p><small>QS. At-Taubah: 103</small></aside>';
+}
+
 function render() {
   $('role').textContent = simulated?'Admin · Demo':admin()?'Administrator':'Akses Umum';
   $('status').hidden = !failure&&!simulated;
@@ -210,7 +217,7 @@ function render() {
   let content;
   if(screen==='Dashboard') {
     const saldo = totals(summary)[2];
-    content = '<div class="hero"><div class="eyebrow">'+(admin()?'DASHBOARD ADMIN':'DASHBOARD UMUM')+'</div><h1>Kas UPZ Cipeundeuy</h1><p>Ringkasan penerimaan, pengeluaran, dan saldo kas.</p><strong>Saldo kas keseluruhan · '+money(loading||failure?null:saldo)+'</strong></div>'+
+    content = '<div class="hero"><div class="eyebrow">'+(admin()?'DASHBOARD ADMIN':'DASHBOARD UMUM')+'</div><h1>Kas UPZ Cipeundeuy</h1><p>Ringkasan penerimaan, pengeluaran, dan saldo kas.</p><strong>Saldo kas keseluruhan · '+money(loading||failure?null:saldo)+'</strong>'+heroExtras()+'</div>'+
       cards(data)+annualDashboard()+'<div class="panel"><div class="toolbar"><h2>'+ (admin()?'Transaksi Terbaru':'Ringkasan Bulanan')+'</h2>'+filters()+'</div>'+
       (admin()?ledger([...list].reverse().slice(0,8),false):publicLedger(data))+'</div>';
   } else if(screen==='Profil') {
@@ -242,6 +249,7 @@ function render() {
   $('transactionCategory')?.addEventListener('change',e=>{transactionCategory=e.target.value;render();});
   $('all')?.addEventListener('click',()=>{month='';render();});
   $('print')?.addEventListener('click',()=>window.print());
+  document.querySelectorAll('[data-goto]').forEach(b=>b.addEventListener('click',()=>go(b.dataset.goto)));
   if(screen==='Cetak Laporan') bindReportFilters();
   $('login')?.addEventListener('submit',login);
   $('demo')?.addEventListener('click',()=>{simulated=true;screen='Dashboard';loadProfile();refresh();});
