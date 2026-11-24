@@ -54,3 +54,10 @@ Halaman rekap pengumpulan zakat per UPZ desa/kelurahan, dengan filter tahun, bar
 - Jalankan `setup-perhimpunan-supabase.sql` sekali di Supabase SQL Editor untuk membuat tabel `perhimpunan` beserta kebijakan RLS-nya.
 - Beras (kg) dihitung terpisah dan tidak masuk Jumlah Rp.
 - Mode Admin Demo menyimpan data hanya selama halaman terbuka.
+
+## Menu Pendistribusian
+
+Sama seperti Perhimpunan (rekap per UPZ desa/kelurahan, filter tahun, baris jumlah otomatis, admin saja yang dapat mengubah), tetapi mencatat dana yang **didistribusikan** dan dicetak dengan **form B2 Kecamatan**.
+
+- Jalankan `setup-pendistribusian-supabase.sql` sekali di Supabase SQL Editor untuk membuat tabel `pendistribusian` beserta kebijakan RLS-nya.
+- Form cetak A2 (Perhimpunan) dan B2 (Pendistribusian) memakai kop logo BAZNAS (`logo-baznas.png`), nama Ketua UPZ dari menu Profil, dan nama Camat yang diisi manual sebelum cetak.
