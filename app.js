@@ -17,6 +17,7 @@ const ICON = {
   Dashboard:'<path d="M3 11.5 12 4l9 7.5"/><path d="M5.5 10v9.5h13V10"/><path d="M10 19.5v-5h4v5"/>',
   Profil:'<circle cx="12" cy="8" r="3.6"/><path d="M4.8 20c.9-3.7 3.8-5.6 7.2-5.6s6.3 1.9 7.2 5.6"/>',
   Pemasukan:'<circle cx="12" cy="12" r="8.5"/><path d="M12 8v8M8 12h8"/>',
+  Perhimpunan:'<circle cx="9" cy="8" r="3.2"/><path d="M3.5 19c.6-3.2 2.8-5 5.5-5s4.9 1.8 5.5 5"/><circle cx="17" cy="9" r="2.5"/><path d="M16 14.2c2.3.2 4 1.7 4.5 4.3"/>',
   Pengeluaran:'<circle cx="12" cy="12" r="8.5"/><path d="M8 12h8"/>',
   BKU:'<path d="M6 3.5h9.5L19 7v13.5H6z"/><path d="M15 3.5V7.5h4"/><path d="M9 12h7M9 15.5h7"/>',
   'Cetak Laporan':'<path d="M7 9V3.5h10V9"/><rect x="4" y="9" width="16" height="8" rx="2"/><path d="M7 14h10v6.5H7z"/>',
@@ -24,9 +25,21 @@ const ICON = {
   Keluar:'<path d="M10 4.5H5.5A1.5 1.5 0 0 0 4 6v12a1.5 1.5 0 0 0 1.5 1.5H10"/><path d="M20 12H10M16.5 8.5 20 12l-3.5 3.5"/>'
 };
 const svgIcon = n => '<svg class="ico" viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">'+(ICON[n]||'')+'</svg>';
-const items = [['Dashboard'],['Profil'],['Pemasukan'],['Pengeluaran'],['BKU'],['Cetak Laporan'],['Login']];
+const items = [['Dashboard'],['Profil'],['Perhimpunan'],['Pemasukan'],['Pengeluaran'],['BKU'],['Cetak Laporan'],['Login']];
 const bkuGroup = ['BKU','Pemasukan','Pengeluaran','Cetak Laporan'];
 let bkuOpen = false;
+
+/* ---------- Perhimpunan (pengumpulan per UPZ desa/kelurahan) ---------- */
+let phRows = [], phYear = '', phLoading = false, phFailure = '', phGeneration = 0;
+const demoYear = Number(today().slice(0,4));
+const demoPerhimpunan = [
+  {id:1,tahun:demoYear,nama_upz:'UPZ Desa Contoh A',alamat_kp:'Kp. Contoh',rt:'01',rw:'01',jumlah_jiwa:420,zakat_fitrah:4200000,beras_kg:120,bis_ramadhan:900000,zakat_mal:1500000,infak_umum:600000,fidyah:150000},
+  {id:2,tahun:demoYear,nama_upz:'UPZ Desa Contoh B',alamat_kp:'Kp. Sample',rt:'02',rw:'03',jumlah_jiwa:310,zakat_fitrah:3100000,beras_kg:80,bis_ramadhan:700000,zakat_mal:900000,infak_umum:450000,fidyah:90000}
+];
+const angka = new Intl.NumberFormat('id-ID',{maximumFractionDigits:2});
+const PH_MONEY = ['zakat_fitrah','bis_ramadhan','zakat_mal','infak_umum','fidyah'];
+const PH_SUM = ['jumlah_jiwa','zakat_fitrah','beras_kg','bis_ramadhan','zakat_mal','infak_umum','fidyah'];
+const phJumlah = r => PH_MONEY.reduce((sum,key)=>sum+Number(r[key]||0),0);
 let screen = 'Dashboard', month = '', dashboardYear = today().slice(0,4), transactionSearch = '', transactionCategory = '', rows = [], summary = [], session, simulated = false, loading = true, failure = '', generation = 0;
 const admin = () => simulated || session?.user?.id === ADMIN;
 const demoReceiptCounters = new Map();
@@ -103,6 +116,7 @@ function go(name) {
   screen=name;
   if(bkuGroup.includes(name)) bkuOpen=true;
   if(name==='Profil'||name==='Cetak Laporan') loadProfile();
+  else if(name==='Perhimpunan') loadPerhimpunan();
   else render();
 }
 function filters() {
@@ -207,6 +221,129 @@ function heroExtras() {
     '<aside class="hero-quote" aria-hidden="true"><span>“</span><p>Ambillah zakat dari sebagian harta mereka, guna membersihkan dan menyucikan mereka.</p><small>QS. At-Taubah: 103</small></aside>';
 }
 
+async function loadPerhimpunan() {
+  const stamp = ++phGeneration;
+  phLoading = true;
+  phFailure = '';
+  render();
+  try {
+    if(simulated) phRows = [...demoPerhimpunan].sort((a,b)=>b.tahun-a.tahun||a.id-b.id);
+    else phRows = await api('/rest/v1/perhimpunan?select=*&order=tahun.desc,id.asc&limit=1000');
+  } catch(error) {
+    if(stamp!==phGeneration) return;
+    phRows = [];
+    phFailure = error.message;
+  } finally {
+    if(stamp===phGeneration) {phLoading=false;render();}
+  }
+}
+
+function perhimpunanPage() {
+  if(!phYear && !phLoading) phYear = phRows.length ? String(phRows[0].tahun) : today().slice(0,4);
+  const year = phYear || today().slice(0,4);
+  const years = [...new Set([...phRows.map(r=>String(r.tahun)),year,today().slice(0,4)])].sort().reverse();
+  const list = phRows.filter(r=>String(r.tahun)===year);
+  const total = {};
+  PH_SUM.forEach(key=>{total[key]=list.reduce((sum,r)=>sum+Number(r[key]||0),0);});
+  const grand = list.reduce((sum,r)=>sum+phJumlah(r),0);
+  const canEdit = admin();
+  const sql = /perhimpunan|schema cache/i.test(phFailure) ? ' Jalankan <a href="setup-perhimpunan-supabase.sql" download>setup-perhimpunan-supabase.sql</a> di Supabase SQL Editor.' : '';
+  const n = value => angka.format(Number(value||0));
+  const actions = r => canEdit ? '<td class="no-print ph-actions"><button type="button" class="secondary" data-ph-edit="'+esc(r.id)+'">Edit</button> <button type="button" class="danger" data-ph-delete="'+esc(r.id)+'">Hapus</button></td>' : '';
+  const body = list.map((r,i)=>'<tr><td>'+(i+1)+'</td><td class="ph-name">'+esc(r.nama_upz)+'</td><td class="ph-left">'+esc(r.alamat_kp)+'</td><td>'+esc(r.rt)+'</td><td>'+esc(r.rw)+'</td><td class="money">'+n(r.jumlah_jiwa)+'</td>'+
+    '<td class="money">'+n(r.zakat_fitrah)+'</td><td class="money">'+n(r.beras_kg)+'</td><td class="money">'+n(r.bis_ramadhan)+'</td><td class="money">'+n(r.zakat_mal)+'</td><td class="money">'+n(r.infak_umum)+'</td><td class="money">'+n(r.fidyah)+'</td><td class="money ph-strong">'+n(phJumlah(r))+'</td>'+actions(r)+'</tr>').join('');
+  const table = '<div class="scroll ph-table-wrap"><table class="ph-table"><thead>'+
+    '<tr><th rowspan="2">No</th><th rowspan="2">Nama UPZ Desa/Kelurahan</th><th colspan="3">Alamat</th><th rowspan="2">Jumlah Jiwa (Orang)</th><th colspan="7">Pengumpulan</th>'+(canEdit?'<th rowspan="2" class="no-print">Aksi</th>':'')+'</tr>'+
+    '<tr><th>Kp/Dsn/Blok</th><th>RT</th><th>RW</th><th>Zakat Fitrah (Rp)</th><th>Beras (kg)</th><th>BIS Ramadhan (Rp)</th><th>Zakat Mal (Rp)</th><th>Infak Umum (Rp)</th><th>Fidyah (Rp)</th><th>Jumlah (Rp)</th></tr></thead>'+
+    '<tbody>'+body+'</tbody><tfoot><tr><td></td><td class="ph-name">JUMLAH RP.</td><td colspan="3"></td><td class="money">'+n(total.jumlah_jiwa)+'</td><td class="money">'+n(total.zakat_fitrah)+'</td><td class="money">'+n(total.beras_kg)+'</td><td class="money">'+n(total.bis_ramadhan)+'</td><td class="money">'+n(total.zakat_mal)+'</td><td class="money">'+n(total.infak_umum)+'</td><td class="money">'+n(total.fidyah)+'</td><td class="money ph-strong">'+n(grand)+'</td>'+(canEdit?'<td class="no-print"></td>':'')+'</tr></tfoot></table></div>';
+  const cards = '<div class="ph-cards">'+list.map((r,i)=>'<article class="ph-card"><h3>'+(i+1)+'. '+esc(r.nama_upz)+'</h3><p class="muted">'+esc([r.alamat_kp,(r.rt||r.rw)?'RT '+(r.rt||'-')+' / RW '+(r.rw||'-'):'',n(r.jumlah_jiwa)+' jiwa'].filter(Boolean).join(' · '))+'</p><dl>'+
+    '<dt>Zakat fitrah</dt><dd>'+money(Number(r.zakat_fitrah||0))+'</dd><dt>Beras</dt><dd>'+n(r.beras_kg)+' kg</dd><dt>BIS Ramadhan</dt><dd>'+money(Number(r.bis_ramadhan||0))+'</dd><dt>Zakat mal</dt><dd>'+money(Number(r.zakat_mal||0))+'</dd><dt>Infak umum</dt><dd>'+money(Number(r.infak_umum||0))+'</dd><dt>Fidyah</dt><dd>'+money(Number(r.fidyah||0))+'</dd><dt class="ph-strong">Jumlah</dt><dd class="ph-strong">'+money(phJumlah(r))+'</dd></dl>'+
+    (canEdit?'<div class="toolbar"><button type="button" class="secondary" data-ph-edit="'+esc(r.id)+'">Edit</button><button type="button" class="danger" data-ph-delete="'+esc(r.id)+'">Hapus</button></div>':'')+'</article>').join('')+
+    '<article class="ph-card ph-total"><h3>Jumlah Rp.</h3><p><strong>'+money(grand)+'</strong></p><p class="muted">'+n(total.jumlah_jiwa)+' jiwa · beras '+n(total.beras_kg)+' kg</p></article></div>';
+  let content;
+  if(phLoading) content = '<p class="empty">Memuat data…</p>';
+  else if(phFailure) content = '<p class="empty" role="alert">Data perhimpunan gagal dimuat. '+esc(phFailure)+sql+'</p>';
+  else if(!list.length) content = '<p class="empty">Belum ada data perhimpunan untuk tahun '+esc(year)+'.'+(canEdit?' Klik “Tambah UPZ desa” untuk mengisi.':'')+'</p>';
+  else content = table+cards;
+  return '<section class="panel ph-panel"><div class="ph-heading"><p class="crumb">Perhimpunan</p><h1>Perhimpunan Zakat</h1><p class="muted">Pengumpulan per UPZ desa/kelurahan · Tahun '+esc(year)+'</p></div>'+
+    '<div class="toolbar no-print"><label class="ph-year">Tahun <select id="phYear">'+years.map(y=>'<option value="'+esc(y)+'" '+(y===year?'selected':'')+'>'+esc(y)+'</option>').join('')+'</select></label>'+
+    '<span class="ph-tools"><button type="button" class="secondary" id="phPrint">Cetak</button>'+(canEdit?'<button type="button" id="phAdd">Tambah UPZ desa</button>':'')+'</span></div>'+content+'</section>';
+}
+
+function editPerhimpunan(record) {
+  if(!admin()) return;
+  const dialog=$('modal');
+  const val=key=>esc(record?.[key] ?? '');
+  const moneyField=(key,label)=>'<label>'+label+'<input type="number" name="'+key+'" min="0" max="9999999999999" step="0.01" placeholder="0" value="'+val(key)+'"></label>';
+  dialog.innerHTML='<h2>'+(record?'Edit':'Tambah')+' UPZ Desa/Kelurahan</h2><form id="phForm">'+
+    '<label>Tahun<input type="number" name="tahun" min="2000" max="2100" required value="'+esc(record?.tahun || phYear || today().slice(0,4))+'"></label>'+
+    '<label>Nama UPZ Desa/Kelurahan<input name="nama_upz" maxlength="120" required value="'+val('nama_upz')+'"></label>'+
+    '<label>Kp/Dsn/Blok<input name="alamat_kp" maxlength="120" value="'+val('alamat_kp')+'"></label>'+
+    '<div class="ph-grid"><label>RT<input name="rt" maxlength="10" value="'+val('rt')+'"></label><label>RW<input name="rw" maxlength="10" value="'+val('rw')+'"></label></div>'+
+    '<label>Jumlah Jiwa (orang)<input type="number" name="jumlah_jiwa" min="0" step="1" placeholder="0" value="'+val('jumlah_jiwa')+'"></label>'+
+    '<div class="ph-grid">'+moneyField('zakat_fitrah','Zakat Fitrah (Rp)')+'<label>Beras (kg)<input type="number" name="beras_kg" min="0" step="0.01" placeholder="0" value="'+val('beras_kg')+'"></label>'+
+    moneyField('bis_ramadhan','BIS Ramadhan (Rp)')+moneyField('zakat_mal','Zakat Mal (Rp)')+moneyField('infak_umum','Infak Umum (Rp)')+moneyField('fidyah','Fidyah (Rp)')+'</div>'+
+    '<div id="phError" role="alert"></div><div class="toolbar"><button>Simpan</button><button type="button" class="secondary" id="phCancel">Batal</button>'+
+    (record?'<button type="button" class="danger" id="phDelete">Hapus</button>':'')+'</div></form>';
+  $('phCancel').onclick=()=>dialog.close();
+  $('phForm').onsubmit=event=>{
+    event.preventDefault();
+    const f=Object.fromEntries(new FormData(event.currentTarget));
+    const body={tahun:Number(f.tahun),nama_upz:f.nama_upz.trim(),alamat_kp:f.alamat_kp.trim()||null,rt:f.rt.trim()||null,rw:f.rw.trim()||null};
+    if(!body.nama_upz) {$('phError').textContent='Nama UPZ wajib diisi.';return;}
+    for(const key of PH_SUM) {
+      const value=Number(f[key]||0);
+      if(!Number.isFinite(value)||value<0) {$('phError').textContent='Angka tidak boleh negatif.';return;}
+      body[key]=key==='jumlah_jiwa'?Math.round(value):value;
+    }
+    savePerhimpunan(record,body);
+  };
+  if(record) $('phDelete').onclick=()=>deletePerhimpunan(record);
+  dialog.showModal();
+}
+
+async function savePerhimpunan(record, body) {
+  const buttons=[...$('phForm').querySelectorAll('button')];
+  buttons.forEach(b=>b.disabled=true);
+  try {
+    if(simulated) {
+      if(record) {
+        const index=demoPerhimpunan.findIndex(r=>r.id===record.id);
+        if(index>=0) demoPerhimpunan[index]={...record,...body};
+      } else demoPerhimpunan.push({...body,id:Math.max(0,...demoPerhimpunan.map(r=>r.id))+1});
+    } else {
+      const path=record?'/rest/v1/perhimpunan?id=eq.'+encodeURIComponent(record.id):'/rest/v1/perhimpunan';
+      const result=await api(path,{method:record?'PATCH':'POST',body,token:session.access_token,extra:{Prefer:'return=representation'}});
+      if(!result?.length) throw Error('Data tidak ditemukan atau akses ditolak.');
+    }
+    phYear=String(body.tahun);
+    $('modal').close();
+    await loadPerhimpunan();
+  } catch(error) {
+    const notice=$('phError');
+    if(/duplicate key/i.test(error.message)) notice.textContent='UPZ dengan nama itu sudah ada pada tahun '+body.tahun+'.';
+    else if(/row-level security/i.test(error.message)) notice.textContent='Akses ditolak. Pastikan kamu masuk sebagai admin.';
+    else if(/perhimpunan|schema cache/i.test(error.message)) notice.innerHTML='Jalankan <a href="setup-perhimpunan-supabase.sql" download>setup-perhimpunan-supabase.sql</a> di Supabase SQL Editor, lalu coba simpan lagi.';
+    else notice.textContent=error.message;
+  } finally {buttons.forEach(b=>b.disabled=false);}
+}
+
+async function deletePerhimpunan(record) {
+  if(!admin()) return;
+  if(!confirm('Hapus data '+record.nama_upz+' tahun '+record.tahun+'?\n\nData yang dihapus tidak dapat dikembalikan.')) return;
+  try {
+    if(simulated) {
+      const index=demoPerhimpunan.findIndex(r=>r.id===record.id);
+      if(index>=0) demoPerhimpunan.splice(index,1);
+    } else {
+      const result=await api('/rest/v1/perhimpunan?id=eq.'+encodeURIComponent(record.id),{method:'DELETE',token:session.access_token,extra:{Prefer:'return=representation'}});
+      if(!result?.length) throw Error('Data tidak ditemukan atau akses ditolak.');
+    }
+    if($('modal').open) $('modal').close();
+    await loadPerhimpunan();
+  } catch(error) {alert('Data gagal dihapus. '+error.message);}
+}
+
 function bkuTabs() {
   return '<div class="bku-tabs no-print" role="tablist">'+[['BKU','Ringkasan'],['Pemasukan','Pemasukan'],['Pengeluaran','Pengeluaran'],['Cetak Laporan','Cetak']].map(([page,label])=>
     '<button type="button" role="tab" data-goto="'+page+'" aria-selected="'+(screen===page)+'" class="'+(screen===page?'on':'')+'">'+label+'</button>').join('')+'</div>';
@@ -241,6 +378,8 @@ function render() {
     content = profilePage();
   } else if(screen==='Login') {
     content = '<section class="panel login"><h1>Login Admin</h1><p class="muted">Gunakan akun yang terdaftar di Supabase Auth.</p><form id="login"><label>Email<input type="email" name="email" autocomplete="username" required></label><label>Kata sandi<input type="password" name="password" autocomplete="current-password" required></label><div id="loginError" role="alert"></div><button>Masuk</button><button type="button" class="secondary" id="demo">Coba Admin Demo</button></form></section>';
+  } else if(screen==='Perhimpunan') {
+    content = perhimpunanPage();
   } else if(screen==='Cetak Laporan') {
     content = bkuTabs()+reportPage();
   } else if(screen==='BKU') {
@@ -266,6 +405,9 @@ function render() {
   $('transactionCategory')?.addEventListener('change',e=>{transactionCategory=e.target.value;render();});
   $('all')?.addEventListener('click',()=>{month='';render();});
   $('print')?.addEventListener('click',()=>window.print());
+  $('phYear')?.addEventListener('change',e=>{phYear=e.target.value;render();});
+  $('phAdd')?.addEventListener('click',()=>editPerhimpunan());
+  $('phPrint')?.addEventListener('click',()=>window.print());
   document.querySelectorAll('[data-goto]').forEach(b=>b.addEventListener('click',()=>go(b.dataset.goto)));
   if(screen==='Cetak Laporan') bindReportFilters();
   $('login')?.addEventListener('submit',login);
@@ -409,6 +551,15 @@ $('page').addEventListener('click',event=>{
   if(button.dataset.edit) edit(record);
   else if(button.dataset.delete) deleteTransaction(record,button);
   else downloadReceipt(record,button);
+});
+
+$('page').addEventListener('click',event=>{
+  const button=event.target.closest('[data-ph-edit],[data-ph-delete]');
+  if(!button||!admin()) return;
+  const record=phRows.find(row=>String(row.id)===(button.dataset.phEdit ?? button.dataset.phDelete));
+  if(!record) return;
+  if(button.dataset.phEdit!==undefined) editPerhimpunan(record);
+  else deletePerhimpunan(record);
 });
 
 const menuToggle = $('menuToggle');

@@ -45,3 +45,12 @@ Konfigurasi Supabase yang sudah ada pada `app.js` dipertahankan agar aplikasi te
 ## Catatan kompatibilitas
 
 Perubahan ini tidak mengubah struktur tabel database, autentikasi, maupun endpoint Supabase. Skrip SQL setup tidak terdapat di arsip sumber yang diterima, sehingga tidak dibuat atau dimasukkan ke paket ini. Jika proyek Supabase Anda telah berjalan dengan skema lama, gunakan skema tersebut seperti sebelumnya.
+
+## Menu Perhimpunan
+
+Halaman rekap pengumpulan zakat per UPZ desa/kelurahan, dengan filter tahun, baris jumlah otomatis, dan cetak (A4 landscape).
+
+- Publik dapat melihat tabel. Hanya admin yang dapat menambah, mengubah, dan menghapus data.
+- Jalankan `setup-perhimpunan-supabase.sql` sekali di Supabase SQL Editor untuk membuat tabel `perhimpunan` beserta kebijakan RLS-nya.
+- Beras (kg) dihitung terpisah dan tidak masuk Jumlah Rp.
+- Mode Admin Demo menyimpan data hanya selama halaman terbuka.

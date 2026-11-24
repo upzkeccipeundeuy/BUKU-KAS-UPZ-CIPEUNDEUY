@@ -642,3 +642,46 @@ aside nav .nav-label .lbl-desk,aside nav .nav-label .lbl-mob{width:auto;font-siz
 @media(max-width:900px){aside nav .nav-label .lbl-desk{display:none}aside nav .nav-label .lbl-mob{display:inline}}
 
 @media(min-width:901px){.bku-tabs{display:none}}
+
+
+/* ==========================================================
+   Halaman Perhimpunan
+   ========================================================== */
+.ph-heading h1{margin:4px 0 2px}
+.ph-heading .muted{margin:0 0 14px}
+.ph-year{display:flex;align-items:center;gap:8px}
+.ph-tools{display:flex;gap:8px;flex-wrap:wrap}
+.ph-table{min-width:980px;font-size:13px}
+.ph-table th,.ph-table td{border:1px solid #cfdcd5;text-align:center;padding:8px 6px;white-space:nowrap}
+.ph-table th{white-space:normal;line-height:1.25}
+.ph-table th{background:#edf4f0;color:#24493b;font-weight:700}
+.ph-table td.ph-name,.ph-table td.ph-left{text-align:left;white-space:normal;min-width:150px}
+.ph-table td.money{text-align:right}
+.ph-table tfoot td{background:#f1f7f3;font-weight:700}
+.ph-strong{font-weight:700}
+.ph-actions{white-space:nowrap}
+.ph-actions button{padding:6px 10px;font-size:13px}
+.ph-grid{display:grid;grid-template-columns:1fr 1fr;gap:13px}
+.ph-cards{display:none}
+@media(max-width:900px){
+  .ph-table-wrap{display:none}
+  .ph-cards{display:grid;gap:12px}
+  .ph-card{border:1px solid #dce7e1;border-radius:14px;padding:14px 16px;background:#fff}
+  .ph-card h3{margin:0 0 2px;font-size:16px}
+  .ph-card p{margin:0 0 10px}
+  .ph-card dl{display:grid;grid-template-columns:1fr auto;gap:5px 12px;margin:0;font-size:14px}
+  .ph-card dt{color:#546b61}.ph-card dd{margin:0;text-align:right;font-variant-numeric:tabular-nums}
+  .ph-card .toolbar{margin:12px 0 0}
+  .ph-card.ph-total{background:#edf4f0}
+  .ph-card.ph-total p{margin:2px 0}
+  .ph-card.ph-total strong{font-size:20px}
+}
+@page ph{size:A4 landscape;margin:10mm}
+@media print{
+  .ph-panel{page:ph}
+  .ph-table-wrap{display:block!important}
+  .ph-cards{display:none!important}
+  .ph-table{min-width:0;font-size:9pt}
+  .ph-table th,.ph-table td{border:1px solid #555;padding:4px 3px;white-space:normal}
+  .ph-heading h1{font-size:15pt}
+}
