@@ -614,16 +614,13 @@ nav button .nav-icon .ico{width:22px;height:22px}
    ========================================================== */
 .crumb,.lbl-mob{display:none}
 @media(max-width:900px){
-  .nav-parent{display:none!important}
-  .nav-sub{display:contents}
+  .nav-sub{display:none!important}
+  .nav-chevron{display:none}
   .lbl-desk{display:none}.lbl-mob{display:inline}
-  nav [data-page="Dashboard"]{order:1}
-  nav [data-page="Profil"]{order:2}
-  nav [data-page="Pemasukan"]{order:3}
-  nav [data-page="Pengeluaran"]{order:4}
-  nav [data-page="BKU"]{order:5}
-  nav [data-page="Cetak Laporan"]{order:6}
-  nav [data-page="Login"]{order:7}
+  .bku-tabs{display:flex;gap:4px;background:#e9f1ed;padding:4px;border-radius:12px;margin:0 0 14px}
+  .bku-tabs button{flex:1;min-width:0;padding:9px 2px;border-radius:9px;background:transparent;color:#4b6a5d;font-size:12px;font-weight:600;box-shadow:none;white-space:nowrap}
+  .bku-tabs button:hover{filter:none;transform:none}
+  .bku-tabs button.on{background:#fff;color:#126142;box-shadow:0 1px 4px #0f3a2a1f}
 }
 @media(min-width:901px){
   .lbl-mob{display:none}
@@ -643,3 +640,5 @@ nav button .nav-icon .ico{width:22px;height:22px}
 aside nav .nav-label .lbl-desk,aside nav .nav-label .lbl-mob{width:auto;font-size:inherit;place-items:unset}
 @media(min-width:901px){aside nav .nav-label .lbl-desk{display:inline}aside nav .nav-label .lbl-mob{display:none}}
 @media(max-width:900px){aside nav .nav-label .lbl-desk{display:none}aside nav .nav-label .lbl-mob{display:inline}}
+
+@media(min-width:901px){.bku-tabs{display:none}}

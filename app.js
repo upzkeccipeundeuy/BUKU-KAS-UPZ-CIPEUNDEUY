@@ -25,7 +25,7 @@ const ICON = {
 };
 const svgIcon = n => '<svg class="ico" viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">'+(ICON[n]||'')+'</svg>';
 const items = [['Dashboard'],['Profil'],['Pemasukan'],['Pengeluaran'],['BKU'],['Cetak Laporan'],['Login']];
-const bkuGroup = ['BKU','Pemasukan','Pengeluaran'];
+const bkuGroup = ['BKU','Pemasukan','Pengeluaran','Cetak Laporan'];
 let bkuOpen = false;
 let screen = 'Dashboard', month = '', dashboardYear = today().slice(0,4), transactionSearch = '', transactionCategory = '', rows = [], summary = [], session, simulated = false, loading = true, failure = '', generation = 0;
 const admin = () => simulated || session?.user?.id === ADMIN;
@@ -207,6 +207,11 @@ function heroExtras() {
     '<aside class="hero-quote" aria-hidden="true"><span>“</span><p>Ambillah zakat dari sebagian harta mereka, guna membersihkan dan menyucikan mereka.</p><small>QS. At-Taubah: 103</small></aside>';
 }
 
+function bkuTabs() {
+  return '<div class="bku-tabs no-print" role="tablist">'+[['BKU','Ringkasan'],['Pemasukan','Pemasukan'],['Pengeluaran','Pengeluaran'],['Cetak Laporan','Cetak']].map(([page,label])=>
+    '<button type="button" role="tab" data-goto="'+page+'" aria-selected="'+(screen===page)+'" class="'+(screen===page?'on':'')+'">'+label+'</button>').join('')+'</div>';
+}
+
 function render() {
   $('role').textContent = simulated?'Admin · Demo':admin()?'Administrator':'Akses Umum';
   $('status').hidden = !failure&&!simulated;
@@ -214,12 +219,12 @@ function render() {
   const navButton = (name,label,iconName,extra='')=>'<button type="button" data-page="'+name+'" class="'+(screen===name?'active':'')+extra+'" '+(screen===name?'aria-current="page"':'')+'><span class="nav-icon" aria-hidden="true">'+svgIcon(iconName)+'</span><span class="nav-label">'+label+'</span></button>';
   const inBku = bkuGroup.includes(screen);
   $('nav').innerHTML = items.map(([name])=>{
-    if(name==='Pemasukan'||name==='Pengeluaran') return '';
+    if(name==='Pemasukan'||name==='Pengeluaran'||name==='Cetak Laporan') return '';
     if(name==='BKU') {
-      return '<button type="button" id="bkuParent" class="nav-parent'+(inBku?' in-group':'')+(bkuOpen?' open':'')+'" aria-expanded="'+bkuOpen+'" aria-controls="bkuSub"><span class="nav-icon" aria-hidden="true">'+svgIcon('BKU')+'</span><span class="nav-label">BKU</span><span class="nav-chevron" aria-hidden="true"></span></button>'+
+      return '<button type="button" id="bkuParent" class="nav-parent'+(inBku?' in-group active':'')+(bkuOpen?' open':'')+'" '+(inBku?'aria-current="page" ':'')+'aria-expanded="'+bkuOpen+'" aria-controls="bkuSub"><span class="nav-icon" aria-hidden="true">'+svgIcon('BKU')+'</span><span class="nav-label">BKU</span><span class="nav-chevron" aria-hidden="true"></span></button>'+
         '<div class="nav-sub'+(bkuOpen?' show':'')+'" id="bkuSub">'+
         '<button type="button" data-page="BKU" class="'+(screen==='BKU'?'active':'')+'" '+(screen==='BKU'?'aria-current="page"':'')+'><span class="nav-icon" aria-hidden="true">'+svgIcon('BKU')+'</span><span class="nav-label"><span class="lbl-desk">Ringkasan</span><span class="lbl-mob">BKU</span></span></button>'+
-        navButton('Pemasukan','Pemasukan','Pemasukan')+navButton('Pengeluaran','Pengeluaran','Pengeluaran')+'</div>';
+        navButton('Pemasukan','Pemasukan','Pemasukan')+navButton('Pengeluaran','Pengeluaran','Pengeluaran')+navButton('Cetak Laporan','Cetak Laporan','Cetak Laporan')+'</div>';
     }
     const label = name==='Login'&&admin()?'Keluar':name;
     return navButton(name,label,name==='Login'&&admin()?'Keluar':name);
@@ -237,9 +242,9 @@ function render() {
   } else if(screen==='Login') {
     content = '<section class="panel login"><h1>Login Admin</h1><p class="muted">Gunakan akun yang terdaftar di Supabase Auth.</p><form id="login"><label>Email<input type="email" name="email" autocomplete="username" required></label><label>Kata sandi<input type="password" name="password" autocomplete="current-password" required></label><div id="loginError" role="alert"></div><button>Masuk</button><button type="button" class="secondary" id="demo">Coba Admin Demo</button></form></section>';
   } else if(screen==='Cetak Laporan') {
-    content = reportPage();
+    content = bkuTabs()+reportPage();
   } else if(screen==='BKU') {
-    content = '<section class="panel bku-panel"><div class="bku-heading"><p class="crumb">BKU / Ringkasan</p><h1>BKU</h1><p class="muted">Ringkasan kas dan rincian transaksi per bulan, dimulai dari Januari.</p></div>'+
+    content = '<section class="panel bku-panel">'+bkuTabs()+'<div class="bku-heading"><p class="crumb">BKU / Ringkasan</p><h1>BKU</h1><p class="muted">Ringkasan kas dan rincian transaksi per bulan, dimulai dari Januari.</p></div>'+
       '<div class="toolbar no-print">'+filters()+'</div>'+
       '<div class="bku-month-list">'+bkuMonthly(data,list)+'</div></section>';
   } else {
@@ -249,7 +254,7 @@ function render() {
       const matches=!query||[r.no_kwitansi,r.penerima,r.tanggal,r.kriteria,r.uraian].some(value=>String(value||'').toLocaleLowerCase('id').includes(query));
       return matches&&(!transactionCategory||r.kriteria===transactionCategory);
     });
-    content = '<section class="panel"><p class="crumb">BKU / '+esc(screen)+'</p><h1>'+esc(screen)+'</h1>'+
+    content = '<section class="panel">'+bkuTabs()+'<p class="crumb">BKU / '+esc(screen)+'</p><h1>'+esc(screen)+'</h1>'+
       '<div class="toolbar no-print">'+filters()+
       (admin()?'<button id="add">Tambah '+esc(type?screen:'Transaksi')+'</button>':'')+
       '</div>'+(admin()?transactionFilters(type?list.filter(r=>Number(r[type])>0):list)+ledger(selection,true):publicLedger(data,screen))+'</section>';
@@ -421,6 +426,10 @@ document.addEventListener('keydown',event=>{
 $('nav').addEventListener('click',event=>{
   const parent=event.target.closest('#bkuParent');
   if(parent) {
+    if(window.matchMedia('(max-width:900px)').matches) {
+      if(!bkuGroup.includes(screen)) go('BKU');
+      return;
+    }
     bkuOpen=!bkuOpen;
     parent.classList.toggle('open',bkuOpen);
     parent.setAttribute('aria-expanded',String(bkuOpen));
