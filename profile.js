@@ -13,6 +13,10 @@ const profileFields = [
 ];
 let profile = defaultProfile, publicProfile = defaultProfile, demoProfile = defaultProfile, profileState = '', profileRequest = 0;
 
+function profileOfficer(role) {
+  return (profile.pengurus || []).find(entry=>entry.jabatan?.trim().toLowerCase().startsWith(role))?.nama || '';
+}
+
 function updateBrandLogo() {
   const logo = $('brandLogo');
   const source = profileImage(profile.identitas.foto);
@@ -37,7 +41,7 @@ async function loadProfile() {
   profileState = 'loading';
   profile = publicProfile;
   updateBrandLogo();
-  if(screen === 'Profil' || screen === 'Cetak Laporan') render();
+  if(['Profil','Cetak Laporan','Perhimpunan'].includes(screen)) render();
   try {
     const result = await api(profileEndpoint);
     if(request !== profileRequest) return;
@@ -50,7 +54,7 @@ async function loadProfile() {
     profileState = 'error';
   }
   updateBrandLogo();
-  if(screen === 'Profil' || screen === 'Cetak Laporan') render();
+  if(['Profil','Cetak Laporan','Perhimpunan'].includes(screen)) render();
 }
 
 function profileImage(source) {

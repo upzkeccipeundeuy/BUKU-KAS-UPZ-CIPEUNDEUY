@@ -685,3 +685,34 @@ aside nav .nav-label .lbl-desk,aside nav .nav-label .lbl-mob{width:auto;font-siz
   .ph-table th,.ph-table td{border:1px solid #555;padding:4px 3px;white-space:normal}
   .ph-heading h1{font-size:15pt}
 }
+
+
+/* ---------- Formulir cetak A2 Kecamatan (Perhimpunan) ---------- */
+.ph-form{display:none}
+.ph-year input{min-height:40px}
+@media print{
+  .ph-panel .ph-heading,.ph-panel .ph-table-wrap,.ph-panel .ph-cards,.ph-panel .empty{display:none!important}
+  .ph-form{display:block!important;font-family:Arial,Helvetica,sans-serif;font-size:10pt;color:#000;line-height:1.25}
+  .ph-panel{border:0!important;box-shadow:none!important;border-radius:0!important;padding:0!important;margin:0!important;background:none!important;min-height:0!important}
+  .ph-form .phf-tag{font-style:italic;font-weight:700;font-size:9pt;margin-bottom:3mm}
+  .ph-form .phf-head{display:flex;align-items:center;gap:6mm;margin-bottom:4mm}
+  .ph-form .phf-head img{height:19mm;width:auto;max-width:36mm;object-fit:contain}
+  .ph-form .phf-nologo{display:none}
+  .ph-form .phf-title{font-weight:700;font-size:12.5pt;line-height:1.35;text-align:left}
+  .ph-form .phf-title{margin-left:0}
+  .ph-form .phf-info{display:grid;grid-template-columns:1fr 1fr;column-gap:22mm;row-gap:1mm;margin-bottom:4mm}
+  .ph-form .phf-info>div{display:grid;grid-template-columns:34mm 1fr;align-items:end}
+  .ph-form .phf-info .ul{border-bottom:0.6pt solid #000;min-height:4.8mm;padding-left:1mm}
+  .ph-form .phf-table{width:100%;table-layout:fixed;border-collapse:collapse;font-size:9pt}
+  .ph-form .phf-table th,.ph-form .phf-table td{border:0.6pt solid #000;padding:1.3mm 1.2mm;text-align:center;vertical-align:middle;font-weight:400;background:none;color:#000;white-space:normal;overflow-wrap:anywhere}
+  .ph-form .phf-table thead th{font-weight:400;font-size:9pt}
+  .ph-form .phf-table td{height:5.6mm}
+  .ph-form .phf-table td.l{text-align:left}
+  .ph-form .phf-table td.r{text-align:right}
+  .ph-form .phf-table .beras{font-size:8pt}
+  .ph-form .phf-table tr{break-inside:avoid}
+  .ph-form .phf-sign{display:flex;justify-content:space-between;margin-top:5mm;font-size:10pt;break-inside:avoid}
+  .ph-form .phf-left{text-align:center;margin-left:12mm}
+  .ph-form .phf-right{text-align:center;margin-right:12mm}
+  .ph-form .phf-name{margin-top:12mm;font-weight:700;text-transform:uppercase;min-height:5mm}
+}

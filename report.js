@@ -59,7 +59,7 @@ function reportPage() {
   const list=rows.filter(row=>row.tanggal.startsWith(prefix));
   const info=profile.identitas;
   const logo=profileImage(info.foto);
-  const officer=role=>profile.pengurus.find(entry=>entry.jabatan?.trim().toLowerCase().startsWith(role))?.nama;
+  const officer=role=>profileOfficer(role);
   const hasData=!loading&&!failure;
   const opening=hasData?openingBalance(startDate):null;
   const [debet,kredit,movement]=totals(data);
