@@ -135,7 +135,7 @@ function go(name) {
   if(rekapGroup.includes(name)) rekapOpen=true;
   if(name==='Profil'||name==='Cetak Laporan') loadProfile();
   else if(PH_KINDS[name]) loadPh(name);
-  else if(rekapGroup.includes(name)) {loadPh('Pendistribusian');loadPh('Perhimpunan');}
+  else if(rekapGroup.includes(name)) {loadPh('Pendistribusian');loadPh('Perhimpunan');loadRekapPct();}
   else render();
 }
 function filters() {

@@ -19,10 +19,44 @@ const RK_DEFAULT = {
 };
 let rkPct = null, rkTotals = {};
 
+/* ---------- Persentase disimpan di Supabase (tabel rekap_persen): publik hanya membaca, admin mengubah ---------- */
+const rkSaved = {c2a:null,c2b:null}, rkTimers = {};
+let rkPctFailure = '';
+async function loadRekapPct() {
+  if(simulated) {render();return;}
+  try {
+    const data = await api('/rest/v1/rekap_persen?select=kunci,nilai');
+    rkSaved.c2a = rkSaved.c2b = null;
+    for(const row of data||[]) if(row.kunci in rkSaved) rkSaved[row.kunci] = row.nilai;
+    rkPct = null; c2bPct = null; rkPctFailure = '';
+  } catch(error) {
+    rkPctFailure = /rekap_persen|schema cache/i.test(error.message) ? 'Tabel rekap_persen belum dibuat. Jalankan setup-rekap-persen-supabase.sql di Supabase SQL Editor.' : error.message;
+  }
+  render();
+}
+function rkStatus(text,bad) {
+  const el = $('rkSaveStatus'); if(el) {el.textContent = text; el.style.color = bad ? '#b3261e' : '';}
+}
+function rkPersist(kunci,nilai) {
+  if(!admin()) return;
+  rkSaved[kunci] = nilai;
+  if(simulated) return;
+  clearTimeout(rkTimers[kunci]);
+  rkStatus('Menyimpan…');
+  rkTimers[kunci] = setTimeout(async()=>{
+    try {
+      if(nilai==null) await api('/rest/v1/rekap_persen?kunci=eq.'+kunci,{method:'DELETE',token:session.access_token});
+      else await api('/rest/v1/rekap_persen?on_conflict=kunci',{method:'POST',body:{kunci,nilai,diubah:new Date().toISOString()},token:session.access_token,extra:{Prefer:'resolution=merge-duplicates,return=minimal'}});
+      rkStatus('Tersimpan');
+    } catch(error) {
+      rkStatus('Gagal menyimpan: '+(/row-level security/i.test(error.message)?'akses ditolak, pastikan masuk sebagai admin.':error.message),true);
+    }
+  },500);
+}
+
 function rkPctState() {
   if(rkPct) return rkPct;
-  let saved = {};
-  try {saved = JSON.parse(localStorage.getItem(RK_KEY) || '{}') || {};} catch {}
+  const saved = rkSaved.c2a || {};
   rkPct = {};
   for(const g of RK_ROWS) for(const l of g.leaves) {
     rkPct[l.id] = {};
@@ -34,7 +68,7 @@ function rkPctState() {
   }
   return rkPct;
 }
-function rkSave() {try {localStorage.setItem(RK_KEY,JSON.stringify(rkPct));} catch {}}
+function rkSave() {rkPersist('c2a',rkPct);}
 
 const rkNum = v => angka.format(Number(v||0));
 const rkPctText = v => v==null ? '' : angka.format(v)+'%';
@@ -76,7 +110,7 @@ function rkWarnHtml(warn) {
 function rkRefresh() {
   const {cell,warn} = rkCompute(rkTotals);
   document.querySelectorAll('[data-rk]').forEach(el=>{el.textContent = cell[el.dataset.rk] ?? '';});
-  const box = $('rkWarn'); if(box) box.innerHTML = rkWarnHtml(warn);
+  const box = $('rkWarn'); if(box) box.innerHTML = admin() ? rkWarnHtml(warn) : '';
 }
 
 function rekapTable(cell) {
@@ -92,8 +126,9 @@ function rekapTable(cell) {
   const leafCells = l => RK_LEVELS.map(([lv,label])=>{
     if(!l.use.includes(lv)) return grey(2);
     const v = pct[l.id][lv];
-    return '<td class="rk-pct"><input type="number" min="0" max="100" step="0.1" inputmode="decimal" data-rk-pct="'+l.id+':'+lv+'" value="'+(v==null?'':v)+'" aria-label="Persen '+esc((l.label||RK_ROWS.find(g=>g.leaves.includes(l)).label)+' '+label)+'">'+
-      '<span class="rk-pct-print" data-rk-pcttxt="'+l.id+':'+lv+'">'+esc(rkPctText(v))+'</span></td>'+td('amt:'+l.id+':'+lv);
+    const field = admin() ? '<input type="number" min="0" max="100" step="0.1" inputmode="decimal" data-rk-pct="'+l.id+':'+lv+'" value="'+(v==null?'':v)+'" aria-label="Persen '+esc((l.label||RK_ROWS.find(g=>g.leaves.includes(l)).label)+' '+label)+'">' : '';
+    return '<td class="rk-pct">'+field+
+      '<span class="rk-pct-print'+(admin()?'':' rk-pct-view')+'" data-rk-pcttxt="'+l.id+':'+lv+'">'+esc(rkPctText(v))+'</span></td>'+td('amt:'+l.id+':'+lv);
   }).join('');
   const body = RK_ROWS.map(g=>{
     const single = g.leaves.length===1 && g.leaves[0].label===null;
@@ -127,8 +162,8 @@ function rekapPage() {
   const toolbar = '<div class="toolbar no-print"><label class="ph-year">Tahun <select id="rkYear">'+years.map(y=>'<option value="'+esc(y)+'" '+(y===year?'selected':'')+'>'+esc(y)+'</option>').join('')+'</select></label>'+
     '<label class="ph-year">Nama Camat <input id="phCamat" maxlength="100" placeholder="Isi sebelum cetak" value="'+esc(phCamat)+'"></label>'+
     '<label class="ph-year">Tanggal laporan <input id="phReportDate" type="date" max="9999-12-31" value="'+esc(phReportDate||today())+'"></label>'+
-    '<span class="ph-tools"><button type="button" class="secondary" id="rkReset">Persentase bawaan</button><button type="button" id="phPrint">Cetak Rekap</button></span></div>';
-  const note = '<p class="muted no-print rk-note">Total pengumpulan dijumlahkan dari menu Perhimpunan tahun '+esc(year)+'. Persentase pada kolom putih dapat diubah dan tersimpan di peramban ini.</p>';
+    '<span class="ph-tools">'+(admin()?'<button type="button" class="secondary" id="rkReset">Persentase bawaan</button>':'')+'<button type="button" id="phPrint">Cetak Rekap</button></span></div>';
+  const note = '<p class="muted no-print rk-note">Total pengumpulan dijumlahkan dari menu Perhimpunan tahun '+esc(year)+'. '+(admin()?'Persentase pada kolom putih dapat diubah dan tersimpan di server. <span id="rkSaveStatus" role="status"></span>':'Persentase dikelola oleh admin.')+(rkPctFailure?' <b>'+esc(rkPctFailure)+'</b>':'')+'</p>';
   const sumJiwa = rows => rows.filter(x=>String(x.tahun)===year).reduce((sum,x)=>sum+Number(x.jumlah_jiwa||0),0);
   const P = phState.Pendistribusian;
   const muzaki = rkNum(sumJiwa(S.rows));
@@ -141,17 +176,18 @@ function rekapPage() {
   const sign = '<div class="ph-form rk-sign" aria-hidden="true"><div class="phf-sign"><div class="phf-left">Mengetahui,<br>Camat Cipeundeuy<div class="phf-name" id="phCamatPrint">'+(phCamat.trim()?esc(phCamat.trim()):'')+'</div></div>'+
     '<div class="phf-right"><span id="phDatePrint">Dilaporkan tanggal : '+esc(reportDate)+'</span><br>Ketua UPZ,<div class="phf-name">'+e(ketua)+'</div></div></div></div>';
   return '<section class="panel ph-panel rk-panel">'+rekapTabs()+heading+toolbar+note+kop+'<div class="scroll rk-wrap">'+rekapTable(cell)+'</div>'+
-    '<div id="rkWarn" class="rk-warn no-print" role="status">'+rkWarnHtml(warn)+'</div>'+sign+'</section>';
+    '<div id="rkWarn" class="rk-warn no-print" role="status">'+(admin()?rkWarnHtml(warn):'')+'</div>'+sign+'</section>';
 }
 
 function bindRekap() {
   $('rkYear')?.addEventListener('change',e=>{phState.Perhimpunan.year=e.target.value;render();});
   $('rkReset')?.addEventListener('click',()=>{
-    rkPct = null;
-    try {localStorage.removeItem(RK_KEY);} catch {}
+    if(!admin()) return;
+    rkPct = null; rkPersist('c2a',null);
     render();
   });
   document.querySelectorAll('[data-rk-pct]').forEach(input=>input.addEventListener('input',()=>{
+    if(!admin()) return;
     const [id,lv] = input.dataset.rkPct.split(':');
     const raw = input.value.trim();
     const n = raw==='' ? null : Number(raw);
@@ -178,8 +214,7 @@ let c2bPct = null;
 
 function c2bState() {
   if(c2bPct) return c2bPct;
-  let saved = {};
-  try {saved = JSON.parse(localStorage.getItem(C2B_KEY) || '{}') || {};} catch {}
+  const saved = rkSaved.c2b || {};
   c2bPct = {};
   for(const k of Object.keys(C2B_DEFAULT)) {
     const own = Object.prototype.hasOwnProperty.call(saved,k);
@@ -188,7 +223,7 @@ function c2bState() {
   }
   return c2bPct;
 }
-function c2bSave() {try {localStorage.setItem(C2B_KEY,JSON.stringify(c2bPct));} catch {}}
+function c2bSave() {rkPersist('c2b',c2bPct);}
 
 function c2bCompute(totalBis) {
   const p = c2bState(), cell = {}, warn = [];
@@ -214,14 +249,14 @@ function c2bCompute(totalBis) {
 function c2bRefresh() {
   const {cell,warn} = c2bCompute(rkTotals.bis_ramadhan);
   document.querySelectorAll('[data-c2b]').forEach(el=>{el.textContent = cell[el.dataset.c2b] ?? '';});
-  const box = $('c2bWarn'); if(box) box.innerHTML = rkWarnHtml(warn);
+  const box = $('c2bWarn'); if(box) box.innerHTML = admin() ? rkWarnHtml(warn) : '';
 }
 
 function c2bTable(cell) {
   const p = c2bState();
   const td = (id,cls='r') => '<td class="'+cls+'" data-c2b="'+id+'">'+esc(cell[id] ?? '')+'</td>';
-  const pctCell = (k,label) => '<td class="rk-pct"><input type="number" min="0" max="100" step="0.1" inputmode="decimal" data-c2b-pct="'+k+'" value="'+(p[k]==null?'':p[k])+'" aria-label="Persen '+esc(label)+'">'+
-    '<span class="rk-pct-print" data-c2b-pcttxt="'+k+'">'+esc(rkPctText(p[k]))+'</span></td>'+td('amt:'+k);
+  const pctCell = (k,label) => '<td class="rk-pct">'+(admin()?'<input type="number" min="0" max="100" step="0.1" inputmode="decimal" data-c2b-pct="'+k+'" value="'+(p[k]==null?'':p[k])+'" aria-label="Persen '+esc(label)+'">':'')+
+    '<span class="rk-pct-print'+(admin()?'':' rk-pct-view')+'" data-c2b-pcttxt="'+k+'">'+esc(rkPctText(p[k]))+'</span></td>'+td('amt:'+k);
   const head = '<colgroup><col style="width:3.5%"><col style="width:15%"><col style="width:11%">'+
     C2B_GROUPS.map(()=>'<col style="width:4.5%"><col style="width:9.5%">').join('')+'<col style="width:5.5%"><col style="width:11%"></colgroup>'+
     '<thead><tr><th rowspan="3">NO</th><th rowspan="3">URAIAN</th><th rowspan="3">PENGUMPULAN<br>DITERIMA UPZ<br>(<span data-c2b-pool-pct>'+esc(p.pool==null?'':angka.format(p.pool))+'</span>%) RP</th><th colspan="10" class="c2b-title">RENCANA PROGRAM PENDISTRIBUSIAN</th></tr>'+
@@ -252,11 +287,11 @@ function rekapC2BPage() {
   const e = v => v==null ? '' : esc(v);
   const reportDate = phLongDate(phReportDate || today());
   const toolbar = '<div class="toolbar no-print"><label class="ph-year">Tahun <select id="rkYear">'+years.map(y=>'<option value="'+esc(y)+'" '+(y===year?'selected':'')+'>'+esc(y)+'</option>').join('')+'</select></label>'+
-    '<label class="ph-year">Bagian UPZ (%) <input id="c2bPool" type="number" min="0" max="100" step="0.1" inputmode="decimal" value="'+(p.pool==null?'':p.pool)+'"></label>'+
+    (admin()?'<label class="ph-year">Bagian UPZ (%) <input id="c2bPool" type="number" min="0" max="100" step="0.1" inputmode="decimal" value="'+(p.pool==null?'':p.pool)+'"></label>':'')+
     '<label class="ph-year">Nama Camat <input id="phCamat" maxlength="100" placeholder="Isi sebelum cetak" value="'+esc(phCamat)+'"></label>'+
     '<label class="ph-year">Tanggal laporan <input id="phReportDate" type="date" max="9999-12-31" value="'+esc(phReportDate||today())+'"></label>'+
-    '<span class="ph-tools"><button type="button" class="secondary" id="c2bReset">Persentase bawaan</button><button type="button" id="phPrint">Cetak C2B</button></span></div>';
-  const note = '<p class="muted no-print rk-note">Pengumpulan diterima UPZ = total BIS Ramadhan menu Perhimpunan tahun '+esc(year)+' × bagian UPZ (bawaan 35%). Persentase program pada kolom putih dapat diubah dan tersimpan di peramban ini.</p>';
+    '<span class="ph-tools">'+(admin()?'<button type="button" class="secondary" id="c2bReset">Persentase bawaan</button>':'')+'<button type="button" id="phPrint">Cetak C2B</button></span></div>';
+  const note = '<p class="muted no-print rk-note">Pengumpulan diterima UPZ = total BIS Ramadhan menu Perhimpunan tahun '+esc(year)+' × bagian UPZ (bawaan 35%). '+(admin()?'Persentase pada kolom putih dapat diubah dan tersimpan di server. <span id="rkSaveStatus" role="status"></span>':'Persentase dikelola oleh admin.')+(rkPctFailure?' <b>'+esc(rkPctFailure)+'</b>':'')+'</p>';
   const kop = '<div class="ph-form rk-kop" aria-hidden="true"><div class="phf-tag">form C2B Kecamatan</div><div class="rk-kop-grid"><img src="logo-baznas.png" alt="">'+
     '<div class="rk-title">RENCANA PROGRAM PENDISTRIBUSIAN<br>DANA INFAK TERIKAT BIS RAMADHAN<br>TAHUN '+phHijriYear(year)+' H / '+esc(year)+' M<br><b>(WAJIB DISAMPAIKAN KEPADA BAZNAS KABUPATEN SUBANG)</b></div>'+
     '<dl class="rk-meta"><dt>Kecamatan</dt><dd>: Cipeundeuy</dd><dt>Nama/No. HP Ketua UPZ</dt><dd>: '+e(ketua)+phone+'</dd>'+
@@ -264,17 +299,18 @@ function rekapC2BPage() {
   const sign = '<div class="ph-form rk-sign" aria-hidden="true"><div class="phf-sign"><div class="phf-left">Mengetahui,<br>Camat Cipeundeuy<div class="phf-name" id="phCamatPrint">'+(phCamat.trim()?esc(phCamat.trim()):'')+'</div></div>'+
     '<div class="phf-right"><span id="phDatePrint">Dilaporkan tanggal : '+esc(reportDate)+'</span><br>Ketua UPZ,<div class="phf-name">'+e(ketua)+'</div></div></div></div>';
   return '<section class="panel ph-panel rk-panel">'+rekapTabs()+heading+toolbar+note+kop+'<div class="scroll rk-wrap">'+c2bTable(cell)+'</div>'+
-    '<div id="c2bWarn" class="rk-warn no-print" role="status">'+rkWarnHtml(warn)+'</div>'+sign+'</section>';
+    '<div id="c2bWarn" class="rk-warn no-print" role="status">'+(admin()?rkWarnHtml(warn):'')+'</div>'+sign+'</section>';
 }
 
 function bindRekapC2B() {
   $('rkYear')?.addEventListener('change',e=>{phState.Perhimpunan.year=e.target.value;render();});
   $('c2bReset')?.addEventListener('click',()=>{
-    c2bPct = null;
-    try {localStorage.removeItem(C2B_KEY);} catch {}
+    if(!admin()) return;
+    c2bPct = null; rkPersist('c2b',null);
     render();
   });
   const setPct = (key,raw) => {
+    if(!admin()) return false;
     const n = raw.trim()==='' ? null : Number(raw);
     if(n!==null && (!Number.isFinite(n) || n<0 || n>100)) return false;
     c2bState()[key] = n; c2bSave();

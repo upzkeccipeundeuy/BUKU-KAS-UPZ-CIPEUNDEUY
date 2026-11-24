@@ -70,3 +70,5 @@ Tabel rekap pengumpulan dan pendistribusian per jenis dana (Zakat Fitrah, BIS Ra
 - **Jumlah Rp.** = Total Pengumpulan × persentase, dibulatkan ke rupiah. Kolom putih dapat diubah (tersimpan di peramban), kolom abu-abu tidak berlaku.
 - Persentase bawaan mengikuti format; kolom Kecamatan dan Kabupaten BIS Ramadhan dikosongkan agar diisi manual. Peringatan muncul jika total persentase satu jenis dana belum 100%.
 - Cetak A4 landscape mengikuti form C2A Kecamatan: kop BAZNAS, Jumlah Muzaki (jiwa Perhimpunan) dan Jumlah Mustahik (jiwa Pendistribusian) otomatis, Ketua UPZ dari Profil, Camat diisi manual.
+
+- **Persentase dikelola admin.** Jalankan `setup-rekap-persen-supabase.sql` sekali di Supabase SQL Editor. Persentase Form C2A dan C2B tersimpan di tabel `rekap_persen`; publik hanya melihat, hanya admin yang dapat mengubah.
