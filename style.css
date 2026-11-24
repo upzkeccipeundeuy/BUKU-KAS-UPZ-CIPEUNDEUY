@@ -764,3 +764,15 @@ aside nav .nav-label .lbl-desk,aside nav .nav-label .lbl-mob{width:auto;font-siz
   .rk-table td{height:6.4mm}
 }
 @media print{.rk-table{border-bottom:0.6pt solid #000}.rk-table tbody tr:last-child td{border-bottom:0.6pt solid #000}}
+
+/* ---------- Form C2B Kecamatan ---------- */
+.c2b-table .c2b-title{font-size:15px}
+.c2b-table .c2b-blank td{height:14mm}
+@media print{
+  .c2b-table{font-size:9pt}
+  .c2b-table .c2b-title{font-size:11pt;font-weight:700}
+  .rk-table.c2b-table th{padding:1.4mm .8mm}
+  .c2b-table td{height:8mm}
+  .c2b-table .c2b-blank td{height:14mm}
+  .rk-kop .rk-meta dt{white-space:nowrap}
+}

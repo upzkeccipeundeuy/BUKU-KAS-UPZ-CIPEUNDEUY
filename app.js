@@ -30,6 +30,9 @@ const svgIcon = n => '<svg class="ico" viewBox="0 0 24 24" width="22" height="22
 const items = [['Dashboard'],['Profil'],['Perhimpunan'],['Pendistribusian'],['Rekap Laporan'],['Pemasukan'],['Pengeluaran'],['BKU'],['Cetak Laporan'],['Login']];
 const bkuGroup = ['BKU','Pemasukan','Pengeluaran','Cetak Laporan'];
 let bkuOpen = false;
+const rekapGroup = ['Form C2A','Form C2B'];
+let rekapOpen = false;
+ICON['Form C2A'] = ICON['Form C2B'] = ICON['Rekap Laporan'];
 
 /* ---------- Perhimpunan (pengumpulan per UPZ desa/kelurahan) ---------- */
 let phCamat = '', phReportDate = '';
@@ -129,9 +132,10 @@ async function refresh() {
 function go(name) {
   screen=name;
   if(bkuGroup.includes(name)) bkuOpen=true;
+  if(rekapGroup.includes(name)) rekapOpen=true;
   if(name==='Profil'||name==='Cetak Laporan') loadProfile();
   else if(PH_KINDS[name]) loadPh(name);
-  else if(name==='Rekap Laporan') {loadPh('Pendistribusian');loadPh('Perhimpunan');}
+  else if(rekapGroup.includes(name)) {loadPh('Pendistribusian');loadPh('Perhimpunan');}
   else render();
 }
 function filters() {
@@ -432,6 +436,11 @@ function render() {
   const inBku = bkuGroup.includes(screen);
   $('nav').innerHTML = items.map(([name])=>{
     if(name==='Pemasukan'||name==='Pengeluaran'||name==='Cetak Laporan') return '';
+    if(name==='Rekap Laporan') {
+      const inRekap = rekapGroup.includes(screen);
+      return '<button type="button" id="rekapParent" class="nav-parent'+(inRekap?' in-group active':'')+(rekapOpen?' open':'')+'" '+(inRekap?'aria-current="page" ':'')+'aria-expanded="'+rekapOpen+'" aria-controls="rekapSub"><span class="nav-icon" aria-hidden="true">'+svgIcon('Rekap Laporan')+'</span><span class="nav-label">Rekap Laporan</span><span class="nav-chevron" aria-hidden="true"></span></button>'+
+        '<div class="nav-sub'+(rekapOpen?' show':'')+'" id="rekapSub">'+navButton('Form C2A','Form C2A','Form C2A')+navButton('Form C2B','Form C2B','Form C2B')+'</div>';
+    }
     if(name==='BKU') {
       return '<button type="button" id="bkuParent" class="nav-parent'+(inBku?' in-group active':'')+(bkuOpen?' open':'')+'" '+(inBku?'aria-current="page" ':'')+'aria-expanded="'+bkuOpen+'" aria-controls="bkuSub"><span class="nav-icon" aria-hidden="true">'+svgIcon('BKU')+'</span><span class="nav-label">BKU</span><span class="nav-chevron" aria-hidden="true"></span></button>'+
         '<div class="nav-sub'+(bkuOpen?' show':'')+'" id="bkuSub">'+
@@ -455,8 +464,10 @@ function render() {
     content = '<section class="panel login"><h1>Login Admin</h1><p class="muted">Gunakan akun yang terdaftar di Supabase Auth.</p><form id="login"><label>Email<input type="email" name="email" autocomplete="username" required></label><label>Kata sandi<input type="password" name="password" autocomplete="current-password" required></label><div id="loginError" role="alert"></div><button>Masuk</button><button type="button" class="secondary" id="demo">Coba Admin Demo</button></form></section>';
   } else if(PH_KINDS[screen]) {
     content = phPage(screen);
-  } else if(screen==='Rekap Laporan') {
+  } else if(screen==='Form C2A') {
     content = rekapPage();
+  } else if(screen==='Form C2B') {
+    content = rekapC2BPage();
   } else if(screen==='Cetak Laporan') {
     content = bkuTabs()+reportPage();
   } else if(screen==='BKU') {
@@ -493,7 +504,8 @@ function render() {
   });
   document.querySelectorAll('[data-goto]').forEach(b=>b.addEventListener('click',()=>go(b.dataset.goto)));
   if(screen==='Cetak Laporan') bindReportFilters();
-  if(screen==='Rekap Laporan') bindRekap();
+  if(screen==='Form C2A') bindRekap();
+  if(screen==='Form C2B') bindRekapC2B();
   $('login')?.addEventListener('submit',login);
   $('demo')?.addEventListener('click',()=>{simulated=true;screen='Dashboard';loadProfile();refresh();});
   $('add')?.addEventListener('click',()=>edit());
@@ -659,6 +671,18 @@ document.addEventListener('keydown',event=>{
   if(event.key==='Escape') setNavigationOpen(false);
 });
 $('nav').addEventListener('click',event=>{
+  const rekapParent=event.target.closest('#rekapParent');
+  if(rekapParent) {
+    if(window.matchMedia('(max-width:900px)').matches) {
+      if(!rekapGroup.includes(screen)) go('Form C2A');
+      return;
+    }
+    rekapOpen=!rekapOpen;
+    rekapParent.classList.toggle('open',rekapOpen);
+    rekapParent.setAttribute('aria-expanded',String(rekapOpen));
+    $('rekapSub')?.classList.toggle('show',rekapOpen);
+    return;
+  }
   const parent=event.target.closest('#bkuParent');
   if(parent) {
     if(window.matchMedia('(max-width:900px)').matches) {
