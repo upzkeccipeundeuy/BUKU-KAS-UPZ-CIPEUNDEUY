@@ -147,9 +147,9 @@ function totals(data) {
   const k = data.reduce((sum,r)=>sum+Math.round(Number(r.kredit)*100),0)/100;
   return [d,k,Math.round((d-k)*100)/100];
 }
-function cards(data) {
+function cards(data, labels=['Total Pemasukan','Total Pengeluaran','Selisih Periode']) {
   const values = totals(data);
-  return '<div class="cards">'+['Total Pemasukan','Total Pengeluaran','Selisih Periode'].map((label,i)=>
+  return '<div class="cards">'+labels.map((label,i)=>
     '<div class="card '+['in','out','net'][i]+'"><div class="symbol" aria-hidden="true">'+svgIcon(['Pemasukan','Pengeluaran','BKU'][i])+'</div><small>'+label+'</small><strong>'+money(loading||failure?null:values[i])+'</strong></div>').join('')+'</div>';
 }
 function makeTable(headers, content) {
@@ -242,7 +242,8 @@ function phDashCard(kind, year) {
   const jiwa=list.reduce((sum,r)=>sum+Number(r.jumlah_jiwa||0),0);
   const beras=list.reduce((sum,r)=>sum+Number(r.beras_kg||0),0);
   const peak=Math.max(1,...list.map(phJumlah));
-  const head='<div class="dash-ph-head"><span class="symbol" aria-hidden="true">'+svgIcon(kind)+'</span><div><h2>Kartu '+kind+'</h2><p class="muted">'+(kind==='Perhimpunan'?'Dana zakat yang dikumpulkan':'Dana zakat yang disalurkan')+' · Tahun '+esc(year)+'</p></div></div>';
+  const clean=v=>{const t=String(v??'').trim();return /^[.\-–—_\s]*$/.test(t)?'':t;};
+  const head='<div class="dash-ph-head"><span class="symbol" aria-hidden="true">'+svgIcon(kind)+'</span><div><h2>Kartu '+kind+'</h2><p class="muted">'+(kind==='Perhimpunan'?'Dana zakat yang dikumpulkan':'Dana zakat yang disalurkan')+' · Tahun '+esc(year)+'</p></div><button type="button" class="secondary dash-ph-link" data-goto="'+kind+'">Kelola</button></div>';
   let body;
   if(S.loading) body='<p class="empty">Memuat data…</p>';
   else if(S.failure) body='<p class="empty" role="alert">Data '+kind.toLowerCase()+' gagal dimuat.</p>';
@@ -250,12 +251,13 @@ function phDashCard(kind, year) {
   else body='<div class="dash-ph-total"><small>Total '+(kind==='Perhimpunan'?'pengumpulan':'pendistribusian')+'</small><strong>'+money(total)+'</strong>'+
     '<span>'+angka.format(jiwa)+' jiwa · '+angka.format(beras)+' kg beras · '+list.length+' UPZ desa/kelurahan</span></div>'+
     '<h3 class="dash-ph-sub">Rincian per desa/kelurahan</h3><ul class="dash-desa-list">'+list.map(r=>{
-      const place=[r.alamat_kp,(r.rt||r.rw)?'RT '+(r.rt||'-')+'/RW '+(r.rw||'-'):''].filter(Boolean).join(' · ');
+      const rt=clean(r.rt), rw=clean(r.rw);
+      const place=[clean(r.alamat_kp),(rt||rw)?'RT '+(rt||'-')+'/RW '+(rw||'-'):''].filter(Boolean).join(' · ');
       const chips=PH_COMPONENTS.filter(([key])=>Number(r[key]||0)>0).map(([key,label])=>'<div><dt>'+label+'</dt><dd>'+money(Number(r[key]))+'</dd></div>').join('');
       return '<li class="dash-desa"><div class="dash-desa-top"><div><strong>'+esc(r.nama_upz)+'</strong><small>'+esc(place)+(place?' · ':'')+angka.format(Number(r.jumlah_jiwa||0))+' jiwa'+(Number(r.beras_kg||0)>0?' · '+angka.format(Number(r.beras_kg))+' kg beras':'')+'</small></div><b>'+money(phJumlah(r))+'</b></div>'+
-        '<div class="dash-bar"><i style="width:'+Math.max(phJumlah(r)?3:0,phJumlah(r)/peak*100)+'%"></i></div>'+(chips?'<dl class="dash-chips">'+chips+'</dl>':'')+'</li>';
+        '<div class="dash-bar-row"><div class="dash-bar"><i style="width:'+Math.max(phJumlah(r)?3:0,phJumlah(r)/peak*100)+'%"></i></div><span class="dash-pct">'+(total?Math.round(phJumlah(r)/total*100):0)+'%</span></div>'+(chips?'<dl class="dash-chips">'+chips+'</dl>':'')+'</li>';
     }).join('')+'</ul>';
-  return '<article class="panel dash-ph-card '+tone+'">'+head+body+'<button type="button" class="secondary dash-ph-link" data-goto="'+kind+'">Kelola '+kind+'</button></article>';
+  return '<article class="panel dash-ph-card '+tone+'">'+head+body+'</article>';
 }
 function phDashboard() {
   const P=phState.Perhimpunan, D=phState.Pendistribusian;
@@ -278,7 +280,7 @@ function heroExtras() {
   const updated=new Intl.DateTimeFormat('id-ID',{day:'numeric',month:'long',year:'numeric'}).format(new Date());
   return '<div class="hero-actions"><button type="button" data-goto="Pemasukan">Lihat Pemasukan</button><button type="button" data-goto="Pengeluaran">Lihat Pengeluaran</button><button type="button" data-goto="Cetak Laporan">Cetak Laporan</button></div>'+
     '<p class="hero-updated">Diperbarui: '+updated+'</p>'+
-    '<aside class="hero-quote" aria-hidden="true"><span>“</span><p>Ambillah zakat dari sebagian harta mereka, guna membersihkan dan menyucikan mereka.</p><small>QS. At-Taubah: 103</small></aside>';
+    '<div class="hero-quote" aria-hidden="true"><span>“</span><p>Ambillah zakat dari sebagian harta mereka, guna membersihkan dan menyucikan mereka.</p><small>QS. At-Taubah: 103</small></div>';
 }
 
 async function loadPh(kind=screen) {
@@ -498,6 +500,7 @@ function render() {
     phDashEnsure();
     const saldo = totals(summary)[2];
     content = '<div class="hero"><div class="eyebrow">'+(admin()?'DASHBOARD ADMIN':'DASHBOARD UMUM')+'</div><h1>Kas UPZ Cipeundeuy</h1><p>Ringkasan penerimaan, pengeluaran, dan saldo kas.</p><strong>Saldo kas keseluruhan · '+money(loading||failure?null:saldo)+'</strong>'+heroExtras()+'</div>'+
+      cards(summary,['Total Pemasukan','Total Pengeluaran','Saldo Kas'])+
       phDashboard();
   } else if(screen==='Profil') {
     content = profilePage();

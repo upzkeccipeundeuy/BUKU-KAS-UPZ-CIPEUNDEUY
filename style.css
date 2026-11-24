@@ -836,3 +836,79 @@ aside nav .nav-label .lbl-desk,aside nav .nav-label .lbl-mob{width:auto;font-siz
 .profile-actions a.btn-link.secondary{color:var(--green-dark)!important}
 .profile-layout .profile-facts{grid-template-columns:repeat(auto-fit,minmax(260px,1fr))}
 .profile-facts dd a{overflow-wrap:anywhere}
+
+
+/* ==========================================================
+   Perapian dashboard — hero, kartu ringkasan, kartu desa
+   ========================================================== */
+
+/* Hero: pastikan kutipan tampil sebagai kartu kaca (bukan gaya sidebar) */
+.hero{box-shadow:0 18px 44px #14402e24}
+.hero .eyebrow{display:inline-flex;align-items:center;gap:8px}
+.hero .eyebrow:before{content:"";width:22px;height:2px;border-radius:2px;background:var(--gold)}
+.hero>strong{background:#ffffff14;border:1px solid #ffffff26;backdrop-filter:blur(4px)}
+@media(min-width:1024px){
+  .hero{min-height:268px;display:flex;flex-direction:column;justify-content:center}
+  .hero-quote{height:auto;min-height:0;overflow:visible;box-shadow:0 12px 32px #0a2a1e33}
+  .hero-quote p{max-width:none}
+  .hero-quote small{display:block}
+}
+
+/* Kartu ringkasan di dashboard */
+.layout .hero+.cards{margin:20px 0 6px}
+.layout .hero+.cards .card strong{white-space:nowrap}
+@media(max-width:600px){.layout .hero+.cards .card strong{white-space:normal}}
+
+/* Judul bagian + pilih tahun */
+.dash-ph-toolbar{margin:26px 0 14px;padding:0 2px}
+.dash-ph-toolbar h2{font-size:20px;letter-spacing:-.02em}
+.year-select{font-size:13px;color:var(--muted)}
+.year-select select{font-weight:700;color:var(--green-dark);cursor:pointer;background:#fff}
+
+/* Kartu Perhimpunan / Pendistribusian */
+.dash-ph-grid{gap:20px}
+.dash-ph-card{padding:22px;gap:16px}
+.dash-ph-card.in{border-top:3px solid #1a9a68}
+.dash-ph-card.out{border-top:3px solid #d99a2b}
+.dash-ph-head{align-items:flex-start}
+.dash-ph-head>div{flex:1;min-width:0}
+.dash-ph-head .dash-ph-link{margin-left:auto;padding:7px 14px;font-size:13px;flex:none}
+.dash-ph-total{padding:18px 20px;border-radius:16px;gap:4px;position:relative;overflow:hidden}
+.dash-ph-total:after{content:"";position:absolute;width:150px;height:150px;right:-40px;top:-60px;border-radius:50%;
+  border:1px solid #ffffff26;box-shadow:0 0 0 22px #ffffff0d;pointer-events:none}
+.dash-ph-total strong{font-size:clamp(24px,2.6vw,32px);letter-spacing:-.03em}
+.dash-ph-sub{margin:4px 0 -4px;font-size:12px;letter-spacing:.08em;font-weight:700}
+
+/* Daftar desa lebih ringkas */
+.dash-desa-list{gap:8px}
+.dash-desa{padding:12px 14px 11px;border-radius:13px;transition:border-color .15s,box-shadow .15s,background .15s}
+.dash-desa:hover{border-color:#cfe0d6;background:#fff;box-shadow:0 4px 14px #153b2b0d}
+.dash-desa-top strong{font-size:15px}
+.dash-desa-top small{font-size:12.5px;line-height:1.45}
+.dash-desa-top b{font-size:15px}
+.dash-bar-row{display:flex;align-items:center;gap:10px;margin:9px 0 8px}
+.dash-bar-row .dash-bar{flex:1;margin:0}
+.dash-pct{flex:none;min-width:34px;text-align:right;font-size:12px;font-weight:700;color:var(--muted);font-variant-numeric:tabular-nums}
+.dash-chips{gap:6px}
+.dash-chips div{padding:3px 10px;background:#f0f6f2;border:1px solid #e3ede7}
+
+@media(max-width:900px){
+  .dash-ph-toolbar{flex-direction:row;align-items:flex-end}
+  .dash-ph-card{padding:16px}
+}
+@media(max-width:520px){
+  .dash-ph-head .dash-ph-link{padding:6px 11px}
+  .dash-desa-top{flex-direction:column;gap:2px}
+  .dash-ph-toolbar h2{width:auto}
+}
+@media print{.hero-quote{display:none!important}}
+
+/* Penyesuaian lanjutan */
+@media(min-width:1024px){
+  .hero>strong{align-self:flex-start}
+  .layout .hero+.cards .card{display:grid;grid-template-columns:auto 1fr;column-gap:16px;align-items:center;padding:18px 22px;border-top-width:1px;border-left:4px solid var(--accent,#176b4a)}
+  .layout .hero+.cards .card .symbol{grid-row:1 / span 2;margin:0;width:46px;height:46px}
+  .layout .hero+.cards .card small{align-self:end}
+  .layout .hero+.cards .card strong{margin:2px 0 0;align-self:start;font-size:clamp(22px,2vw,28px)}
+}
+@media(max-width:600px){.layout .hero+.cards .card:last-child{grid-column:1/-1}}
