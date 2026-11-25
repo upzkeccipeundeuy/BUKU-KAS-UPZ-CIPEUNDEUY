@@ -333,6 +333,24 @@ function phDashEnsure() {
     if(S.dashKey!==key && !S.loading) {S.dashKey=key; setTimeout(()=>loadPh(kind),0);}
   }
 }
+function parseVisiMisi(raw) {
+  const clean = v => String(v||'').replace(/^\s*(?:\d+\s*[.)]|[-•*])\s*/,'').replace(/^[\s"“”'‘’]+|[\s"“”'‘’]+$/g,'').trim();
+  const lines = String(raw||'').replace(/\r/g,'').split('\n').map(v=>v.trim()).filter(Boolean);
+  const out = {visi:[],misi:[]};
+  let current = '', headed = false;
+  for(const line of lines) {
+    const m = line.match(/^(?:["“]?)(visi|misi)(?:["”]?)\s*(?:[:：]\s*(.*))?$/i);
+    if(m) {
+      headed = true; current = m[1].toLowerCase();
+      const rest = clean(m[2]); if(rest) out[current].push(rest);
+      continue;
+    }
+    const item = clean(line);
+    if(item) out[current||'visi'].push(item);
+  }
+  if(!headed && out.visi.length>1) { out.misi = out.visi.slice(1); out.visi = out.visi.slice(0,1); }
+  return out;
+}
 function dashboardVisiInfo() {
   const info = profile?.identitas || {};
   const nama = info.nama || 'UPZ Kecamatan Cipeundeuy';
@@ -340,12 +358,17 @@ function dashboardVisiInfo() {
   const alamat = info.alamat || 'Alamat belum diatur pada menu Profil';
   const ketua = profileOfficer('ketua') || 'Belum diatur';
   const periode = info.periode || 'Belum diatur';
-  const text = info.misi || 'Mewujudkan UPZ yang profesional, amanah dan terpercaya dalam pengelolaan zakat, infak dan sedekah untuk kesejahteraan umat.';
-  const parts = text.split(/\n+/).map(v=>v.trim()).filter(Boolean);
-  const visi = parts.shift() || text;
-  const missions = parts.length ? parts : ['Mengoptimalkan penghimpunan zakat, infak dan sedekah.','Menyalurkan dana secara tepat sasaran dan amanah.','Meningkatkan pelayanan kepada masyarakat.','Membangun sinergi dengan berbagai pihak.'];
-  return '<section class="dash-vision-info"><div class="dash-vision"><div class="dash-vi-title"><span>✦</span> VISI & MISI UPZ</div><div class="dash-vi-columns"><div class="dash-vi-block"><span class="dash-vi-pill">◎ Visi</span><p class="dash-vision-text">“'+esc(visi)+'”</p></div><div class="dash-vi-block"><span class="dash-vi-pill">🤝 Misi</span><ol>'+missions.map((m,i)=>'<li><span>'+ (i+1) +'</span>'+esc(m)+'</li>').join('')+'</ol></div></div></div>'+
-    '<div class="dash-info"><div class="dash-vi-title">ⓘ INFO UPZ KECAMATAN CIPEUNDEUY</div><div class="dash-info-card"><h2>'+esc(nama)+'</h2><p><b>Wilayah:</b> '+esc(wilayah)+'</p><p><b>Alamat:</b> '+esc(alamat)+'</p><p><b>Ketua:</b> '+esc(ketua)+'</p><p><b>Periode:</b> '+esc(periode)+'</p></div></div></section>';
+  const parsed = parseVisiMisi(info.misi);
+  const visi = parsed.visi.join(' ') || 'Mewujudkan UPZ yang profesional, amanah dan terpercaya dalam pengelolaan zakat, infak dan sedekah untuk kesejahteraan umat.';
+  const missions = parsed.misi.length ? parsed.misi : ['Mengoptimalkan penghimpunan zakat, infak dan sedekah.','Menyalurkan dana secara tepat sasaran dan amanah.','Meningkatkan pelayanan kepada masyarakat.','Membangun sinergi dengan berbagai pihak.'];
+  const row = (label,value) => '<div><dt>'+label+'</dt><dd>'+esc(value)+'</dd></div>';
+  return '<section class="dash-vision-info" aria-label="Visi, misi, dan info UPZ">'+
+    '<div class="dash-vision">'+
+      '<article class="dash-vi-card dash-visi"><h2 class="dash-vi-title"><span aria-hidden="true">◎</span> Visi</h2><p class="dash-vision-text">'+esc(visi)+'</p></article>'+
+      '<article class="dash-vi-card dash-misi"><h2 class="dash-vi-title"><span aria-hidden="true">✦</span> Misi</h2><ol>'+missions.map((m,i)=>'<li><span aria-hidden="true">'+(i+1)+'</span><p>'+esc(m)+'</p></li>').join('')+'</ol></article>'+
+    '</div>'+
+    '<div class="dash-info"><div class="dash-info-card"><div class="dash-info-head"><img src="logo-baznas.png" alt="" width="48" height="48"><div><small>Info UPZ</small><h2>'+esc(nama)+'</h2></div></div>'+
+      '<dl>'+row('Wilayah',wilayah)+row('Alamat',alamat)+row('Ketua',ketua)+row('Periode',periode)+'</dl></div></div></section>';
 }
 function heroExtras() {
   const updated=new Intl.DateTimeFormat('id-ID',{day:'numeric',month:'long',year:'numeric'}).format(new Date());

@@ -1131,3 +1131,31 @@ tr.xl-error td{background:#fff6f5}.xl-note{color:#a23c37;font-size:12.5px;white-
 
 /* Profile: separate Visi and Misi panels */
 .institution-vm-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px;margin:12px 0 16px}.institution-vm-card{border:1px solid #cfe5d9;border-radius:14px;overflow:hidden;background:linear-gradient(145deg,#f3faf6,#e8f5ee);min-width:0}.institution-vm-card h4{margin:0;padding:11px 16px;background:linear-gradient(100deg,#176b4a,#23845b);color:#fff;font-size:17px}.institution-vm-card h4 span{margin-right:8px}.institution-vm-card p{padding:15px 18px;margin:0;white-space:pre-wrap;overflow-wrap:anywhere;font-size:16px}.vision-card p{font-style:italic;font-weight:600;line-height:1.7}.mission-card p{line-height:1.65}@media(max-width:700px){.institution-vm-grid{grid-template-columns:1fr}}
+
+/* ---------- Dashboard: Visi, Misi & Info UPZ ---------- */
+.dash-vision-info{display:grid;grid-template-columns:minmax(0,1.7fr) minmax(280px,1fr);gap:18px;align-items:start;margin:0 0 8px}
+.dash-vision{display:grid;gap:14px;min-width:0}
+.dash-vi-card{position:relative;padding:20px 24px 22px;border:1px solid var(--line);border-radius:var(--radius);background:var(--paper,#fff);box-shadow:var(--shadow-sm);min-width:0}
+.dash-vi-card:before{content:"";position:absolute;left:0;top:18px;bottom:18px;width:4px;border-radius:0 4px 4px 0;background:var(--green)}
+.dash-misi:before{background:var(--gold)}
+.dash-vi-title{display:flex;align-items:center;gap:10px;margin:0 0 10px;font-size:12.5px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--green)}
+.dash-vi-title span{display:grid;place-items:center;width:28px;height:28px;border-radius:9px;background:var(--mint);font-size:15px;letter-spacing:0}
+.dash-misi .dash-vi-title{color:#8a6a1f}.dash-misi .dash-vi-title span{background:#fbf3df}
+.dash-vision-text{margin:0;font-size:clamp(17px,1.9vw,21px);line-height:1.55;font-weight:600;letter-spacing:-.01em;color:var(--green-deep)}
+.dash-misi ol{list-style:none;margin:0;padding:0;display:grid;gap:10px;counter-reset:none}
+.dash-misi li{display:flex;gap:12px;align-items:flex-start}
+.dash-misi li>span{flex:none;display:grid;place-items:center;width:26px;height:26px;margin-top:1px;border-radius:50%;background:var(--green);color:#fff;font-size:12.5px;font-weight:700}
+.dash-misi li p{margin:0;line-height:1.6;color:var(--ink)}
+.dash-info-card{padding:22px 24px;border-radius:var(--radius);color:#fff;background:linear-gradient(150deg,#103c2d 0%,#176347 100%);box-shadow:var(--shadow-md);position:relative;overflow:hidden}
+.dash-info-card:after{content:"";position:absolute;right:-70px;top:-70px;width:200px;height:200px;border-radius:50%;background:#ffffff0d}
+.dash-info-head{display:flex;gap:14px;align-items:center;margin-bottom:18px;position:relative;z-index:1}
+.dash-info-head img{width:48px;height:48px;border-radius:12px;background:#fff;padding:4px;object-fit:contain;flex:none}
+.dash-info-head small{display:block;font-size:11.5px;letter-spacing:.14em;text-transform:uppercase;color:#a9cdbb;font-weight:600}
+.dash-info-head h2{margin:2px 0 0;font-size:19px;line-height:1.25;color:#fff}
+.dash-info-card dl{display:grid;gap:0;margin:0;position:relative;z-index:1}
+.dash-info-card dl>div{padding:11px 0;border-top:1px solid #ffffff1f}
+.dash-info-card dt{font-size:11.5px;letter-spacing:.08em;text-transform:uppercase;color:#a9cdbb;font-weight:600}
+.dash-info-card dd{margin:2px 0 0;font-size:15px;font-weight:500;overflow-wrap:anywhere}
+@media(max-width:1023px){.dash-vision-info{grid-template-columns:1fr}.dash-info-card{height:auto}}
+@media(max-width:600px){.dash-vi-card{padding:18px 18px 20px}.dash-info-card{padding:20px}}
+.dash-ph-toolbar{margin-top:28px}
