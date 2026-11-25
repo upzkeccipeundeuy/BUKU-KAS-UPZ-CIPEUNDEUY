@@ -132,7 +132,9 @@ function udPhPage(kind='ph') {
     `<label class="ph-year">Tahun <select id="udYear">${years.map(y=>opt(y,y,y===year)).join('')}</select></label>`+
     `<label class="ph-year">Kepala Desa / Lurah <input id="udKades" maxlength="100" placeholder="Nama untuk tanda tangan" value="${esc(UD.kades!==null?UD.kades:(desa?.nama_kades||''))}"></label>`+
     `<label class="ph-year">Tanggal laporan <input id="udDate" type="date" max="9999-12-31" value="${esc(UD.date||today())}"></label>`+
-    `<span class="ph-tools"><button type="button" class="secondary" id="udPrint">Cetak Form ${T.form}</button>${admin()?`<button type="button" data-ud="add:${kind}" ${desa?'':'disabled'}>Tambah UPZ DKM/RT/RW</button>`:''}</span></div>${content}</section>`;
+    `<span class="ph-tools"><button type="button" class="secondary" id="udPrint">Cetak Form ${T.form}</button>`+
+    `<button type="button" class="secondary" id="udXlExport" ${desa?'':'disabled'}>Ekspor Excel</button>${admin()?`<button type="button" class="secondary" id="udXlImport" ${desa?'':'disabled'}>Impor Excel</button><button type="button" class="secondary" id="udXlTemplate">Templat</button><input type="file" id="udXlFile" accept=".xlsx,.xls,.csv" hidden>`:''}`+
+    `${admin()?`<button type="button" data-ud="add:${kind}" ${desa?'':'disabled'}>Tambah UPZ DKM/RT/RW</button>`:''}</span></div>${content}</section>`;
 }
 
 function bindUd() {
@@ -142,6 +144,7 @@ function bindUd() {
   $('udDate')?.addEventListener('input',e=>{if(!e.target.value)return;UD.date=e.target.value;const t=$('udDatePrint');if(t)t.textContent='Dilaporkan tanggal : '+phLongDate(UD.date);});
   $('udMunfiq')?.addEventListener('input',e=>{UD.munfiq=e.target.value;const t=$('udMunfiqPrint');if(t)t.textContent=e.target.value;});
   $('udPrint')?.addEventListener('click',()=>window.print());
+  bindUdExcel();
   bindUdRk();
 }
 

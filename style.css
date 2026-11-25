@@ -1118,3 +1118,13 @@ button.danger-solid{background:var(--danger);color:#fff;box-shadow:none}
 .ud-paper .udc1-table td{height:24px;padding:2px 4px}
 .ud-paper .udc1-table td.rk-pct{padding:2px 3px}
 @media print{.ud-paper .udc1-table th{overflow-wrap:normal;word-break:normal;font-size:8pt}}
+
+/* Ekspor / impor Excel */
+dialog.xl-dialog{width:min(1100px,95vw);max-width:95vw}
+.xl-scroll{max-height:55vh;margin:12px 0}
+.xl-scroll thead th{position:sticky;top:0;z-index:1}
+.xl-total td,.xl-scroll tfoot td{font-weight:700;background:#f0f6f2}
+.xl-badge{display:inline-block;padding:2px 9px;border-radius:20px;font-size:12px;font-weight:700}
+.xl-b-baru{background:#e3f4ea;color:#176b4a}.xl-b-update{background:#fff4d6;color:#8a6410}.xl-b-error{background:#fde8e6;color:#a23c37}
+tr.xl-error td{background:#fff6f5}.xl-note{color:#a23c37;font-size:12.5px;white-space:normal}
+@media print{dialog.xl-dialog{display:none!important}}
