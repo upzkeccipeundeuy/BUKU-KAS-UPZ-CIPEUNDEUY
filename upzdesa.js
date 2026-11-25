@@ -13,7 +13,7 @@ const udTabs = () => '<div class="bku-tabs no-print" role="tablist">'+[['Data UP
 const udRows = kind => kind==='desa' ? UD.desa : kind==='pd' ? UD.pd : UD.ph;
 const udSqlFile = msg => /pendistribusian/i.test(msg||'') ? UD_PD_SQL : UD_SQL;
 let udOpen = false;
-const UD = {desa:[],ph:[],pd:[],pdFailure:'',munfiq:'',loading:false,failure:'',gen:0,desaId:'',year:'',date:'',kades:null};
+const UD = {desa:[],ph:[],pd:[],pdFailure:'',munfiq:'',loading:false,failure:'',gen:0,desaId:'',year:'',date:'',kades:null,expandedDesa:{}};
 const UD_DEMO = {
   desa:[{id:1,nama_desa:'SAWANGAN',kecamatan:'CIPEUNDEUY',kabupaten:'SUBANG',nama_ketua:'ODANG PRIATNA',no_hp:'',nama_kades:'RUDIYANTO',alamat:''}],
   ph:[
@@ -103,10 +103,25 @@ function udDesaPage() {
   if(UD.loading) content = skeletonRows(4);
   else if(UD.failure) content = `<p class="empty" role="alert">Data UPZ Desa gagal dimuat. ${esc(UD.failure)}${udSqlHint()}</p>`;
   else if(!UD.desa.length) content = emptyState('Belum ada UPZ Desa','Klik “Tambah UPZ Desa” untuk mengisi identitas.');
-  else content = `<div class="scroll"><table class="ph-table"><thead><tr><th>No</th><th>Desa/Kelurahan</th><th>Kecamatan</th><th>Kabupaten</th><th>Ketua UPZ</th><th>Nomor Hp.</th><th>Kepala Desa / Lurah</th>${admin()?'<th class="no-print">Aksi</th>':''}</tr></thead><tbody>`+
-    UD.desa.map((d,i)=>`<tr><td>${i+1}</td><td class="ph-name"><strong>${esc(d.nama_desa)}</strong>${d.alamat?`<br><span class="muted">${esc(d.alamat)}</span>`:''}</td><td>${esc(d.kecamatan)}</td><td>${esc(d.kabupaten)}</td><td>${esc(d.nama_ketua)}</td><td>${esc(d.no_hp)}</td><td>${esc(d.nama_kades)}</td>`+
-    (admin()?`<td class="no-print ph-actions"><button type="button" class="secondary" data-ud="edit:desa:${esc(d.id)}">Edit</button> <button type="button" class="danger" data-ud="del:desa:${esc(d.id)}">Hapus</button></td>`:'')+`</tr>`).join('')+`</tbody></table></div>`;
-  return `<section class="panel ud-panel">${udTabs()}<div class="ph-heading"><p class="crumb">UPZ DESA / Data UPZ Desa</p><h1>Data UPZ Desa</h1><p class="muted">Identitas UPZ desa/kelurahan${admin()?'.':' (hanya admin yang dapat mengubah).'}</p></div>`+
+  else {
+    const mainRows = UD.desa.map((d,i)=>{
+      const ph = UD.ph.filter(r=>String(r.upz_desa_id)===String(d.id));
+      const years = [...new Set(ph.map(r=>String(r.tahun)))].sort().reverse();
+      const expanded = !!UD.expandedDesa[d.id];
+      let detail = '';
+      if(expanded){
+        detail = years.length ? years.map(y=>{
+          const rows=ph.filter(r=>String(r.tahun)===y), totals={};
+          ['zakat_fitrah','beras_kg','bis_ramadhan','zakat_mal','infak_umum','fidyah'].forEach(k=>totals[k]=rows.reduce((sum,r)=>sum+Number(r[k]||0),0));
+          const grand=rows.reduce((sum,r)=>sum+phJumlah(r),0);
+          return `<div class="ud-detail-year"><h4>Tahun ${esc(y)} <span>${rows.length} UPZ DKM/RT/RW</span></h4><div class="scroll"><table class="ud-detail-table"><thead><tr><th>No</th><th>Nama UPZ DKM/RT/RW</th><th>Alamat</th><th>Jiwa</th><th>Zakat Fitrah</th><th>Beras (kg)</th><th>BIS Ramadhan</th><th>Zakat Mal</th><th>Infak Umum</th><th>Fidyah</th><th>Total</th></tr></thead><tbody>${rows.map((r,j)=>`<tr><td>${j+1}</td><td>${esc(r.nama_upz)}</td><td>${esc(r.alamat_kp||'')}</td><td>${udN(r.jumlah_jiwa)}</td><td>${udN(r.zakat_fitrah)}</td><td>${udN(r.beras_kg)}</td><td>${udN(r.bis_ramadhan)}</td><td>${udN(r.zakat_mal)}</td><td>${udN(r.infak_umum)}</td><td>${udN(r.fidyah)}</td><td><b>${udN(phJumlah(r))}</b></td></tr>`).join('')}</tbody><tfoot><tr><td colspan="3">TOTAL ${esc(y)}</td><td>${udN(rows.reduce((sum,r)=>sum+Number(r.jumlah_jiwa||0),0))}</td><td>${udN(totals.zakat_fitrah)}</td><td>${udN(totals.beras_kg)}</td><td>${udN(totals.bis_ramadhan)}</td><td>${udN(totals.zakat_mal)}</td><td>${udN(totals.infak_umum)}</td><td>${udN(totals.fidyah)}</td><td>${udN(grand)}</td></tr></tfoot></table></div></div>`;
+        }).join('') : `<p class="muted ud-detail-empty">Belum ada data perhimpunan untuk desa ini.</p>`;
+      }
+      return `<tr><td>${i+1}</td><td class="ph-name"><strong>${esc(d.nama_desa)}</strong>${d.alamat?`<br><span class="muted">${esc(d.alamat)}</span>`:''}</td><td>${esc(d.kecamatan)}</td><td>${esc(d.kabupaten)}</td><td>${esc(d.nama_ketua)}</td><td>${esc(d.no_hp)}</td><td>${esc(d.nama_kades)}</td><td class="no-print"><button type="button" class="secondary ud-toggle-detail" data-ud-expand="${esc(d.id)}">${expanded?'▼ Tutup':'＋ Rincian'} <small>(${ph.length})</small></button></td>${admin()?`<td class="no-print ph-actions"><button type="button" class="secondary" data-ud="edit:desa:${esc(d.id)}">Edit</button> <button type="button" class="danger" data-ud="del:desa:${esc(d.id)}">Hapus</button></td>`:''}</tr>${expanded?`<tr class="ud-detail-row"><td colspan="${admin()?9:8}">${detail}</td></tr>`:''}`;
+    }).join('');
+    content = `<div class="scroll"><table class="ph-table"><thead><tr><th>No</th><th>Desa/Kelurahan</th><th>Kecamatan</th><th>Kabupaten</th><th>Ketua UPZ</th><th>Nomor Hp.</th><th>Kepala Desa / Lurah</th><th class="no-print">Perhimpunan</th>${admin()?'<th class="no-print">Aksi</th>':''}</tr></thead><tbody>${mainRows}</tbody></table></div>`;
+  }
+  return `<section class="panel ud-panel">${udTabs()}<div class="ph-heading"><p class="crumb">UPZ DESA / Data UPZ Desa</p><h1>Data UPZ Desa</h1><p class="muted">Identitas UPZ desa/kelurahan${admin()?'.':' (hanya admin yang dapat mengubah).'} Klik rincian untuk melihat data perhimpunan per tahun.</p></div>`+
     `${admin()?'<div class="toolbar no-print"><span class="ph-tools"><button type="button" data-ud="add:desa">Tambah UPZ Desa</button></span></div>':''}${content}</section>`;
 }
 
@@ -246,6 +261,8 @@ function udEditPh(record, kind='ph') {
 }
 
 document.getElementById('page').addEventListener('click',event=>{
+  const exp = event.target.closest('[data-ud-expand]');
+  if(exp){const id=exp.dataset.udExpand;UD.expandedDesa[id]=!UD.expandedDesa[id];render();return;}
   const button = event.target.closest('[data-ud]');
   if(!button||!admin()) return;
   const [action,kind,id] = button.dataset.ud.split(':');
