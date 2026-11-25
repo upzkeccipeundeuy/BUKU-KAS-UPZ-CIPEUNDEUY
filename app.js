@@ -645,6 +645,8 @@ async function savePh(kind, record, body) {
 }
 
 async function deletePh(kind,record) {
+  const K=PH_KINDS[kind];
+  if(!K) { toast('Jenis data tidak dikenal.','error'); return; }
   if(!admin()) return;
   if(!await confirmDialog('Hapus data '+record.nama_upz+'?','Data tahun '+record.tahun+' akan dihapus dan tidak dapat dikembalikan.')) return;
   try {
