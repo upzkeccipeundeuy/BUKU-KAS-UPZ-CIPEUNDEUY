@@ -65,6 +65,7 @@ let rekapOpen = false;
 ICON['Form C2A'] = ICON['Form C2B'] = ICON['Rekap Laporan'];
 ICON['UPZ DESA'] = ICON['Data UPZ Desa'] = '<path d="M3 11.5 12 4l9 7.5"/><path d="M5.5 10v9.5h13V10"/><path d="M9 19.5v-5h6v5"/>';
 ICON['Perhimpunan Desa'] = ICON.Perhimpunan;
+ICON['Pendistribusian Desa'] = ICON.Pendistribusian;
 
 /* ---------- Perhimpunan (pengumpulan per UPZ desa/kelurahan) ---------- */
 let phCamat = '', phReportDate = '';
@@ -539,7 +540,7 @@ function render() {
     if(name==='UPZ DESA') {
       const inUd = udGroup.includes(screen);
       return '<button type="button" id="udParent" class="nav-parent'+(inUd?' in-group active':'')+(udOpen?' open':'')+'" '+(inUd?'aria-current="page" ':'')+'aria-expanded="'+udOpen+'" aria-controls="udSub"><span class="nav-icon" aria-hidden="true">'+svgIcon('UPZ DESA')+'</span><span class="nav-label">UPZ DESA</span><span class="nav-chevron" aria-hidden="true"></span></button>'+
-        '<div class="nav-sub'+(udOpen?' show':'')+'" id="udSub">'+navButton('Data UPZ Desa','Data UPZ Desa','Data UPZ Desa')+navButton('Perhimpunan Desa','Perhimpunan','Perhimpunan Desa')+'</div>';
+        '<div class="nav-sub'+(udOpen?' show':'')+'" id="udSub">'+navButton('Data UPZ Desa','Data UPZ Desa','Data UPZ Desa')+navButton('Perhimpunan Desa','Perhimpunan','Perhimpunan Desa')+navButton('Pendistribusian Desa','Pendistribusian','Pendistribusian Desa')+'</div>';
     }
     if(name==='Rekap Laporan') {
       const inRekap = rekapGroup.includes(screen);
@@ -574,7 +575,9 @@ function render() {
   } else if(screen==='Data UPZ Desa') {
     content = udDesaPage();
   } else if(screen==='Perhimpunan Desa') {
-    content = udPhPage();
+    content = udPhPage('ph');
+  } else if(screen==='Pendistribusian Desa') {
+    content = udPhPage('pd');
   } else if(screen==='Form C2A') {
     content = rekapPage();
   } else if(screen==='Form C2B') {
