@@ -57,12 +57,14 @@ const ICON = {
   Keluar:'<path d="M10 4.5H5.5A1.5 1.5 0 0 0 4 6v12a1.5 1.5 0 0 0 1.5 1.5H10"/><path d="M20 12H10M16.5 8.5 20 12l-3.5 3.5"/>'
 };
 const svgIcon = n => '<svg class="ico" viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">'+(ICON[n]||'')+'</svg>';
-const items = [['Dashboard'],['Profil'],['Perhimpunan'],['Pendistribusian'],['Rekap Laporan'],['Pemasukan'],['Pengeluaran'],['BKU'],['Cetak Laporan'],['Login']];
+const items = [['Dashboard'],['Profil'],['UPZ DESA'],['Perhimpunan'],['Pendistribusian'],['Rekap Laporan'],['Pemasukan'],['Pengeluaran'],['BKU'],['Cetak Laporan'],['Login']];
 const bkuGroup = ['BKU','Pemasukan','Pengeluaran','Cetak Laporan'];
 let bkuOpen = false;
 const rekapGroup = ['Form C2A','Form C2B'];
 let rekapOpen = false;
 ICON['Form C2A'] = ICON['Form C2B'] = ICON['Rekap Laporan'];
+ICON['UPZ DESA'] = ICON['Data UPZ Desa'] = '<path d="M3 11.5 12 4l9 7.5"/><path d="M5.5 10v9.5h13V10"/><path d="M9 19.5v-5h6v5"/>';
+ICON['Perhimpunan Desa'] = ICON.Perhimpunan;
 
 /* ---------- Perhimpunan (pengumpulan per UPZ desa/kelurahan) ---------- */
 let phCamat = '', phReportDate = '';
@@ -165,8 +167,10 @@ function go(name) {
   loadPrivateContacts();
   if(bkuGroup.includes(name)) bkuOpen=true;
   if(rekapGroup.includes(name)) rekapOpen=true;
+  if(udGroup.includes(name)) udOpen=true;
   if(name==='Profil'||name==='Cetak Laporan') loadProfile();
   else if(PH_KINDS[name]) loadPh(name);
+  else if(udGroup.includes(name)) loadUd();
   else if(rekapGroup.includes(name)) {loadPh('Pendistribusian');loadPh('Perhimpunan');loadRekapPct();}
   else render();
 }
@@ -532,6 +536,12 @@ function render() {
   const inBku = bkuGroup.includes(screen);
   $('nav').innerHTML = items.map(([name])=>{
     if(name==='Pemasukan'||name==='Pengeluaran'||name==='Cetak Laporan') return '';
+    if(name==='UPZ DESA') {
+      if(!admin()) return '';
+      const inUd = udGroup.includes(screen);
+      return '<button type="button" id="udParent" class="nav-parent'+(inUd?' in-group active':'')+(udOpen?' open':'')+'" '+(inUd?'aria-current="page" ':'')+'aria-expanded="'+udOpen+'" aria-controls="udSub"><span class="nav-icon" aria-hidden="true">'+svgIcon('UPZ DESA')+'</span><span class="nav-label">UPZ DESA</span><span class="nav-chevron" aria-hidden="true"></span></button>'+
+        '<div class="nav-sub'+(udOpen?' show':'')+'" id="udSub">'+navButton('Data UPZ Desa','Data UPZ Desa','Data UPZ Desa')+navButton('Perhimpunan Desa','Perhimpunan','Perhimpunan Desa')+'</div>';
+    }
     if(name==='Rekap Laporan') {
       const inRekap = rekapGroup.includes(screen);
       return '<button type="button" id="rekapParent" class="nav-parent'+(inRekap?' in-group active':'')+(rekapOpen?' open':'')+'" '+(inRekap?'aria-current="page" ':'')+'aria-expanded="'+rekapOpen+'" aria-controls="rekapSub"><span class="nav-icon" aria-hidden="true">'+svgIcon('Rekap Laporan')+'</span><span class="nav-label">Rekap Laporan</span><span class="nav-chevron" aria-hidden="true"></span></button>'+
@@ -562,6 +572,10 @@ function render() {
     content = '<div class="login-shell"><div class="login-side"><img src="logo-baznas.png" alt="" width="72" height="72"><h2>BKU UPZ Cipeundeuy</h2><p>Sistem informasi buku kas umum yang transparan dan akuntabel.</p><blockquote>“Ambillah zakat dari sebagian harta mereka…”<small>QS. At-Taubah: 103</small></blockquote></div><section class="panel login"><h1>Login Admin</h1><p class="muted">Gunakan akun yang terdaftar di Supabase Auth.</p><form id="login"><label>Email<input type="email" name="email" autocomplete="username" required></label><label>Kata sandi<input type="password" name="password" autocomplete="current-password" required></label><div id="loginError" role="alert"></div><button>Masuk</button><button type="button" class="secondary" id="demo">Coba Admin Demo</button></form></section></div>';
   } else if(PH_KINDS[screen]) {
     content = phPage(screen);
+  } else if(screen==='Data UPZ Desa') {
+    content = udDesaPage();
+  } else if(screen==='Perhimpunan Desa') {
+    content = udPhPage();
   } else if(screen==='Form C2A') {
     content = rekapPage();
   } else if(screen==='Form C2B') {
@@ -605,6 +619,7 @@ function render() {
   document.querySelectorAll('[data-goto]').forEach(b=>b.addEventListener('click',()=>go(b.dataset.goto)));
   if(screen==='Cetak Laporan') bindReportFilters();
   if(screen==='Profil') bindProfile();
+  if(udGroup.includes(screen)) bindUd();
   if(screen==='Form C2A') bindRekap();
   if(screen==='Form C2B') bindRekapC2B();
   $('login')?.addEventListener('submit',login);
@@ -774,6 +789,18 @@ document.addEventListener('keydown',event=>{
   if(event.key==='Escape') setNavigationOpen(false);
 });
 $('nav').addEventListener('click',event=>{
+  const udParent=event.target.closest('#udParent');
+  if(udParent) {
+    if(window.matchMedia('(max-width:900px)').matches) {
+      if(!udGroup.includes(screen)) go('Data UPZ Desa');
+      return;
+    }
+    udOpen=!udOpen;
+    udParent.classList.toggle('open',udOpen);
+    udParent.setAttribute('aria-expanded',String(udOpen));
+    $('udSub')?.classList.toggle('show',udOpen);
+    return;
+  }
   const rekapParent=event.target.closest('#rekapParent');
   if(rekapParent) {
     if(window.matchMedia('(max-width:900px)').matches) {

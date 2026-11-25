@@ -37,3 +37,7 @@ Catatan: data transaksi tidak dimigrasikan atau diubah. Grafik memakai ringkasan
 - Komponen baru: toast, dialog konfirmasi hapus, skeleton pemuatan, keadaan kosong, halaman login dua kolom.
 - Perbaikan bug: kutipan di hero tidak lagi terkena gaya sidebar.
 - `style (1).css` dihapus (tidak dipakai).
+
+## Menu UPZ DESA (baru)
+- Menu **UPZ DESA** (khusus admin) dengan sub menu **Data UPZ Desa** (identitas: desa/kelurahan, kecamatan, kabupaten, ketua UPZ, no. Hp, kepala desa/lurah) dan **Perhimpunan** (data per UPZ DKM/RT/RW + pratinjau dan cetak **Form A1 Desa dan Kelurahan**).
+- Berkas baru: `upzdesa.js`, `setup-upz-desa-supabase.sql` (jalankan sekali di Supabase SQL Editor). Perubahan kecil di `index.html`, `app.js`, `style.css`.
