@@ -57,12 +57,15 @@ const ICON = {
   Keluar:'<path d="M10 4.5H5.5A1.5 1.5 0 0 0 4 6v12a1.5 1.5 0 0 0 1.5 1.5H10"/><path d="M20 12H10M16.5 8.5 20 12l-3.5 3.5"/>'
 };
 const svgIcon = n => '<svg class="ico" viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">'+(ICON[n]||'')+'</svg>';
-const items = [['Dashboard'],['Profil'],['UPZ DESA'],['Perhimpunan'],['Pendistribusian'],['Rekap Laporan'],['Pemasukan'],['Pengeluaran'],['BKU'],['Cetak Laporan'],['Login']];
+const items = [['Dashboard'],['Profil'],['UPZ DESA'],['UPZ KEC'],['Pemasukan'],['Pengeluaran'],['BKU'],['Cetak Laporan'],['Login']];
 const bkuGroup = ['BKU','Pemasukan','Pengeluaran','Cetak Laporan'];
 let bkuOpen = false;
 const rekapGroup = ['Form C2A','Form C2B'];
 let rekapOpen = false;
+const upzkecGroup = ['Perhimpunan','Pendistribusian','Form C2A','Form C2B'];
+let upzkecOpen = false;
 ICON['Form C2A'] = ICON['Form C2B'] = ICON['Rekap Laporan'];
+ICON['UPZ KEC'] = '<path d="M4 5.5h16v13H4z"/><path d="M8 9h8M8 12.5h8M8 16h4"/>';
 ICON['UPZ DESA'] = ICON['Data UPZ Desa'] = '<path d="M3 11.5 12 4l9 7.5"/><path d="M5.5 10v9.5h13V10"/><path d="M9 19.5v-5h6v5"/>';
 ICON['Perhimpunan Desa'] = ICON.Perhimpunan;
 ICON['Pendistribusian Desa'] = ICON.Pendistribusian;
@@ -169,6 +172,7 @@ function go(name) {
   loadPrivateContacts();
   if(bkuGroup.includes(name)) bkuOpen=true;
   if(rekapGroup.includes(name)) rekapOpen=true;
+  if(upzkecGroup.includes(name)) upzkecOpen=true;
   if(udGroup.includes(name)) udOpen=true;
   if(name==='Profil'||name==='Cetak Laporan') loadProfile();
   else if(PH_KINDS[name]) loadPh(name);
@@ -712,10 +716,11 @@ function render() {
       return '<button type="button" id="udParent" class="nav-parent'+(inUd?' in-group active':'')+(udOpen?' open':'')+'" '+(inUd?'aria-current="page" ':'')+'aria-expanded="'+udOpen+'" aria-controls="udSub"><span class="nav-icon" aria-hidden="true">'+svgIcon('UPZ DESA')+'</span><span class="nav-label">UPZ DESA</span><span class="nav-chevron" aria-hidden="true"></span></button>'+
         '<div class="nav-sub'+(udOpen?' show':'')+'" id="udSub">'+navButton('Data UPZ Desa','Data UPZ Desa','Data UPZ Desa')+navButton('Perhimpunan Desa','Perhimpunan','Perhimpunan Desa')+navButton('Pendistribusian Desa','Pendistribusian','Pendistribusian Desa')+navButton('Rekap Laporan Desa','Rekap Laporan','Rekap Laporan Desa')+'</div>';
     }
-    if(name==='Rekap Laporan') {
-      const inRekap = rekapGroup.includes(screen);
-      return '<button type="button" id="rekapParent" class="nav-parent'+(inRekap?' in-group active':'')+(rekapOpen?' open':'')+'" '+(inRekap?'aria-current="page" ':'')+'aria-expanded="'+rekapOpen+'" aria-controls="rekapSub"><span class="nav-icon" aria-hidden="true">'+svgIcon('Rekap Laporan')+'</span><span class="nav-label">Rekap Laporan</span><span class="nav-chevron" aria-hidden="true"></span></button>'+
-        '<div class="nav-sub'+(rekapOpen?' show':'')+'" id="rekapSub">'+navButton('Form C2A','Form C2A','Form C2A')+navButton('Form C2B','Form C2B','Form C2B')+'</div>';
+    if(name==='UPZ KEC') {
+      const inUpzKec = upzkecGroup.includes(screen);
+      const rekapActive = rekapGroup.includes(screen);
+      return '<button type="button" id="upzkecParent" class="nav-parent'+(inUpzKec?' in-group active':'')+(upzkecOpen?' open':'')+'" '+(inUpzKec?'aria-current="page" ':'')+'aria-expanded="'+upzkecOpen+'" aria-controls="upzkecSub"><span class="nav-icon" aria-hidden="true">'+svgIcon('UPZ KEC')+'</span><span class="nav-label">UPZ KEC</span><span class="nav-chevron" aria-hidden="true"></span></button>'+
+        '<div class="nav-sub'+(upzkecOpen?' show':'')+'" id="upzkecSub">'+navButton('Perhimpunan','Perhimpunan','Perhimpunan')+navButton('Pendistribusian','Pendistribusian','Pendistribusian')+'<button type="button" data-page="Form C2A" class="'+(rekapActive?'active':'')+'" '+(rekapActive?'aria-current="page"':'')+'><span class="nav-icon" aria-hidden="true">'+svgIcon('Rekap Laporan')+'</span><span class="nav-label">Rekap Laporan</span></button></div>';
     }
     if(name==='BKU') {
       return '<button type="button" id="bkuParent" class="nav-parent'+(inBku?' in-group active':'')+(bkuOpen?' open':'')+'" '+(inBku?'aria-current="page" ':'')+'aria-expanded="'+bkuOpen+'" aria-controls="bkuSub"><span class="nav-icon" aria-hidden="true">'+svgIcon('BKU')+'</span><span class="nav-label">BKU</span><span class="nav-chevron" aria-hidden="true"></span></button>'+
@@ -960,6 +965,14 @@ document.addEventListener('keydown',event=>{
   if(event.key==='Escape') setNavigationOpen(false);
 });
 $('nav').addEventListener('click',event=>{
+  const upzkecParent=event.target.closest('#upzkecParent');
+  if(upzkecParent) {
+    upzkecOpen=!upzkecOpen;
+    upzkecParent.classList.toggle('open',upzkecOpen);
+    upzkecParent.setAttribute('aria-expanded',String(upzkecOpen));
+    $('upzkecSub')?.classList.toggle('show',upzkecOpen);
+    return;
+  }
   const udParent=event.target.closest('#udParent');
   if(udParent) {
     if(window.matchMedia('(max-width:900px)').matches) {
