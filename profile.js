@@ -7,7 +7,8 @@ const defaultProfile = {
 };
 const profileEndpoint = '/rest/v1/profil_lembaga_bku?id=eq.1&select=identitas,pengurus';
 const profileFields = [
-  ['nama','Nama lembaga',150], ['deskripsi','Profil singkat',2000,'textarea'], ['misi','Visi dan misi singkat',1000,'textarea'],
+  ['nama','Nama lembaga',150], ['deskripsi','Profil singkat',2000,'textarea'], ['visi','Visi',500,'textarea','Contoh: Menjadi lembaga pengelola zakat yang amanah, transparan, dan profesional.'],
+  ['misi','Misi (satu poin per baris)',1500,'textarea','Tulis satu misi di tiap baris, tanpa nomor.\nContoh:\nOptimalisasi pengumpulan zakat\nPendistribusian tepat sasaran'],
   ['alamat','Alamat',300], ['wilayah','Wilayah kerja',200], ['telepon','Nomor telepon lembaga',40,'tel'],
   ['whatsapp','Nomor WhatsApp',40,'tel'], ['email','Email lembaga',150,'email'], ['jam_layanan','Jam layanan',200],
   ['peta','Tautan peta (opsional, diawali https://)',300,'url'],
@@ -17,6 +18,18 @@ const profileFields = [
 let privateContacts = {}, privateKey = '';
 let profile = defaultProfile, publicProfile = defaultProfile, demoProfile = defaultProfile, profileState = '', profileRequest = 0;
 
+/* Visi dan misi disimpan terpisah (identitas.visi & identitas.misi). Data lama yang masih
+   tergabung dalam satu kolom "misi" dipecah otomatis. */
+function profileMisiList(text) {
+  return String(text||'').replace(/\r/g,'').split('\n')
+    .map(v=>v.replace(/^\s*(?:\d+\s*[.)]|[-•*])\s*/,'').replace(/^[\s"“”'‘’]+|[\s"“”'‘’]+$/g,'').trim()).filter(Boolean);
+}
+function profileVisiMisi(info) {
+  info = info || {};
+  if(typeof info.visi === 'string') return {visi:info.visi.trim(), misi:profileMisiList(info.misi)};
+  const parsed = parseVisiMisi(info.misi);
+  return {visi:parsed.visi.join(' '), misi:parsed.misi};
+}
 function profileOfficer(role) {
   return (profile.pengurus || []).find(entry=>entry.jabatan?.trim().toLowerCase().startsWith(role))?.nama || '';
 }
@@ -117,17 +130,11 @@ function profilePage() {
     (showPhone?'<td>'+esc(privateContacts[entry.id] || '—')+'</td>':'')+'</tr>').join('');
   const legal = [info.nomor_sk?'SK No. '+esc(info.nomor_sk):'',info.periode?'Periode '+esc(info.periode):''].filter(Boolean).join(' · ');
   const visionMission = (() => {
-    const raw = String(info.misi || '').trim();
-    if(!raw) return '';
-    const cleaned = raw.replace(/\r/g,'').replace(/^\s*["“”']|["“”']\s*$/g,'');
-    const match = cleaned.match(/(?:^|\n)\s*visi\s*[:：]?\s*([\s\S]*?)(?:\n\s*misi\s*[:：]?\s*([\s\S]*))?$/i);
-    if(match) {
-      const vision = match[1].trim(); const mission = (match[2] || '').trim();
-      return '<div class="institution-vm-grid">'+
-        (vision?'<section class="institution-vm-card vision-card"><h4><span aria-hidden="true">◎</span> Visi</h4><p>'+esc(vision).replace(/\n/g,'<br>')+'</p></section>':'')+
-        (mission?'<section class="institution-vm-card mission-card"><h4><span aria-hidden="true">✧</span> Misi</h4><p>'+esc(mission).replace(/\n/g,'<br>')+'</p></section>':'')+'</div>';
-    }
-    return '<div class="institution-vm-grid"><section class="institution-vm-card vision-card"><h4>Visi &amp; Misi</h4><p>'+esc(cleaned).replace(/\n/g,'<br>')+'</p></section></div>';
+    const vm = profileVisiMisi(info);
+    if(!vm.visi && !vm.misi.length) return '';
+    return '<div class="institution-vm-grid">'+
+      (vm.visi?'<section class="institution-vm-card vision-card"><h4><span aria-hidden="true">◎</span> Visi</h4><p>'+esc(vm.visi).replace(/\n/g,'<br>')+'</p></section>':'')+
+      (vm.misi.length?'<section class="institution-vm-card mission-card"><h4><span aria-hidden="true">✧</span> Misi</h4><ol class="vm-list">'+vm.misi.map(m=>'<li>'+esc(m)+'</li>').join('')+'</ol></section>':'')+'</div>';
   })();
   const rekening = info.rek_nomor ? '<section class="panel"><div class="toolbar"><h2>Rekening Penyaluran Zakat</h2></div><dl class="profile-facts rek-facts">'+
     fact('Bank',esc(info.rek_bank))+'<div><dt>Nomor rekening</dt><dd><span class="rek-number" id="rekNumber">'+esc(info.rek_nomor)+'</span> <button type="button" class="secondary copy-btn" id="copyRek">Salin</button></dd></div>'+
@@ -164,13 +171,14 @@ function bindProfile() {
 }
 
 function editInstitution() {
-  const info = profile.identitas;
-  const control = ([key,label,limit,kind]) => '<label>'+label+(kind==='textarea'?
-    '<textarea name="'+key+'" maxlength="'+limit+'" rows="3">'+esc(info[key] || '')+'</textarea>':
+  const vm = profileVisiMisi(profile.identitas);
+  const info = {...profile.identitas, visi:vm.visi, misi:vm.misi.join('\n')};
+  const control = ([key,label,limit,kind,hint]) => '<label>'+label+(kind==='textarea'?
+    '<textarea name="'+key+'" maxlength="'+limit+'" rows="'+(key==='misi'?6:3)+'"'+(hint?' placeholder="'+esc(hint)+'"':'')+'>'+esc(info[key] || '')+'</textarea>':
     '<input name="'+key+'" type="'+(kind||'text')+'" maxlength="'+limit+'" '+(key==='nama'?'required':'')+' value="'+esc(info[key] || '')+'">')+'</label>';
   const section = (title,keys) => '<fieldset class="form-section"><legend>'+title+'</legend>'+profileFields.filter(([key])=>keys.includes(key)).map(control).join('')+'</fieldset>';
   const form = profileDialog('Edit Identitas Lembaga',
-    section('Identitas',['nama','deskripsi','misi'])+
+    section('Identitas',['nama','deskripsi'])+section('Visi dan misi',['visi','misi'])+
     section('Alamat dan kontak',['alamat','wilayah','telepon','whatsapp','email','jam_layanan','peta'])+
     section('Legalitas kepengurusan',['nomor_sk','periode'])+
     section('Rekening penyaluran zakat',['rek_bank','rek_nomor','rek_nama'])+
@@ -182,6 +190,7 @@ function editInstitution() {
     const data = new FormData(form);
     saveProfile(form,async () => {
       const identitas = Object.fromEntries(profileFields.map(([key])=>[key,data.get(key).trim()]));
+      identitas.misi = profileMisiList(identitas.misi).join('\n');
       if(!identitas.nama) throw Error('Nama lembaga wajib diisi.');
       if(identitas.peta && !/^https:\/\/[^\s]+$/i.test(identitas.peta)) throw Error('Tautan peta harus diawali https://');
       const file = data.get('foto');

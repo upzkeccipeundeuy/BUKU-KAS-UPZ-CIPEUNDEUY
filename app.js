@@ -450,8 +450,8 @@ function dashboardPage() {
   /* Panel samping */
   const info=profile?.identitas||{};
   const nama=info.nama||'UPZ Kecamatan Cipeundeuy';
-  const parsed=parseVisiMisi(info.misi);
-  const visi=parsed.visi.join(' ')||'Mewujudkan UPZ yang profesional, amanah dan terpercaya dalam pengelolaan zakat, infak dan sedekah untuk kesejahteraan umat.';
+  const parsed=profileVisiMisi(info);
+  const visi=parsed.visi||'Mewujudkan UPZ yang profesional, amanah dan terpercaya dalam pengelolaan zakat, infak dan sedekah untuk kesejahteraan umat.';
   const missions=parsed.misi.length?parsed.misi:['Mengoptimalkan penghimpunan zakat, infak dan sedekah.','Menyalurkan dana secara tepat sasaran dan amanah.','Meningkatkan pelayanan kepada masyarakat.','Membangun sinergi dengan berbagai pihak.'];
   const dl2=(label,value)=>'<div><dt>'+label+'</dt><dd>'+esc(value)+'</dd></div>';
   const side='<div class="db-side">'+

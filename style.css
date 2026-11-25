@@ -1302,3 +1302,7 @@ tr.xl-error td{background:#fff6f5}.xl-note{color:#a23c37;font-size:12.5px;white-
 
 @media(max-width:760px){.db-kpi-val{font-size:20px}}
 .db-head,.db-panel-head{height:auto;background:transparent;backdrop-filter:none;padding-left:0;padding-right:0}
+
+/* Daftar misi pada halaman Profil */
+.institution-vm-card .vm-list{margin:0;padding:14px 18px 16px 40px;display:grid;gap:6px;line-height:1.55;color:#1d3b30}
+.vm-list li::marker{font-weight:700;color:var(--green)}
