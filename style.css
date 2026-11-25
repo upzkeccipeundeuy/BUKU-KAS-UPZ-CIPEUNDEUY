@@ -1306,3 +1306,7 @@ tr.xl-error td{background:#fff6f5}.xl-note{color:#a23c37;font-size:12.5px;white-
 /* Daftar misi pada halaman Profil */
 .institution-vm-card .vm-list{margin:0;padding:14px 18px 16px 40px;display:grid;gap:6px;line-height:1.55;color:#1d3b30}
 .vm-list li::marker{font-weight:700;color:var(--green)}
+
+/* Impor Excel: pemilih tahun */
+.xl-yearbar{justify-content:flex-start;gap:14px;margin:6px 0 10px;padding:12px 14px;background:#f4f9f6;border:1px solid #dcebe2;border-radius:12px}
+.xl-yearbar .muted{font-size:13px;flex:1;min-width:200px}

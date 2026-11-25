@@ -85,14 +85,47 @@ function udExportPreview(kind) {
 /* ---------- TEMPLAT ---------- */
 function udDownloadTemplate(kind) {
   if(!xlReady()) return;
-  const T = UD_TXT[kind];
-  const ws = XLSX.utils.aoa_to_sheet([
-    XL_COLS.map(c=>c.label),
-    ['DKM AL-HUDA','DSN.III CIPEUNDEUY','001','001',800,29600000,0,2400000,0,0,0]
-  ]);
-  ws['!cols'] = [28,22,6,6,8,16,10,16,14,14,12].map(wch=>({wch}));
+  const T = UD_TXT[kind], isPh = kind==='ph';
+  const yr = Number(udCurrent(kind).year) || udYearNow;
+  const head = [...XL_COLS.map(c=>c.label),'Tahun'];
+  // RT/RW ditulis sebagai teks agar angka nol di depan (001) tidak hilang
+  const ex = [
+    ['(CONTOH) UPZ DKM Al-Ikhlas','Kp. Sawangan','001','001',800,29600000,120,2400000,1500000,850000,0,yr],
+    ['(CONTOH) UPZ DKM Nurul Huda','Kp. Cibogo','002','001',720,26000000,0,2200000,0,400000,150000,yr],
+    ['(CONTOH) UPZ RW 03','Kp. Pasirjati','','003',350,12500000,60,900000,0,0,0,yr]
+  ];
+  const ws = XLSX.utils.aoa_to_sheet([head,...ex]);
+  ws['!cols'] = [30,24,7,7,9,18,11,16,14,14,12,8].map(wch=>({wch}));
+  // format angka ribuan; teks untuk RT/RW
+  for(let r=1;r<=ex.length;r++) {
+    for(let c=0;c<head.length;c++) {
+      const cell = ws[XLSX.utils.encode_cell({r,c})]; if(!cell) continue;
+      if(c===2||c===3) {cell.t='s'; cell.z='@';}
+      else if(c>=4&&c<=10) cell.z = c===6 ? '#,##0.##' : '#,##0';
+      else if(c===11) cell.z='0';
+    }
+  }
+  ws['!autofilter'] = {ref:'A1:L1'};
+  const guide = [
+    ['PETUNJUK PENGISIAN — '+T.h1.toUpperCase()],
+    [''],
+    ['1','Isi data pada sheet “Data”. Baris pertama (judul kolom) jangan diubah, ditambah, atau dihapus.'],
+    ['2','Hapus 3 baris “(CONTOH)” sebelum impor. Baris yang namanya diawali “(CONTOH)” akan dilewati otomatis.'],
+    ['3','Kolom wajib: Nama UPZ DKM/RT/RW. Kolom lain boleh kosong (dianggap 0).'],
+    ['4','RT dan RW ditulis sebagai teks (mis. 001 atau 01). Angka nol di depan tidak mempengaruhi pencocokan data.'],
+    ['5','Nominal ditulis angka saja tanpa “Rp” (mis. 29600000). Format “29.600.000” juga dapat dibaca. Tidak boleh negatif.'],
+    ['6','Beras diisi dalam kilogram dan tidak dihitung ke Jumlah Rp. Kolom Jumlah (Rp) dihitung otomatis oleh aplikasi.'],
+    ['7','Kolom Tahun bersifat opsional. Jika diisi, Anda dapat memilih “Ikuti kolom Tahun di berkas” saat impor, sehingga satu berkas dapat memuat beberapa tahun. Jika dikosongkan, tahun dipilih pada dialog impor.'],
+    ['8','Data dengan nama, alamat, RT, RW, dan tahun yang sama dengan data yang sudah ada akan MEMPERBARUI data tersebut; selainnya ditambahkan sebagai data baru.'],
+    ['9','Pratinjau ditampilkan sebelum disimpan. Baris yang error dilewati. Maksimal 1.000 baris per impor, ukuran berkas maksimal 5 MB.'],
+    [''],
+    ['Jenis data',isPh?'Perhimpunan (pengumpulan) — Form A1':'Pendistribusian — Form B1']
+  ];
+  const wg = XLSX.utils.aoa_to_sheet(guide);
+  wg['!cols'] = [12,110].map(wch=>({wch}));
   const wb = XLSX.utils.book_new();
   XLSX.utils.book_append_sheet(wb,ws,'Data');
+  XLSX.utils.book_append_sheet(wb,wg,'Petunjuk');
   XLSX.writeFile(wb,'templat-'+T.noun+'.xlsx');
 }
 
@@ -108,6 +141,7 @@ function xlParseSheet(aoa) {
     if(col) map[col.key] = ci;
   });
   if(!('nama_upz' in map)) throw Error('Kolom “Nama UPZ DKM/RT/RW” tidak ditemukan.');
+  const yi = (aoa[hi]||[]).findIndex(c=>['tahun','tahun (opsional)'].includes(xlNorm(c)));
   const items = [];
   for(let i=hi+1;i<aoa.length;i++) {
     const row = aoa[i]||[];
@@ -115,6 +149,7 @@ function xlParseSheet(aoa) {
     const nama = String(get('nama_upz')??'').trim();
     if(!nama) continue;                          // baris kosong / baris total tanpa nama
     if(/^jumlah\b|^total\b/i.test(nama)) continue; // baris total dari berkas ekspor
+    if(/^\(?contoh\)?/i.test(nama)) continue;      // baris contoh dari templat
     const body = {nama_upz:nama.slice(0,120),alamat_kp:String(get('alamat_kp')??'').trim().slice(0,120)||null,rt:String(get('rt')??'').trim().slice(0,10)||null,rw:String(get('rw')??'').trim().slice(0,10)||null};
     const errors = [];
     for(const k of XL_NUM) {
@@ -123,17 +158,29 @@ function xlParseSheet(aoa) {
       if(p.n<0) {errors.push(XL_COLS.find(c=>c.key===k).label+' negatif');body[k]=0;continue;}
       body[k] = k==='jumlah_jiwa' ? Math.round(p.n) : p.n;
     }
-    items.push({line:i+1,body,errors});
+    let year = null;
+    if(yi>=0) {
+      const raw = String(row[yi]??'').trim();
+      if(raw) {
+        const n = Number(raw);
+        if(Number.isInteger(n) && n>=2000 && n<=2100) year = n; else errors.push('Tahun tidak valid');
+      }
+    }
+    items.push({line:i+1,body,year,errors,base:[...errors]});
   }
+  items.hasYear = yi>=0 && items.some(it=>it.year);
   return items;
 }
 
-function xlClassify(items, kind) {
-  const {desa,year,list} = udCurrent(kind);
-  const existing = new Map(list.map(r=>[xlKey(r),r]));
+/* sel = '__file' (ikuti kolom Tahun di berkas) atau tahun yang dipilih */
+function xlClassify(items, kind, sel) {
+  const {desa,year} = udCurrent(kind);
+  const existing = new Map(udRows(kind).filter(r=>String(r.upz_desa_id)===String(desa.id)).map(r=>[xlKey(r)+'|'+Number(r.tahun),r]));
   const seen = new Set();
   items.forEach(it=>{
-    const k = xlKey(it.body);
+    it.yr = sel==='__file' ? (it.year||Number(year)) : Number(sel);
+    it.errors = [...it.base];
+    const k = xlKey(it.body)+'|'+it.yr;
     it.record = existing.get(k)||null;
     if(seen.has(k)) it.errors.push('duplikat di berkas');
     seen.add(k);
@@ -142,38 +189,48 @@ function xlClassify(items, kind) {
   return {desa,year};
 }
 
-function udImportPreview(kind, fileName, items) {
+function udImportPreview(kind, fileName, items, sel) {
   const T = UD_TXT[kind];
-  const {desa,year} = xlClassify(items,kind);
+  const cur = udCurrent(kind);
+  if(!sel) sel = items.hasYear ? '__file' : cur.year;
+  const {desa} = xlClassify(items,kind,sel);
   const cnt = s => items.filter(i=>i.status===s).length;
   const nBaru = cnt('baru'), nUpd = cnt('update'), nErr = cnt('error');
   const label = {baru:'Baru',update:'Perbarui',error:'Error'};
-  const rows = items.map((it,i)=>'<tr class="xl-'+it.status+'"><td>'+(i+1)+'</td><td><span class="xl-badge xl-b-'+it.status+'">'+label[it.status]+'</span></td><td>'+esc(it.body.nama_upz)+'</td><td>'+esc(it.body.alamat_kp||'')+'</td><td>'+esc(it.body.rt||'')+'</td><td>'+esc(it.body.rw||'')+'</td>'+
+  const rows = items.map((it,i)=>'<tr class="xl-'+it.status+'"><td>'+(i+1)+'</td><td><span class="xl-badge xl-b-'+it.status+'">'+label[it.status]+'</span></td><td>'+it.yr+'</td><td>'+esc(it.body.nama_upz)+'</td><td>'+esc(it.body.alamat_kp||'')+'</td><td>'+esc(it.body.rt||'')+'</td><td>'+esc(it.body.rw||'')+'</td>'+
     XL_NUM.map(k=>'<td class="money">'+udN(it.body[k])+'</td>').join('')+'<td class="money ph-strong">'+udN(phJumlah(it.body))+'</td><td class="xl-note">'+esc(it.errors.join('; '))+'</td></tr>').join('');
   const good = items.filter(i=>i.status!=='error');
   const t = xlTotals(good.map(i=>i.body));
-  const d = xlOpenDialog(`<h2>Pratinjau Impor Excel</h2><p class="muted">Berkas <strong>${esc(fileName)}</strong> → ${esc(T.h1)} · <strong>${esc(desa.nama_desa)}</strong> · Tahun <strong>${esc(year)}</strong>.<br>`+
-    `<span class="xl-badge xl-b-baru">${nBaru} baru</span> <span class="xl-badge xl-b-update">${nUpd} diperbarui</span> <span class="xl-badge xl-b-error">${nErr} error</span> — baris error dilewati. Baris yang nama, alamat, RT, dan RW-nya sama dengan data yang ada akan memperbarui data tersebut.</p>`+
-    `<div class="scroll xl-scroll"><table class="ph-table"><thead><tr><th>#</th><th>Status</th>${XL_COLS.map(c=>'<th>'+esc(c.label)+'</th>').join('')}<th>Jumlah (Rp)</th><th>Catatan</th></tr></thead><tbody>${rows}</tbody>`+
-    `<tfoot><tr><td></td><td></td><td>JUMLAH (baris valid)</td><td colspan="3"></td>${XL_NUM.map(k=>'<td class="money">'+udN(t[k])+'</td>').join('')}<td class="money ph-strong">${udN(t.jumlah)}</td><td></td></tr></tfoot></table></div>`+
-    `<div id="udError" role="alert"></div><div class="toolbar"><button type="button" id="xlApply" ${good.length?'':'disabled'}>Impor ${good.length} baris</button><button type="button" class="secondary" id="xlCancel">Batal</button></div>`);
+  const yearsUsed = [...new Set(good.map(i=>i.yr))].sort();
+  const yearOpts = [...new Set([...udRows(kind).filter(r=>String(r.upz_desa_id)===String(desa.id)).map(r=>String(r.tahun)),
+    ...Array.from({length:6},(_,i)=>String(udYearNow+1-i)),String(cur.year)])].sort().reverse();
+  const optHtml = (items.hasYear?'<option value="__file" '+(sel==='__file'?'selected':'')+'>Ikuti kolom Tahun di berkas</option>':'')+
+    yearOpts.map(y=>'<option value="'+y+'" '+(String(sel)===y?'selected':'')+'>'+y+'</option>').join('');
+  const d = xlOpenDialog(`<h2>Pratinjau Impor Excel</h2><p class="muted">Berkas <strong>${esc(fileName)}</strong> → ${esc(T.h1)} · <strong>${esc(desa.nama_desa)}</strong>.</p>`+
+    `<div class="toolbar xl-yearbar"><label class="ph-year">Impor ke tahun <select id="xlYear">${optHtml}</select></label>`+
+    `<span class="muted">${items.hasYear?'Berkas memuat kolom Tahun; baris tanpa tahun memakai tahun '+esc(cur.year)+' bila “Ikuti kolom Tahun” dipilih.':'Tahun berlaku untuk semua baris di berkas.'}</span></div>`+
+    `<p class="muted"><span class="xl-badge xl-b-baru">${nBaru} baru</span> <span class="xl-badge xl-b-update">${nUpd} diperbarui</span> <span class="xl-badge xl-b-error">${nErr} error</span> — baris error dilewati. Baris yang nama, alamat, RT, RW, dan tahunnya sama dengan data yang ada akan memperbarui data tersebut.</p>`+
+    `<div class="scroll xl-scroll"><table class="ph-table"><thead><tr><th>#</th><th>Status</th><th>Tahun</th>${XL_COLS.map(c=>'<th>'+esc(c.label)+'</th>').join('')}<th>Jumlah (Rp)</th><th>Catatan</th></tr></thead><tbody>${rows}</tbody>`+
+    `<tfoot><tr><td></td><td></td><td></td><td>JUMLAH (baris valid)</td><td colspan="3"></td>${XL_NUM.map(k=>'<td class="money">'+udN(t[k])+'</td>').join('')}<td class="money ph-strong">${udN(t.jumlah)}</td><td></td></tr></tfoot></table></div>`+
+    `<div id="udError" role="alert"></div><div class="toolbar"><button type="button" id="xlApply" ${good.length?'':'disabled'}>Impor ${good.length} baris${yearsUsed.length?' ke tahun '+yearsUsed.join(', '):''}</button><button type="button" class="secondary" id="xlCancel">Batal</button></div>`);
+  $('xlYear').onchange = e => udImportPreview(kind,fileName,items,e.target.value);
   $('xlCancel').onclick = () => d.close();
   $('xlApply').onclick = async () => {
-    const btns = [$('xlApply'),$('xlCancel')]; btns.forEach(b=>b.disabled=true);
+    const btns = [$('xlApply'),$('xlCancel'),$('xlYear')]; btns.forEach(b=>b.disabled=true);
     let ok = 0;
     try {
       for(const it of good) {
         $('xlApply').textContent = 'Menyimpan '+(ok+1)+' / '+good.length+'…';
-        await udWrite(kind,it.record,{...it.body,upz_desa_id:desa.id,tahun:Number(year)});
+        await udWrite(kind,it.record,{...it.body,upz_desa_id:desa.id,tahun:it.yr});
         ok++;
       }
-      UD.year = String(year);
+      UD.year = String(yearsUsed.includes(Number(cur.year)) ? cur.year : yearsUsed.at(-1));
       d.close(); await loadUd();
-      toast(ok+' baris berhasil diimpor.');
+      toast(ok+' baris berhasil diimpor ke tahun '+yearsUsed.join(', ')+'.');
     } catch(e) {
       udShowError(e.message+(ok?' ('+ok+' baris sebelumnya sudah tersimpan.)':''));
       btns.forEach(b=>b.disabled=false); $('xlApply').textContent = 'Coba lagi';
-      if(ok) {UD.year=String(year); await loadUd().catch(()=>{});}
+      if(ok) {UD.year=String(good[0].yr); await loadUd().catch(()=>{});}
     }
   };
 }
