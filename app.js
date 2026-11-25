@@ -613,7 +613,7 @@ function phPage(kind) {
   else if(!list.length) content = emptyState('Belum ada data '+K.empty,'Belum ada data untuk tahun '+esc(year)+'.'+(canEdit?' Klik “Tambah UPZ desa” untuk mengisi.':''));
   else content = table+cards;
   const printForm = !S.loading&&!S.failure ? phPrintForm(kind,list,year,total,grand) : '';
-  return '<section class="panel ph-panel"><div class="ph-heading"><p class="crumb">'+kind+'</p><h1>'+K.heading+'</h1><p class="muted">'+K.sub+' · Tahun '+esc(year)+'</p></div>'+
+  return '<section class="panel ph-panel">'+kecTabs()+'<div class="ph-heading"><p class="crumb">'+kind+'</p><h1>'+K.heading+'</h1><p class="muted">'+K.sub+' · Tahun '+esc(year)+'</p></div>'+
     '<div class="toolbar no-print"><label class="ph-year">Tahun <select id="phYear">'+years.map(y=>'<option value="'+esc(y)+'" '+(y===year?'selected':'')+'>'+esc(y)+'</option>').join('')+'</select></label>'+
     '<label class="ph-year">Nama Camat <input id="phCamat" maxlength="100" placeholder="Isi sebelum cetak" value="'+esc(phCamat||profileOfficer('camat'))+'"></label>'+
     '<label class="ph-year">Tanggal laporan <input id="phReportDate" type="date" max="9999-12-31" value="'+esc(phReportDate||today())+'"></label>'+
@@ -696,6 +696,12 @@ async function deletePh(kind,record) {
     await loadPh(kind);
     toast('Data berhasil dihapus.');
   } catch(error) {toast('Data gagal dihapus. '+error.message,'error');}
+}
+
+function kecTabs() {
+  const cur=rekapGroup.includes(screen)?'Form C2A':screen;
+  return '<div class="bku-tabs no-print" role="tablist">'+[['Perhimpunan','Perhimpunan'],['Pendistribusian','Pendistribusian'],['Form C2A','Rekap Laporan']].map(([page,label])=>
+    '<button type="button" role="tab" data-goto="'+page+'" aria-selected="'+(cur===page)+'" class="'+(cur===page?'on':'')+'">'+label+'</button>').join('')+'</div>';
 }
 
 function bkuTabs() {
@@ -967,6 +973,10 @@ document.addEventListener('keydown',event=>{
 $('nav').addEventListener('click',event=>{
   const upzkecParent=event.target.closest('#upzkecParent');
   if(upzkecParent) {
+    if(window.matchMedia('(max-width:900px)').matches) {
+      if(!upzkecGroup.includes(screen)) go('Perhimpunan');
+      return;
+    }
     upzkecOpen=!upzkecOpen;
     upzkecParent.classList.toggle('open',upzkecOpen);
     upzkecParent.setAttribute('aria-expanded',String(upzkecOpen));

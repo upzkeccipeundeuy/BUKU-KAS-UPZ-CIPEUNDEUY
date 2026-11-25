@@ -203,7 +203,7 @@ function bindRekap() {
 
 /* ---------- Tab sub menu Rekap Laporan (tampil di HP; di desktop memakai sub menu sidebar) ---------- */
 function rekapTabs() {
-  return '<div class="bku-tabs no-print" role="tablist">'+[['Form C2A','Form C2A'],['Form C2B','Form C2B']].map(([page,label])=>
+  return (typeof kecTabs==='function'?kecTabs():'')+'<div class="bku-tabs no-print" role="tablist">'+[['Form C2A','Form C2A'],['Form C2B','Form C2B']].map(([page,label])=>
     '<button type="button" role="tab" data-goto="'+page+'" aria-selected="'+(screen===page)+'" class="'+(screen===page?'on':'')+'">'+label+'</button>').join('')+'</div>';
 }
 
