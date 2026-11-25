@@ -21,8 +21,8 @@ async function loadUd() {
   UD.loading = true; UD.failure = ''; render();
   try {
     if(simulated) {UD.desa=[...UD_DEMO.desa];UD.ph=[...UD_DEMO.ph];}
-    else if(admin()) {
-      const token = session.access_token;
+    else {
+      const token = session?.access_token;
       [UD.desa,UD.ph] = await Promise.all([
         api('/rest/v1/upz_desa?select=*&order=nama_desa.asc&limit=1000',{token}),
         api('/rest/v1/upz_desa_perhimpunan?select=*&order=tahun.desc,id.asc&limit=5000',{token})]);
@@ -88,11 +88,11 @@ function udDesaPage() {
   if(UD.loading) content = skeletonRows(4);
   else if(UD.failure) content = `<p class="empty" role="alert">Data UPZ Desa gagal dimuat. ${esc(UD.failure)}${udSqlHint()}</p>`;
   else if(!UD.desa.length) content = emptyState('Belum ada UPZ Desa','Klik “Tambah UPZ Desa” untuk mengisi identitas.');
-  else content = `<div class="scroll"><table class="ph-table"><thead><tr><th>No</th><th>Desa/Kelurahan</th><th>Kecamatan</th><th>Kabupaten</th><th>Ketua UPZ</th><th>Nomor Hp.</th><th>Kepala Desa / Lurah</th><th class="no-print">Aksi</th></tr></thead><tbody>`+
+  else content = `<div class="scroll"><table class="ph-table"><thead><tr><th>No</th><th>Desa/Kelurahan</th><th>Kecamatan</th><th>Kabupaten</th><th>Ketua UPZ</th><th>Nomor Hp.</th><th>Kepala Desa / Lurah</th>${admin()?'<th class="no-print">Aksi</th>':''}</tr></thead><tbody>`+
     UD.desa.map((d,i)=>`<tr><td>${i+1}</td><td class="ph-name"><strong>${esc(d.nama_desa)}</strong>${d.alamat?`<br><span class="muted">${esc(d.alamat)}</span>`:''}</td><td>${esc(d.kecamatan)}</td><td>${esc(d.kabupaten)}</td><td>${esc(d.nama_ketua)}</td><td>${esc(d.no_hp)}</td><td>${esc(d.nama_kades)}</td>`+
-    `<td class="no-print ph-actions"><button type="button" class="secondary" data-ud="edit:desa:${esc(d.id)}">Edit</button> <button type="button" class="danger" data-ud="del:desa:${esc(d.id)}">Hapus</button></td></tr>`).join('')+`</tbody></table></div>`;
-  return `<section class="panel ud-panel"><div class="ph-heading"><p class="crumb">UPZ DESA / Data UPZ Desa</p><h1>Data UPZ Desa</h1><p class="muted">Identitas UPZ desa/kelurahan yang dikelola admin.</p></div>`+
-    `<div class="toolbar no-print"><span class="ph-tools"><button type="button" data-ud="add:desa">Tambah UPZ Desa</button></span></div>${content}</section>`;
+    (admin()?`<td class="no-print ph-actions"><button type="button" class="secondary" data-ud="edit:desa:${esc(d.id)}">Edit</button> <button type="button" class="danger" data-ud="del:desa:${esc(d.id)}">Hapus</button></td>`:'')+`</tr>`).join('')+`</tbody></table></div>`;
+  return `<section class="panel ud-panel"><div class="ph-heading"><p class="crumb">UPZ DESA / Data UPZ Desa</p><h1>Data UPZ Desa</h1><p class="muted">Identitas UPZ desa/kelurahan${admin()?'.':' (hanya admin yang dapat mengubah).'}</p></div>`+
+    `${admin()?'<div class="toolbar no-print"><span class="ph-tools"><button type="button" data-ud="add:desa">Tambah UPZ Desa</button></span></div>':''}${content}</section>`;
 }
 
 function udPhPage() {
@@ -100,13 +100,13 @@ function udPhPage() {
   let content;
   if(UD.loading) content = skeletonRows(6);
   else if(UD.failure) content = `<p class="empty" role="alert">Data perhimpunan gagal dimuat. ${esc(UD.failure)}${udSqlHint()}</p>`;
-  else if(!desa) content = emptyState('Belum ada UPZ Desa','Isi dulu identitas di menu UPZ DESA › Data UPZ Desa.');
+  else if(!desa) content = emptyState('Belum ada UPZ Desa',admin()?'Isi dulu identitas di menu UPZ DESA › Data UPZ Desa.':'Data UPZ Desa belum tersedia.');
   else {
     const rowsHtml = list.map((r,i)=>`<tr><td>${i+1}</td><td class="ph-name">${esc(r.nama_upz)}</td><td class="ph-left">${esc(r.alamat_kp)}</td><td>${esc(r.rt)}</td><td>${esc(r.rw)}</td><td class="money">${udN(r.jumlah_jiwa)}</td>`+
       ['zakat_fitrah','beras_kg','bis_ramadhan','zakat_mal','infak_umum','fidyah'].map(k=>`<td class="money">${udN(r[k])}</td>`).join('')+`<td class="money ph-strong">${udN(phJumlah(r))}</td>`+
-      `<td class="no-print ph-actions"><button type="button" class="secondary" data-ud="edit:ph:${esc(r.id)}">Edit</button> <button type="button" class="danger" data-ud="del:ph:${esc(r.id)}">Hapus</button></td></tr>`).join('');
-    const table = list.length ? `<div class="scroll no-print"><table class="ph-table"><thead><tr><th>No</th><th>Nama UPZ DKM/RT/RW</th><th>Kp/Dsn/Blok</th><th>RT</th><th>RW</th><th>Jiwa</th><th>Zakat Fitrah (Rp)</th><th>Beras (kg)</th><th>BIS Ramadhan</th><th>Zakat Mal</th><th>Infak Umum</th><th>Fidyah</th><th>Jumlah (Rp)</th><th>Aksi</th></tr></thead><tbody>${rowsHtml}</tbody>`+
-      `<tfoot><tr><td></td><td class="ph-name">JUMLAH RP.</td><td colspan="3"></td><td class="money">${udN(total.jumlah_jiwa)}</td>${['zakat_fitrah','beras_kg','bis_ramadhan','zakat_mal','infak_umum','fidyah'].map(k=>`<td class="money">${udN(total[k])}</td>`).join('')}<td class="money ph-strong">${udN(grand)}</td><td></td></tr></tfoot></table></div>`
+      (admin()?`<td class="no-print ph-actions"><button type="button" class="secondary" data-ud="edit:ph:${esc(r.id)}">Edit</button> <button type="button" class="danger" data-ud="del:ph:${esc(r.id)}">Hapus</button></td>`:'')+`</tr>`).join('');
+    const table = list.length ? `<div class="scroll no-print"><table class="ph-table"><thead><tr><th>No</th><th>Nama UPZ DKM/RT/RW</th><th>Kp/Dsn/Blok</th><th>RT</th><th>RW</th><th>Jiwa</th><th>Zakat Fitrah (Rp)</th><th>Beras (kg)</th><th>BIS Ramadhan</th><th>Zakat Mal</th><th>Infak Umum</th><th>Fidyah</th><th>Jumlah (Rp)</th>${admin()?'<th class="no-print">Aksi</th>':''}</tr></thead><tbody>${rowsHtml}</tbody>`+
+      `<tfoot><tr><td></td><td class="ph-name">JUMLAH RP.</td><td colspan="3"></td><td class="money">${udN(total.jumlah_jiwa)}</td>${['zakat_fitrah','beras_kg','bis_ramadhan','zakat_mal','infak_umum','fidyah'].map(k=>`<td class="money">${udN(total[k])}</td>`).join('')}<td class="money ph-strong">${udN(grand)}</td>${admin()?'<td class="no-print"></td>':''}</tr></tfoot></table></div>`
       : emptyState('Belum ada data perhimpunan','Belum ada data untuk '+esc(desa.nama_desa)+' tahun '+esc(year)+'. Klik “Tambah UPZ DKM/RT/RW”.');
     content = table+`<h2 class="ud-sub no-print">Pratinjau cetak Form A1</h2><div class="ud-paper">${udPrintForm(c)}</div>`;
   }
@@ -116,7 +116,7 @@ function udPhPage() {
     `<label class="ph-year">Tahun <select id="udYear">${years.map(y=>opt(y,y,y===year)).join('')}</select></label>`+
     `<label class="ph-year">Kepala Desa / Lurah <input id="udKades" maxlength="100" placeholder="Nama untuk tanda tangan" value="${esc(UD.kades!==null?UD.kades:(desa?.nama_kades||''))}"></label>`+
     `<label class="ph-year">Tanggal laporan <input id="udDate" type="date" max="9999-12-31" value="${esc(UD.date||today())}"></label>`+
-    `<span class="ph-tools"><button type="button" class="secondary" id="udPrint">Cetak Form A1</button><button type="button" data-ud="add:ph" ${desa?'':'disabled'}>Tambah UPZ DKM/RT/RW</button></span></div>${content}</section>`;
+    `<span class="ph-tools"><button type="button" class="secondary" id="udPrint">Cetak Form A1</button>${admin()?`<button type="button" data-ud="add:ph" ${desa?'':'disabled'}>Tambah UPZ DKM/RT/RW</button>`:''}</span></div>${content}</section>`;
 }
 
 function bindUd() {

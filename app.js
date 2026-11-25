@@ -537,7 +537,6 @@ function render() {
   $('nav').innerHTML = items.map(([name])=>{
     if(name==='Pemasukan'||name==='Pengeluaran'||name==='Cetak Laporan') return '';
     if(name==='UPZ DESA') {
-      if(!admin()) return '';
       const inUd = udGroup.includes(screen);
       return '<button type="button" id="udParent" class="nav-parent'+(inUd?' in-group active':'')+(udOpen?' open':'')+'" '+(inUd?'aria-current="page" ':'')+'aria-expanded="'+udOpen+'" aria-controls="udSub"><span class="nav-icon" aria-hidden="true">'+svgIcon('UPZ DESA')+'</span><span class="nav-label">UPZ DESA</span><span class="nav-chevron" aria-hidden="true"></span></button>'+
         '<div class="nav-sub'+(udOpen?' show':'')+'" id="udSub">'+navButton('Data UPZ Desa','Data UPZ Desa','Data UPZ Desa')+navButton('Perhimpunan Desa','Perhimpunan','Perhimpunan Desa')+'</div>';
