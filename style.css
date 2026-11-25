@@ -1310,3 +1310,77 @@ tr.xl-error td{background:#fff6f5}.xl-note{color:#a23c37;font-size:12.5px;white-
 /* Impor Excel: pemilih tahun */
 .xl-yearbar{justify-content:flex-start;gap:14px;margin:6px 0 10px;padding:12px 14px;background:#f4f9f6;border:1px solid #dcebe2;border-radius:12px}
 .xl-yearbar .muted{font-size:13px;flex:1;min-width:200px}
+
+
+/* ==========================================================
+   TAHAP 4 — Kepadatan tampilan laptop (layar 100% dengan skala Windows 125–150%)
+   Berlaku pada lebar 901–1536px; layar lebar & ponsel tidak berubah.
+   ========================================================== */
+.db-kpi-body{container-type:inline-size}
+.db-kpi-val{font-size:clamp(15px,8cqw,24px)}
+@media(max-width:1100px) and (min-width:761px){.db-kpis{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(min-width:1101px){.db-kpis{grid-template-columns:repeat(4,minmax(0,1fr))}}
+
+@media(min-width:901px) and (max-width:1536px){
+  body{font-size:14.5px;grid-template-columns:222px minmax(0,1fr)}
+  aside{padding:18px 12px 14px;gap:18px;min-height:560px}
+  aside#sidebar nav{gap:3px}
+  .brand{min-height:48px;padding:4px 8px;font-size:16.5px;gap:10px}
+  .brand small{font-size:10px;letter-spacing:.16em}
+  .brand .brand-logo,.brand #brandFallback{width:38px;height:38px}
+  nav button{min-height:40px;padding:8px 12px;font-size:14px;gap:10px;border-radius:10px}
+  nav button .nav-icon .ico{width:19px;height:19px}
+  aside#sidebar nav button .nav-label{font-size:14px;font-weight:600;letter-spacing:0;min-width:0}
+  aside#sidebar nav .nav-sub button .nav-label{font-size:13px}
+  .nav-chevron{margin-left:auto;flex:none}
+  .nav-sub button{font-size:13px;padding:7px 10px}
+  .nav-sub button .nav-icon .ico{width:16px;height:16px}
+  .foot{padding:14px 10px 4px;font-size:10.5px}.foot strong{font-size:14.5px}
+
+  header{height:58px;padding:0 26px;font-size:14.5px}
+  .pill{font-size:12px;padding:4px 10px}
+  .layout{padding:22px 26px 36px}
+
+  .db{gap:16px}
+  .db-eyebrow{font-size:11px}
+  .db-head h1{font-size:25px}
+  .db-sub{font-size:13px;margin-top:4px}
+  .db-updated,.db-year{font-size:12px}
+  .db-year select{padding:6px 28px 6px 10px;font-size:13px}
+  .db-kpis{gap:12px}
+  .db-kpi{padding:14px 14px;gap:10px;border-radius:14px}
+  .db-kpi-ico{width:36px;height:36px;border-radius:10px}.db-kpi-ico .ico{width:18px;height:18px}
+  .db-kpi-label{font-size:12px}.db-kpi small{font-size:11px}
+  .db-grid{grid-template-columns:minmax(0,1fr) 300px;gap:16px}
+  .db-main,.db-side{gap:16px}
+  .db-side{top:74px}
+  .db-panel{padding:16px 18px;border-radius:14px}
+  .db-panel-head{margin-bottom:12px}
+  .db-panel-head h2{font-size:15px}.db-panel-head p{font-size:12px}
+  .db-link{padding:5px 10px;font-size:12px}
+  .db-legend{font-size:11.5px}
+  .db-comp{grid-template-columns:96px minmax(0,1fr);padding:9px 0;gap:10px}
+  .db-comp-name{font-size:12.5px}.db-comp-line{grid-template-columns:minmax(0,1fr) 112px}.db-comp-line b{font-size:11.5px}
+  .db-track{height:7px}
+  .db-foot{font-size:11.5px;margin-top:10px;padding-top:10px}
+  .db-table{font-size:13px}.db-table th{font-size:10.5px;padding:6px 8px}
+  .db-table td{padding:8px 8px}.db-table td strong{font-size:13px}.db-table td small{font-size:11px}
+  .db-table .c-rank{width:36px}.db-table .c-share{width:140px}
+  .db-rank{width:24px;height:24px;font-size:11px}
+  .db-info-head{padding:14px 18px}.db-info-head img{width:40px;height:40px}.db-info-head h2{font-size:14.5px}
+  .db-info dl{padding:2px 18px 6px}.db-info dl>div{padding:9px 0}.db-info dd{font-size:13px}.db-info dt{font-size:10.5px}
+  .db-vm,.db-quick{padding:16px 18px}
+  .db-visi{font-size:13.5px;line-height:1.6}.db-vm li p{font-size:12.5px}
+  .db-quick button{padding:8px 10px;font-size:13px;margin-bottom:6px}
+  .db-quick button>span{width:26px;height:26px}
+
+  /* halaman lain: panel, tabel, tombol, form */
+  .panel{padding:18px 20px}
+  h1{font-size:clamp(24px,2.4vw,30px)}
+  h2{font-size:18px}
+  button{padding:8px 13px;font-size:13.5px}
+  input,select,textarea{font-size:13.5px;padding:8px 10px}
+  label{font-size:13px}
+  table{font-size:13px}th,td{padding:9px 10px}
+  .card{padding:16px}
+}
