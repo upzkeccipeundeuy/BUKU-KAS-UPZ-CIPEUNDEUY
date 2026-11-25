@@ -370,6 +370,105 @@ function dashboardVisiInfo() {
     '<div class="dash-info"><div class="dash-info-card"><div class="dash-info-head"><img src="logo-baznas.png" alt="" width="48" height="48"><div><small>Info UPZ</small><h2>'+esc(nama)+'</h2></div></div>'+
       '<dl>'+row('Wilayah',wilayah)+row('Alamat',alamat)+row('Ketua',ketua)+row('Periode',periode)+'</dl></div></div></section>';
 }
+
+/* ---------- Dashboard (tampilan profesional) ---------- */
+Object.assign(ICON,{
+  Rasio:'<path d="M4 19 19 4"/><circle cx="7.5" cy="7.5" r="2.5"/><circle cx="16.5" cy="16.5" r="2.5"/>',
+  Selisih:'<path d="M4 8h13M13.5 4.5 17 8l-3.5 3.5"/><path d="M20 16H7M10.5 12.5 7 16l3.5 3.5"/>',
+  Kalender:'<rect x="4" y="5.5" width="16" height="14.5" rx="2.5"/><path d="M8 3.5v4M16 3.5v4M4 10h16"/>',
+  Panah:'<path d="M5 12h14M13 6l6 6-6 6"/>'
+});
+function dashboardPage() {
+  const P=phState.Perhimpunan, D=phState.Pendistribusian;
+  const now=today().slice(0,4);
+  const years=[...new Set([...P.rows.map(r=>String(r.tahun)),...D.rows.map(r=>String(r.tahun)),now])].sort().reverse();
+  const year=years.includes(P.year)?P.year:(P.rows.length?String(P.rows[0].tahun):now);
+  P.year=D.year=year;
+  const busy=P.loading||D.loading, bad=!!(P.failure||D.failure);
+  const pl=P.rows.filter(r=>String(r.tahun)===year), dl=D.rows.filter(r=>String(r.tahun)===year);
+  const sum=(l,f)=>l.reduce((t,r)=>t+f(r),0);
+  const pTot=sum(pl,phJumlah), dTot=sum(dl,phJumlah);
+  const pJiwa=sum(pl,r=>Number(r.jumlah_jiwa||0)), dJiwa=sum(dl,r=>Number(r.jumlah_jiwa||0));
+  const ratio=pTot?Math.min(100,dTot/pTot*100):0;
+  const val=v=>busy?'<i class="sk db-sk"></i>':bad?'—':v;
+  const updated=new Intl.DateTimeFormat('id-ID',{day:'numeric',month:'long',year:'numeric'}).format(new Date());
+
+  const kpi=(cls,icon,label,value,note,extra='')=>'<article class="db-kpi '+cls+'"><span class="db-kpi-ico" aria-hidden="true">'+svgIcon(icon)+'</span>'+
+    '<div class="db-kpi-body"><span class="db-kpi-label">'+label+'</span><strong class="db-kpi-val">'+value+'</strong><small>'+note+'</small>'+extra+'</div></article>';
+  const kpis='<section class="db-kpis" aria-label="Ringkasan utama">'+
+    kpi('in','Perhimpunan','Total Pengumpulan',val(money(pTot)),val(angka.format(pJiwa)+' jiwa muzaki · '+pl.length+' UPZ'))+
+    kpi('out','Pendistribusian','Total Pendistribusian',val(money(dTot)),val(angka.format(dJiwa)+' jiwa mustahik · '+dl.length+' UPZ'))+
+    kpi('net','Selisih','Selisih Dana',val(money(pTot-dTot)),'Pengumpulan dikurangi pendistribusian')+
+    kpi('rate','Rasio','Rasio Penyaluran',val(angka.format(Math.round(ratio*10)/10)+'%'),'Pendistribusian terhadap pengumpulan',
+      '<div class="db-meter" role="img" aria-label="Rasio penyaluran '+Math.round(ratio)+' persen"><i style="width:'+(busy||bad?0:ratio)+'%"></i></div>')+
+    '</section>';
+
+  /* Komposisi per jenis dana */
+  const peak=Math.max(1,...PH_COMPONENTS.flatMap(([k])=>[sum(pl,r=>Number(r[k]||0)),sum(dl,r=>Number(r[k]||0))]));
+  const compRows=PH_COMPONENTS.map(([k,label])=>{
+    const a=sum(pl,r=>Number(r[k]||0)), b=sum(dl,r=>Number(r[k]||0));
+    return '<li class="db-comp"><span class="db-comp-name">'+label+'</span><div class="db-comp-bars">'+
+      '<div class="db-comp-line"><span class="db-track"><i class="in" style="width:'+(a/peak*100)+'%"></i></span><b>'+money(a)+'</b></div>'+
+      '<div class="db-comp-line"><span class="db-track"><i class="out" style="width:'+(b/peak*100)+'%"></i></span><b>'+money(b)+'</b></div></div></li>';
+  }).join('');
+  const berasP=sum(pl,r=>Number(r.beras_kg||0)), berasD=sum(dl,r=>Number(r.beras_kg||0));
+  let compBody;
+  if(busy) compBody=skeletonRows(4);
+  else if(bad) compBody=emptyState('Data gagal dimuat','Periksa koneksi internet Anda.');
+  else if(!pl.length&&!dl.length) compBody=emptyState('Belum ada data tahun '+esc(year),'Data muncul setelah Perhimpunan atau Pendistribusian diisi.');
+  else compBody='<ul class="db-comp-list">'+compRows+'</ul><p class="db-foot">Beras (tidak termasuk dalam jumlah Rp): '+angka.format(berasP)+' kg dikumpulkan · '+angka.format(berasD)+' kg disalurkan</p>';
+  const composition='<section class="db-panel"><div class="db-panel-head"><div><h2>Komposisi per Jenis Dana</h2><p>Perbandingan pengumpulan dan pendistribusian · Tahun '+esc(year)+'</p></div>'+
+    '<div class="db-legend"><span><i class="in"></i>Pengumpulan</span><span><i class="out"></i>Pendistribusian</span></div></div>'+compBody+'</section>';
+
+  /* Tabel peringkat desa */
+  const clean=v=>{const t=String(v??'').trim();return /^[.\-–—_\s]*$/.test(t)?'':t;};
+  const LIMIT=5;
+  const rankTable=(kind,list)=>{
+    const tone=kind==='Perhimpunan'?'in':'out';
+    const sorted=[...list].sort((x,y)=>phJumlah(y)-phJumlah(x)||String(x.nama_upz).localeCompare(String(y.nama_upz),'id'));
+    const total=sum(sorted,phJumlah), top=Math.max(1,...sorted.map(phJumlah));
+    const shown=phExpanded[kind]?sorted:sorted.slice(0,LIMIT);
+    const S=phState[kind];
+    let body;
+    if(S.loading) body=skeletonRows(4);
+    else if(S.failure) body=emptyState('Data '+kind.toLowerCase()+' gagal dimuat','Periksa koneksi internet Anda.');
+    else if(!sorted.length) body=emptyState('Belum ada data '+kind.toLowerCase(),'Belum ada data untuk tahun '+esc(year)+'.');
+    else body='<div class="db-table-wrap"><table class="db-table"><thead><tr><th class="c-rank">#</th><th>UPZ Desa/Kelurahan</th><th class="c-jiwa num">Jiwa</th><th class="num">Jumlah</th><th class="c-share">Porsi</th></tr></thead><tbody>'+
+      shown.map((r,i)=>{
+        const rt=clean(r.rt), rw=clean(r.rw);
+        const place=[clean(r.alamat_kp),(rt||rw)?'RT '+(rt||'-')+'/RW '+(rw||'-'):''].filter(Boolean).join(' · ');
+        const pct=total?Math.round(phJumlah(r)/total*100):0;
+        return '<tr><td class="c-rank"><span class="db-rank '+tone+'">'+(i+1)+'</span></td><td><strong>'+esc(r.nama_upz)+'</strong>'+(place?'<small>'+esc(place)+'</small>':'')+'</td>'+
+          '<td class="c-jiwa num">'+angka.format(Number(r.jumlah_jiwa||0))+'</td><td class="num"><b>'+money(phJumlah(r))+'</b></td>'+
+          '<td class="c-share"><span class="db-share"><span class="db-track"><i class="'+tone+'" style="width:'+(phJumlah(r)/top*100)+'%"></i></span><em>'+pct+'%</em></span></td></tr>';
+      }).join('')+'</tbody><tfoot><tr><td></td><td>Total ('+sorted.length+' UPZ)</td><td class="c-jiwa num">'+angka.format(sum(sorted,r=>Number(r.jumlah_jiwa||0)))+'</td><td class="num">'+money(total)+'</td><td class="c-share"></td></tr></tfoot></table></div>'+
+      (sorted.length>LIMIT?'<button type="button" class="db-more" data-more="'+kind+'">'+(phExpanded[kind]?'Tampilkan lebih sedikit':'Lihat semua ('+sorted.length+' desa/kelurahan)')+'</button>':'');
+    return '<section class="db-panel"><div class="db-panel-head"><div><h2><span class="db-dot '+tone+'"></span>'+kind+'</h2><p>'+(kind==='Perhimpunan'?'Peringkat pengumpulan':'Peringkat pendistribusian')+' per UPZ desa/kelurahan</p></div>'+
+      '<button type="button" class="db-link" data-goto="'+kind+'">Kelola '+svgIcon('Panah')+'</button></div>'+body+'</section>';
+  };
+
+  /* Panel samping */
+  const info=profile?.identitas||{};
+  const nama=info.nama||'UPZ Kecamatan Cipeundeuy';
+  const parsed=parseVisiMisi(info.misi);
+  const visi=parsed.visi.join(' ')||'Mewujudkan UPZ yang profesional, amanah dan terpercaya dalam pengelolaan zakat, infak dan sedekah untuk kesejahteraan umat.';
+  const missions=parsed.misi.length?parsed.misi:['Mengoptimalkan penghimpunan zakat, infak dan sedekah.','Menyalurkan dana secara tepat sasaran dan amanah.','Meningkatkan pelayanan kepada masyarakat.','Membangun sinergi dengan berbagai pihak.'];
+  const dl2=(label,value)=>'<div><dt>'+label+'</dt><dd>'+esc(value)+'</dd></div>';
+  const side='<div class="db-side">'+
+    '<section class="db-panel db-info"><div class="db-info-head"><img src="logo-baznas.png" alt="" width="48" height="48"><div><small>Profil Lembaga</small><h2>'+esc(nama)+'</h2></div></div>'+
+      '<dl>'+dl2('Wilayah',info.wilayah||'Kecamatan Cipeundeuy, Kabupaten Subang')+dl2('Alamat',info.alamat||'Alamat belum diatur pada menu Profil')+dl2('Ketua',profileOfficer('ketua')||'Belum diatur')+dl2('Periode',info.periode||'Belum diatur')+'</dl></section>'+
+    '<section class="db-panel db-vm"><h3><span aria-hidden="true">'+svgIcon('Profil')+'</span>Visi</h3><p class="db-visi">'+esc(visi)+'</p>'+
+      '<h3><span aria-hidden="true">'+svgIcon('Rekap Laporan')+'</span>Misi</h3><ol>'+missions.map((m,i)=>'<li><span aria-hidden="true">'+(i+1)+'</span><p>'+esc(m)+'</p></li>').join('')+'</ol></section>'+
+    '<section class="db-panel db-quick"><h3>Akses Cepat</h3>'+
+      [['Perhimpunan','Perhimpunan'],['Pendistribusian','Pendistribusian'],['BKU','Buku Kas Umum'],['Cetak Laporan','Cetak Laporan']].map(([pg,l])=>'<button type="button" data-goto="'+pg+'"><span aria-hidden="true">'+svgIcon(pg)+'</span>'+l+svgIcon('Panah')+'</button>').join('')+'</section>'+
+    '</div>';
+
+  return '<div class="db">'+
+    '<div class="db-head"><div><p class="db-eyebrow">Ringkasan</p><h1>Dashboard</h1><p class="db-sub">Pengumpulan dan pendistribusian ZIS · '+esc(nama)+'</p></div>'+
+    '<div class="db-tools"><span class="db-updated">'+svgIcon('Kalender')+'Diperbarui '+updated+'</span>'+
+    '<label class="db-year">Tahun<select id="dashPhYear">'+years.map(y=>'<option value="'+y+'" '+(y===year?'selected':'')+'>'+y+'</option>').join('')+'</select></label></div></div>'+
+    kpis+'<div class="db-grid"><div class="db-main">'+composition+rankTable('Perhimpunan',pl)+rankTable('Pendistribusian',dl)+'</div>'+side+'</div></div>';
+}
 function heroExtras() {
   const updated=new Intl.DateTimeFormat('id-ID',{day:'numeric',month:'long',year:'numeric'}).format(new Date());
   return '<div class="hero-actions"><button type="button" data-goto="Pemasukan">Lihat Pemasukan</button><button type="button" data-goto="Pengeluaran">Lihat Pengeluaran</button><button type="button" data-goto="Cetak Laporan">Cetak Laporan</button></div>'+
@@ -600,7 +699,7 @@ function render() {
   if(screen==='Dashboard') {
     phDashEnsure();
     const saldo = totals(summary)[2];
-    content = dashboardVisiInfo()+phDashboard();
+    content = dashboardPage();
   } else if(screen==='Profil') {
     content = profilePage();
   } else if(screen==='Login') {
