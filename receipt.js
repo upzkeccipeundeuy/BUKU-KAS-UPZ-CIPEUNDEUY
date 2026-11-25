@@ -57,7 +57,7 @@ async function buildReceipt(record, institution) {
   const value=receiptMoney(incoming?record.debet:record.kredit);
   const defaultName=!info.nama || info.nama===defaultProfile.identitas.nama;
   const name=defaultName?'UNIT PENGUMPUL ZAKAT (UPZ)\nKECAMATAN CIPEUNDEUY':info.nama.toUpperCase();
-  const officer=role=>institution.pengurus.find(p=>p.jabatan?.trim().toLowerCase().startsWith(role))?.nama;
+  const officer=role=>findOfficer(institution.pengurus,role)?.nama;
   const party=record.penerima || '—';
   const date=receiptDate.format(new Date(record.tanggal+'T00:00:00Z'));
   const canvas=document.createElement('canvas');

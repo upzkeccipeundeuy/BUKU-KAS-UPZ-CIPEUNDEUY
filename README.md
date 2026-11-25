@@ -79,3 +79,8 @@ Tabel rekap pengumpulan dan pendistribusian per jenis dana (Zakat Fitrah, BIS Ra
 - Susunan pengurus: jumlah baris bebas, dapat diurutkan (↑ ↓), dan dapat diisi jabatan **Camat**. Nama Camat otomatis terisi pada formulir cetak A2, B2, C2A, dan C2B (masih bisa diganti manual).
 - **Nomor HP pengurus bersifat privat**: disimpan di tabel `profil_pengurus_privat` yang hanya dapat dibaca admin. Jalankan `setup-profil-lanjutan-supabase.sql` sekali di Supabase SQL Editor. Form C2A dan C2B memakai HP Ketua saat admin yang mencetak; untuk publik dipakai nomor telepon lembaga.
 - Keterangan "Terakhir diperbarui" otomatis diisi setiap profil disimpan.
+
+## Susunan Pengurus (struktur baru)
+- Susunan pengurus kini dibagi menjadi **Penasehat** (Camat, Kepala KUA, Ketua MUI), **Pelaksana** (Ketua, Sekretaris, Bendahara UPZ), dan tiga **Bidang** (Pengumpulan; Pendistribusian dan Pendayagunaan; Administrasi dan Umum).
+- Tiap entri menyimpan kolom tambahan `bagian` di dalam JSON `pengurus` yang sudah ada — tidak perlu mengubah tabel Supabase. Data lama tanpa `bagian` ditempatkan otomatis (Camat/KUA/MUI → Penasehat, selainnya → Pelaksana).
+- Nama boleh dikosongkan; pencarian Ketua/Bendahara/Camat untuk formulir cetak tetap berjalan (Ketua MUI tidak akan tertukar dengan Ketua UPZ).

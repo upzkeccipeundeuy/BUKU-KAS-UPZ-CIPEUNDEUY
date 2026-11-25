@@ -30,12 +30,34 @@ function profileVisiMisi(info) {
   const parsed = parseVisiMisi(info.misi);
   return {visi:parsed.visi.join(' '), misi:parsed.misi};
 }
+/* Bagian susunan pengurus: Penasehat, Pelaksana, dan tiga Bidang. Setiap entri pengurus
+   menyimpan {id, bagian, jabatan, nama}. Data lama tanpa "bagian" ditempatkan otomatis. */
+const officerSections = [
+  {key:'penasehat', label:'Penasehat', numbered:true, roles:['Camat Cipeundeuy','Kepala KUA Cipeundeuy','Ketua MUI Cipeundeuy'], hint:['Camat Cipeundeuy','Kepala KUA Cipeundeuy','Ketua MUI Cipeundeuy']},
+  {key:'pelaksana', label:'Pelaksana', roles:['Ketua UPZ','Sekretaris UPZ','Bendahara UPZ'], hint:['Ketua UPZ','Wakil Ketua UPZ','Sekretaris UPZ','Bendahara UPZ']},
+  {key:'bidang1', label:'Bidang Pengumpulan', bidang:true, hint:['Ketua Bidang','Anggota']},
+  {key:'bidang2', label:'Bidang Pendistribusian dan Pendayagunaan', bidang:true, hint:['Ketua Bidang','Anggota']},
+  {key:'bidang3', label:'Bidang Administrasi dan Umum', bidang:true, hint:['Ketua Bidang','Anggota']}
+];
+function officerSectionKey(entry) {
+  if(officerSections.some(s=>s.key===entry.bagian)) return entry.bagian;
+  const role = String(entry.jabatan||'').trim().toLowerCase();
+  return /^(camat|kepala kua|kua|ketua mui|mui|penasehat|pembina)/.test(role) ? 'penasehat' : 'pelaksana';
+}
+function officersNormalized(list) {
+  return (list||[]).map(entry=>({...entry,bagian:officerSectionKey(entry)}));
+}
+function findOfficer(list, role) {
+  const items = officersNormalized(list).filter(item=>item.jabatan?.trim().toLowerCase().startsWith(role));
+  if(role==='camat') return items.find(item=>item.bagian==='penasehat') || items[0];
+  return items.find(item=>item.bagian==='pelaksana') || items.find(item=>item.bagian!=='penasehat');
+}
 function profileOfficer(role) {
-  return (profile.pengurus || []).find(entry=>entry.jabatan?.trim().toLowerCase().startsWith(role))?.nama || '';
+  return findOfficer(profile.pengurus,role)?.nama || '';
 }
 function officerPhone(role) {
   if(!admin()) return '';
-  const entry = (profile.pengurus || []).find(item=>item.jabatan?.trim().toLowerCase().startsWith(role));
+  const entry = findOfficer(profile.pengurus,role);
   return (entry && privateContacts[entry.id]) || '';
 }
 function camatName() {
@@ -126,8 +148,15 @@ function profilePage() {
   const actions = (waUrl?'<a class="btn-link" href="'+esc(waUrl)+'" target="_blank" rel="noopener noreferrer">Hubungi via WhatsApp</a>':'')+
     (mapUrl?'<a class="btn-link secondary" href="'+esc(mapUrl)+'" target="_blank" rel="noopener noreferrer">Lihat di peta</a>':'');
   const showPhone = admin();
-  const officers = officersList.map((entry,index)=>'<tr><td>'+(index+1)+'</td><td>'+esc(entry.jabatan)+'</td><td>'+esc(entry.nama)+'</td>'+
-    (showPhone?'<td>'+esc(privateContacts[entry.id] || '—')+'</td>':'')+'</tr>').join('');
+  const officerTable = list => makeTable(['No.','Jabatan','Nama'].concat(showPhone?['No. HP (hanya admin)']:[]),
+    list.map((entry,index)=>'<tr><td>'+(index+1)+'</td><td>'+esc(entry.jabatan)+'</td><td>'+esc(entry.nama || '—')+'</td>'+
+      (showPhone?'<td>'+esc(privateContacts[entry.id] || '—')+'</td>':'')+'</tr>').join(''));
+  const normalizedOfficers = officersNormalized(officersList);
+  const officers = officerSections.map(section=>{
+    const list = normalizedOfficers.filter(entry=>entry.bagian===section.key);
+    if(!list.length) return '';
+    return '<div class="officer-group"><h3>'+(section.bidang?(officerSections.filter(s=>s.bidang).indexOf(section)+1)+'. ':'')+esc(section.label)+'</h3>'+officerTable(list)+'</div>';
+  }).join('');
   const legal = [info.nomor_sk?'SK No. '+esc(info.nomor_sk):'',info.periode?'Periode '+esc(info.periode):''].filter(Boolean).join(' · ');
   const visionMission = (() => {
     const vm = profileVisiMisi(info);
@@ -153,7 +182,7 @@ function profilePage() {
     rekening+
     '<section class="panel"><div class="toolbar"><div><h2>Susunan Pengurus</h2>'+(legal?'<p class="muted legal-line">'+legal+'</p>':'')+'</div>'+
     (canEdit?'<button id="editOfficers">Edit Pengurus</button>':'')+'</div>'+
-    (officers?makeTable(['No.','Jabatan','Nama'].concat(showPhone?['No. HP (hanya admin)']:[]),officers):'<p class="muted">Susunan pengurus belum tersedia.</p>')+'</section>'+
+    (officers||'<p class="muted">Susunan pengurus belum tersedia.</p>')+'</section>'+
     (updated?'<p class="muted profile-updated">Terakhir diperbarui: '+esc(updated)+'</p>':'')+'</div>';
 }
 
@@ -223,24 +252,28 @@ async function prepareProfileImage(file) {
 
 function editOfficers() {
   const form = profileDialog('Edit Susunan Pengurus',
-    '<datalist id="jabatanList">'+['Ketua UPZ','Wakil Ketua UPZ','Sekretaris UPZ','Bendahara UPZ','Anggota','Camat (Pembina)'].map(j=>'<option value="'+j+'">').join('')+'</datalist>'+
-    '<p class="muted">Nomor HP hanya tersimpan untuk admin dan tidak tampil di halaman publik. Isi jabatan "Camat" agar nama Camat terisi otomatis pada formulir cetak.</p>'+
-    '<div id="officerRows"></div><button class="secondary" id="addOfficer" type="button">Tambah Pengurus</button>');
-  const rows = $('officerRows');
+    officerSections.map(s=>'<datalist id="jabatanList-'+s.key+'">'+s.hint.map(j=>'<option value="'+esc(j)+'">').join('')+'</datalist>').join('')+
+    '<p class="muted">Kosongkan nama jika belum ada pejabatnya. Nomor HP hanya tersimpan untuk admin dan tidak tampil di halaman publik. Jabatan \"Camat\" (bagian Penasehat) dan \"Ketua UPZ\", \"Bendahara UPZ\" (bagian Pelaksana) dipakai otomatis pada formulir cetak.</p>'+
+    officerSections.map(s=>'<section class="officer-section" data-section="'+s.key+'"><h3>'+esc(s.label)+'</h3><div class="officer-rows"></div>'+
+      '<button class="secondary" data-add type="button">Tambah '+(s.bidang?'Anggota Bidang':s.key==='penasehat'?'Penasehat':'Pengurus')+'</button></section>').join(''));
+  const total = () => form.querySelectorAll('.officer-entry').length;
   const refresh = () => {
-    const list = [...rows.children];
-    list.forEach((row,index)=>{
-      row.querySelector('[data-up]').disabled = index===0;
-      row.querySelector('[data-down]').disabled = index===list.length-1;
+    form.querySelectorAll('.officer-section').forEach(section=>{
+      const list = [...section.querySelector('.officer-rows').children];
+      list.forEach((row,index)=>{
+        row.querySelector('[data-up]').disabled = index===0;
+        row.querySelector('[data-down]').disabled = index===list.length-1;
+      });
     });
-    $('addOfficer').disabled = list.length >= 50;
+    form.querySelectorAll('[data-add]').forEach(button=>button.disabled = total() >= 80);
   };
-  function addOfficer(entry = {}) {
+  function addOfficer(sectionKey, entry = {}) {
+    const rows = form.querySelector('[data-section="'+sectionKey+'"] .officer-rows');
     const row = document.createElement('fieldset');
     row.className = 'officer-entry';
     row.dataset.id = entry.id || profileNewId();
-    row.innerHTML = '<label>Jabatan<input name="jabatan" list="jabatanList" maxlength="100" required value="'+esc(entry.jabatan || '')+'"></label>'+
-      '<label>Nama<input name="namaPengurus" maxlength="100" required value="'+esc(entry.nama || '')+'"></label>'+
+    row.innerHTML = '<label>Jabatan<input name="jabatan" list="jabatanList-'+sectionKey+'" maxlength="100" required value="'+esc(entry.jabatan || '')+'"></label>'+
+      '<label>Nama<input name="namaPengurus" maxlength="100" value="'+esc(entry.nama || '')+'"></label>'+
       '<label>No. HP (khusus admin)<input name="hpPengurus" type="tel" inputmode="tel" maxlength="20" value="'+esc(privateContacts[entry.id] || '')+'"></label>'+
       '<div class="officer-actions"><button type="button" class="secondary" data-up aria-label="Naikkan urutan">↑</button><button type="button" class="secondary" data-down aria-label="Turunkan urutan">↓</button>'+
       '<button type="button" class="danger" data-del aria-label="Hapus baris pengurus">Hapus</button></div>';
@@ -250,20 +283,28 @@ function editOfficers() {
     rows.append(row);
     refresh();
   }
-  (profile.pengurus || []).forEach(addOfficer);
-  $('addOfficer').onclick = () => addOfficer();
+  form.querySelectorAll('[data-add]').forEach(button=>{
+    const key = button.closest('.officer-section').dataset.section;
+    button.onclick = () => addOfficer(key,{jabatan:key.startsWith('bidang')?'Anggota':''});
+  });
+  const existing = officersNormalized(profile.pengurus);
+  if(existing.length) existing.forEach(entry=>addOfficer(entry.bagian,entry));
+  else officerSections.forEach(s=>(s.roles||[]).forEach(role=>addOfficer(s.key,{jabatan:role})));
   form.onsubmit = event => {
     event.preventDefault();
     saveProfile(form,() => {
       const kontak = {};
-      const pengurus = [...rows.children].map(row=>{
-        const id = row.dataset.id;
-        const hp = row.querySelector('[name=hpPengurus]').value.trim();
-        if(hp && !/^[0-9+()\s-]{5,20}$/.test(hp)) throw Error('Nomor HP hanya boleh berisi angka, spasi, +, - dan tanda kurung.');
-        if(hp) kontak[id] = hp;
-        return {id,jabatan:row.querySelector('[name=jabatan]').value.trim(),nama:row.querySelector('[name=namaPengurus]').value.trim()};
+      const pengurus = [];
+      form.querySelectorAll('.officer-section').forEach(section=>{
+        [...section.querySelector('.officer-rows').children].forEach(row=>{
+          const id = row.dataset.id;
+          const hp = row.querySelector('[name=hpPengurus]').value.trim();
+          if(hp && !/^[0-9+()\s-]{5,20}$/.test(hp)) throw Error('Nomor HP hanya boleh berisi angka, spasi, +, - dan tanda kurung.');
+          if(hp) kontak[id] = hp;
+          pengurus.push({id,bagian:section.dataset.section,jabatan:row.querySelector('[name=jabatan]').value.trim(),nama:row.querySelector('[name=namaPengurus]').value.trim()});
+        });
       });
-      if(pengurus.some(entry=>!entry.jabatan||!entry.nama)) throw Error('Jabatan dan nama wajib diisi.');
+      if(pengurus.some(entry=>!entry.jabatan)) throw Error('Jabatan wajib diisi.');
       return {pengurus,_kontak:kontak};
     });
   };

@@ -1333,3 +1333,5 @@ tr.xl-error td{background:#fff6f5}.xl-note{color:#a23c37;font-size:12.5px;white-
   .xl-scroll{max-height:calc(55vh / var(--ui-zoom))}
   .db-side{top:calc(76px)}
 }
+
+.officer-group{margin:0 0 20px}.officer-group h3{margin:0 0 8px;font-size:17px;color:#234438}.officer-section{border-top:1px solid #dce7e1;margin-top:14px;padding-top:12px}.officer-section h3{margin:0 0 10px;font-size:17px}.officer-section>[data-add]{margin-top:2px}
