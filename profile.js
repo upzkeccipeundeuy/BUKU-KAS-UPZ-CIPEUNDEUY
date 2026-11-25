@@ -79,7 +79,7 @@ async function loadProfile() {
   profileState = 'loading';
   profile = publicProfile;
   updateBrandLogo();
-  if(['Profil','Cetak Laporan','Perhimpunan','Pendistribusian','Rekap Laporan'].includes(screen)) render();
+  if(['Dashboard','Profil','Cetak Laporan','Perhimpunan','Pendistribusian','Rekap Laporan'].includes(screen)) render();
   try {
     const result = await api(profileEndpoint);
     if(request !== profileRequest) return;
@@ -92,7 +92,7 @@ async function loadProfile() {
     profileState = 'error';
   }
   updateBrandLogo();
-  if(['Profil','Cetak Laporan','Perhimpunan','Pendistribusian','Rekap Laporan'].includes(screen)) render();
+  if(['Dashboard','Profil','Cetak Laporan','Perhimpunan','Pendistribusian','Rekap Laporan'].includes(screen)) render();
 }
 
 function profileImage(source) {
