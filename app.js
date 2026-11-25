@@ -70,7 +70,7 @@ ICON['Rekap Laporan Desa'] = ICON['Rekap Laporan'];
 
 /* ---------- Perhimpunan (pengumpulan per UPZ desa/kelurahan) ---------- */
 let phCamat = '', phReportDate = '';
-const phNewState = () => ({rows:[],year:'',loading:false,failure:'',generation:0});
+const phNewState = () => ({rows:[],year:'',loading:false,failure:'',generation:0,source:'upzdesa'});
 const phState = {Perhimpunan:phNewState(),Pendistribusian:phNewState()};
 const demoYear = Number(today().slice(0,4));
 const demoPerhimpunan = [
@@ -481,10 +481,43 @@ async function loadPh(kind=screen) {
   const stamp = ++S.generation;
   S.loading = true;
   S.failure = '';
+  S.source = 'upzdesa';
   render();
   try {
-    if(simulated) S.rows = [...K.demo].sort((a,b)=>b.tahun-a.tahun||a.id-b.id);
-    else S.rows = await api('/rest/v1/'+K.table+'?select=*&order=tahun.desc,id.asc&limit=1000');
+    if(simulated) {
+      const source = kind==='Perhimpunan' ? UD_DEMO.ph : UD_DEMO.pd;
+      const grouped = new Map();
+      for(const r of source) {
+        const d=UD_DEMO.desa.find(x=>String(x.id)===String(r.upz_desa_id));
+        const key=String(r.upz_desa_id)+'|'+String(r.tahun);
+        if(!grouped.has(key)) grouped.set(key,{id:'upzdesa-'+key,upz_desa_id:r.upz_desa_id,tahun:Number(r.tahun),nama_upz:d?.nama_desa||r.nama_upz,alamat_kp:d?.kecamatan||'',rt:'',rw:'',jumlah_jiwa:0,zakat_fitrah:0,beras_kg:0,bis_ramadhan:0,zakat_mal:0,infak_umum:0,fidyah:0,jumlah_transaksi:0});
+        const target=grouped.get(key);
+        for(const field of PH_SUM) target[field]+=Number(r[field]||0);
+        target.jumlah_transaksi++;
+      }
+      S.rows=[...grouped.values()];
+    } else {
+      // Menu Perhimpunan/Pendistribusian adalah rekap otomatis dari seluruh data UPZ Desa.
+      const token = session?.access_token;
+      const table = kind==='Perhimpunan' ? 'upz_desa_perhimpunan' : 'upz_desa_pendistribusian';
+      const [desa, transaksi] = await Promise.all([
+        api('/rest/v1/upz_desa?select=id,nama_desa,kecamatan,kabupaten&order=nama_desa.asc&limit=1000',{token}),
+        api('/rest/v1/'+table+'?select=*&order=tahun.desc,id.asc&limit=5000',{token})
+      ]);
+      if(stamp!==S.generation) return;
+      const desaMap = new Map((desa||[]).map(d=>[String(d.id),d]));
+      const grouped = new Map();
+      for(const r of (transaksi||[])) {
+        const d = desaMap.get(String(r.upz_desa_id));
+        if(!d) continue;
+        const key = String(r.upz_desa_id)+'|'+String(r.tahun);
+        if(!grouped.has(key)) grouped.set(key,{id:'upzdesa-'+key,upz_desa_id:r.upz_desa_id,tahun:Number(r.tahun),nama_upz:d.nama_desa,alamat_kp:d.kecamatan||'',rt:'',rw:'',jumlah_jiwa:0,zakat_fitrah:0,beras_kg:0,bis_ramadhan:0,zakat_mal:0,infak_umum:0,fidyah:0,jumlah_transaksi:0});
+        const target=grouped.get(key);
+        for(const field of PH_SUM) target[field]+=Number(r[field]||0);
+        target.jumlah_transaksi++;
+      }
+      S.rows=[...grouped.values()].sort((a,b)=>b.tahun-a.tahun||a.nama_upz.localeCompare(b.nama_upz,'id'));
+    }
   } catch(error) {
     if(stamp!==S.generation) return;
     S.rows = [];
@@ -556,8 +589,8 @@ function phPage(kind) {
   const total = {};
   PH_SUM.forEach(key=>{total[key]=list.reduce((sum,r)=>sum+Number(r[key]||0),0);});
   const grand = list.reduce((sum,r)=>sum+phJumlah(r),0);
-  const canEdit = admin();
-  const sql = new RegExp(K.empty+'|schema cache','i').test(S.failure) ? ' Jalankan <a href="'+K.sql+'" download>'+K.sql+'</a> di Supabase SQL Editor.' : '';
+  const canEdit = admin() && S.source !== 'upzdesa';
+  const sql = new RegExp(K.empty+'|schema cache','i').test(S.failure) ? ' Pastikan tabel UPZ Desa sudah dibuat di Supabase SQL Editor.' : '';
   const n = value => angka.format(Number(value||0));
   const actions = r => canEdit ? '<td class="no-print ph-actions"><button type="button" class="secondary" data-ph-edit="'+esc(r.id)+'">Edit</button> <button type="button" class="danger" data-ph-delete="'+esc(r.id)+'">Hapus</button></td>' : '';
   const body = list.map((r,i)=>'<tr><td>'+(i+1)+'</td><td class="ph-name">'+esc(r.nama_upz)+'</td><td class="ph-left">'+esc(r.alamat_kp)+'</td><td>'+esc(r.rt)+'</td><td>'+esc(r.rw)+'</td><td class="money">'+n(r.jumlah_jiwa)+'</td>'+
@@ -580,7 +613,7 @@ function phPage(kind) {
     '<div class="toolbar no-print"><label class="ph-year">Tahun <select id="phYear">'+years.map(y=>'<option value="'+esc(y)+'" '+(y===year?'selected':'')+'>'+esc(y)+'</option>').join('')+'</select></label>'+
     '<label class="ph-year">Nama Camat <input id="phCamat" maxlength="100" placeholder="Isi sebelum cetak" value="'+esc(phCamat||profileOfficer('camat'))+'"></label>'+
     '<label class="ph-year">Tanggal laporan <input id="phReportDate" type="date" max="9999-12-31" value="'+esc(phReportDate||today())+'"></label>'+
-    '<span class="ph-tools"><button type="button" class="secondary" id="phPrint">Cetak Form '+K.form+'</button>'+(canEdit?'<button type="button" id="phAdd">Tambah UPZ desa</button>':'')+'</span></div>'+content+printForm+'</section>';
+    '<span class="ph-tools"><button type="button" class="secondary" id="phPrint">Cetak Form '+K.form+'</button>'+(canEdit?'<button type="button" id="phAdd">Tambah UPZ desa</button>':'<span class="muted">Data otomatis dari menu UPZ Desa</span>')+'</span></div>'+content+printForm+'</section>';
 }
 
 function editPh(record, kind=screen) {
@@ -645,8 +678,6 @@ async function savePh(kind, record, body) {
 }
 
 async function deletePh(kind,record) {
-  const K=PH_KINDS[kind];
-  if(!K) { toast('Jenis data tidak dikenal.','error'); return; }
   if(!admin()) return;
   if(!await confirmDialog('Hapus data '+record.nama_upz+'?','Data tahun '+record.tahun+' akan dihapus dan tidak dapat dikembalikan.')) return;
   try {
