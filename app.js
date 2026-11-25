@@ -333,6 +333,20 @@ function phDashEnsure() {
     if(S.dashKey!==key && !S.loading) {S.dashKey=key; setTimeout(()=>loadPh(kind),0);}
   }
 }
+function dashboardVisiInfo() {
+  const info = profile?.identitas || {};
+  const nama = info.nama || 'UPZ Kecamatan Cipeundeuy';
+  const wilayah = info.wilayah || 'Kecamatan Cipeundeuy, Kabupaten Subang';
+  const alamat = info.alamat || 'Alamat belum diatur pada menu Profil';
+  const ketua = profileOfficer('ketua') || 'Belum diatur';
+  const periode = info.periode || 'Belum diatur';
+  const text = info.misi || 'Mewujudkan UPZ yang profesional, amanah dan terpercaya dalam pengelolaan zakat, infak dan sedekah untuk kesejahteraan umat.';
+  const parts = text.split(/\n+/).map(v=>v.trim()).filter(Boolean);
+  const visi = parts.shift() || text;
+  const missions = parts.length ? parts : ['Mengoptimalkan penghimpunan zakat, infak dan sedekah.','Menyalurkan dana secara tepat sasaran dan amanah.','Meningkatkan pelayanan kepada masyarakat.','Membangun sinergi dengan berbagai pihak.'];
+  return '<section class="dash-vision-info"><div class="dash-vision"><div class="dash-vi-title"><span>✦</span> VISI & MISI UPZ</div><div class="dash-vi-columns"><div class="dash-vi-block"><span class="dash-vi-pill">◎ Visi</span><p class="dash-vision-text">“'+esc(visi)+'”</p></div><div class="dash-vi-block"><span class="dash-vi-pill">🤝 Misi</span><ol>'+missions.map((m,i)=>'<li><span>'+ (i+1) +'</span>'+esc(m)+'</li>').join('')+'</ol></div></div></div>'+
+    '<div class="dash-info"><div class="dash-vi-title">ⓘ INFO UPZ KECAMATAN CIPEUNDEUY</div><div class="dash-info-card"><h2>'+esc(nama)+'</h2><p><b>Wilayah:</b> '+esc(wilayah)+'</p><p><b>Alamat:</b> '+esc(alamat)+'</p><p><b>Ketua:</b> '+esc(ketua)+'</p><p><b>Periode:</b> '+esc(periode)+'</p></div></div></section>';
+}
 function heroExtras() {
   const updated=new Intl.DateTimeFormat('id-ID',{day:'numeric',month:'long',year:'numeric'}).format(new Date());
   return '<div class="hero-actions"><button type="button" data-goto="Pemasukan">Lihat Pemasukan</button><button type="button" data-goto="Pengeluaran">Lihat Pengeluaran</button><button type="button" data-goto="Cetak Laporan">Cetak Laporan</button></div>'+
@@ -563,10 +577,7 @@ function render() {
   if(screen==='Dashboard') {
     phDashEnsure();
     const saldo = totals(summary)[2];
-    content = '<div class="hero"><div class="eyebrow">'+(admin()?'DASHBOARD ADMIN':'DASHBOARD UMUM')+'</div><h1>Kas UPZ Cipeundeuy</h1><p>Ringkasan penerimaan, pengeluaran, dan saldo kas.</p><strong>Saldo kas keseluruhan · '+money(loading||failure?null:saldo)+'</strong>'+heroExtras()+'</div>'+
-      cards(summary,['Total Pemasukan','Total Pengeluaran','Saldo Kas'],true)+
-      annualDashboard(true)+
-      phDashboard();
+    content = dashboardVisiInfo()+phDashboard();
   } else if(screen==='Profil') {
     content = profilePage();
   } else if(screen==='Login') {
