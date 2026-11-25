@@ -1,17 +1,19 @@
 /* ---------- UPZ DESA: identitas UPZ desa/kelurahan + perhimpunan + cetak Form A1 (khusus admin) ---------- */
 const UD_SQL = 'setup-upz-desa-supabase.sql';
 const udYearNow = new Date().getFullYear();
-const udGroup = ['Data UPZ Desa','Perhimpunan Desa','Pendistribusian Desa'];
+const udGroup = ['Data UPZ Desa','Perhimpunan Desa','Pendistribusian Desa','Rekap Laporan Desa'];
+const UD_RK_SQL = 'setup-upz-desa-rekap-supabase.sql';
 const UD_PD_SQL = 'setup-upz-desa-pendistribusian-supabase.sql';
 const UD_TABLE = {desa:'upz_desa',ph:'upz_desa_perhimpunan',pd:'upz_desa_pendistribusian'};
 const UD_TXT = {
   ph:{crumb:'Perhimpunan',h1:'Perhimpunan UPZ Desa',desc:'Pengumpulan per UPZ DKM/RT/RW',form:'A1',title:'DATA PENGUMPULAN',group:'PENGUMPULAN',noun:'perhimpunan'},
   pd:{crumb:'Pendistribusian',h1:'Pendistribusian UPZ Desa',desc:'Pendistribusian per UPZ DKM/RT/RW',form:'B1',title:'DATA PENDISTRIBUSIAN',group:'PENDISTRIBUSIAN',noun:'pendistribusian'}
 };
+const udTabs = () => '<div class="bku-tabs no-print" role="tablist">'+[['Data UPZ Desa','Data UPZ Desa'],['Perhimpunan Desa','Perhimpunan'],['Pendistribusian Desa','Pendistribusian'],['Rekap Laporan Desa','Rekap Laporan']].map(([page,label])=>'<button type="button" role="tab" data-goto="'+page+'" aria-selected="'+(screen===page)+'" class="'+(screen===page?'on':'')+'">'+label+'</button>').join('')+'</div>';
 const udRows = kind => kind==='desa' ? UD.desa : kind==='pd' ? UD.pd : UD.ph;
 const udSqlFile = msg => /pendistribusian/i.test(msg||'') ? UD_PD_SQL : UD_SQL;
 let udOpen = false;
-const UD = {desa:[],ph:[],pd:[],pdFailure:'',loading:false,failure:'',gen:0,desaId:'',year:'',date:'',kades:null};
+const UD = {desa:[],ph:[],pd:[],pdFailure:'',munfiq:'',loading:false,failure:'',gen:0,desaId:'',year:'',date:'',kades:null};
 const UD_DEMO = {
   desa:[{id:1,nama_desa:'SAWANGAN',kecamatan:'CIPEUNDEUY',kabupaten:'SUBANG',nama_ketua:'ODANG PRIATNA',no_hp:'',nama_kades:'RUDIYANTO',alamat:''}],
   ph:[
@@ -35,7 +37,8 @@ async function loadUd() {
       [UD.desa,UD.ph,UD.pd] = await Promise.all([
         api('/rest/v1/upz_desa?select=*&order=nama_desa.asc&limit=1000',{token}),
         api('/rest/v1/upz_desa_perhimpunan?select=*&order=tahun.desc,id.asc&limit=5000',{token}),
-        api('/rest/v1/upz_desa_pendistribusian?select=*&order=tahun.desc,id.asc&limit=5000',{token}).catch(e=>{UD.pdFailure=e.message;return [];})]);
+        api('/rest/v1/upz_desa_pendistribusian?select=*&order=tahun.desc,id.asc&limit=5000',{token}).catch(e=>{UD.pdFailure=e.message;return [];}),
+        api('/rest/v1/upz_desa_rekap_persen?select=kunci,nilai',{token}).then(r=>{UDR.saved=(r||[]).find(x=>x.kunci==='c1')?.nilai||null;UDR.pct=null;UDR.failure='';}).catch(e=>{UDR.failure=/rekap_persen|schema cache|does not exist/i.test(e.message)?'Tabel upz_desa_rekap_persen belum dibuat. Jalankan '+UD_RK_SQL+' di Supabase SQL Editor.':e.message;})]);
     }
   } catch(error) {
     if(stamp!==UD.gen) return;
@@ -103,7 +106,7 @@ function udDesaPage() {
   else content = `<div class="scroll"><table class="ph-table"><thead><tr><th>No</th><th>Desa/Kelurahan</th><th>Kecamatan</th><th>Kabupaten</th><th>Ketua UPZ</th><th>Nomor Hp.</th><th>Kepala Desa / Lurah</th>${admin()?'<th class="no-print">Aksi</th>':''}</tr></thead><tbody>`+
     UD.desa.map((d,i)=>`<tr><td>${i+1}</td><td class="ph-name"><strong>${esc(d.nama_desa)}</strong>${d.alamat?`<br><span class="muted">${esc(d.alamat)}</span>`:''}</td><td>${esc(d.kecamatan)}</td><td>${esc(d.kabupaten)}</td><td>${esc(d.nama_ketua)}</td><td>${esc(d.no_hp)}</td><td>${esc(d.nama_kades)}</td>`+
     (admin()?`<td class="no-print ph-actions"><button type="button" class="secondary" data-ud="edit:desa:${esc(d.id)}">Edit</button> <button type="button" class="danger" data-ud="del:desa:${esc(d.id)}">Hapus</button></td>`:'')+`</tr>`).join('')+`</tbody></table></div>`;
-  return `<section class="panel ud-panel"><div class="ph-heading"><p class="crumb">UPZ DESA / Data UPZ Desa</p><h1>Data UPZ Desa</h1><p class="muted">Identitas UPZ desa/kelurahan${admin()?'.':' (hanya admin yang dapat mengubah).'}</p></div>`+
+  return `<section class="panel ud-panel">${udTabs()}<div class="ph-heading"><p class="crumb">UPZ DESA / Data UPZ Desa</p><h1>Data UPZ Desa</h1><p class="muted">Identitas UPZ desa/kelurahan${admin()?'.':' (hanya admin yang dapat mengubah).'}</p></div>`+
     `${admin()?'<div class="toolbar no-print"><span class="ph-tools"><button type="button" data-ud="add:desa">Tambah UPZ Desa</button></span></div>':''}${content}</section>`;
 }
 
@@ -124,7 +127,7 @@ function udPhPage(kind='ph') {
     content = table+`<h2 class="ud-sub no-print">Pratinjau cetak Form ${T.form}</h2><div class="ud-paper">${udPrintForm(c,kind)}</div>`;
   }
   const opt = (v,l,sel)=>`<option value="${esc(v)}" ${sel?'selected':''}>${esc(l)}</option>`;
-  return `<section class="panel ph-panel ud-panel"><div class="ph-heading"><p class="crumb">UPZ DESA / ${T.crumb}</p><h1>${T.h1}</h1><p class="muted">${T.desc} · Form ${T.form} Desa dan Kelurahan${desa?' · '+esc(desa.nama_desa)+' · Tahun '+esc(year):''}</p></div>`+
+  return `<section class="panel ph-panel ud-panel">${udTabs()}<div class="ph-heading"><p class="crumb">UPZ DESA / ${T.crumb}</p><h1>${T.h1}</h1><p class="muted">${T.desc} · Form ${T.form} Desa dan Kelurahan${desa?' · '+esc(desa.nama_desa)+' · Tahun '+esc(year):''}</p></div>`+
     `<div class="toolbar no-print"><label class="ph-year">Desa/Kelurahan <select id="udDesaSel">${UD.desa.map(d=>opt(d.id,d.nama_desa,desa&&String(d.id)===String(desa.id))).join('')}</select></label>`+
     `<label class="ph-year">Tahun <select id="udYear">${years.map(y=>opt(y,y,y===year)).join('')}</select></label>`+
     `<label class="ph-year">Kepala Desa / Lurah <input id="udKades" maxlength="100" placeholder="Nama untuk tanda tangan" value="${esc(UD.kades!==null?UD.kades:(desa?.nama_kades||''))}"></label>`+
@@ -133,11 +136,13 @@ function udPhPage(kind='ph') {
 }
 
 function bindUd() {
-  $('udDesaSel')?.addEventListener('change',e=>{UD.desaId=e.target.value;UD.year='';UD.kades=null;render();});
+  $('udDesaSel')?.addEventListener('change',e=>{UD.desaId=e.target.value;UD.year='';UD.kades=null;UD.munfiq='';render();});
   $('udYear')?.addEventListener('change',e=>{UD.year=e.target.value;render();});
   $('udKades')?.addEventListener('input',e=>{UD.kades=e.target.value;const t=$('udKadesPrint');if(t)t.textContent=e.target.value;});
   $('udDate')?.addEventListener('input',e=>{if(!e.target.value)return;UD.date=e.target.value;const t=$('udDatePrint');if(t)t.textContent='Dilaporkan tanggal : '+phLongDate(UD.date);});
+  $('udMunfiq')?.addEventListener('input',e=>{UD.munfiq=e.target.value;const t=$('udMunfiqPrint');if(t)t.textContent=e.target.value;});
   $('udPrint')?.addEventListener('click',()=>window.print());
+  bindUdRk();
 }
 
 function udShowError(message) {
@@ -247,3 +252,176 @@ document.getElementById('page').addEventListener('click',event=>{
   if(action==='edit') kind==='desa' ? udEditDesa(record) : udEditPh(record,kind);
   else udRemove(kind,record);
 });
+
+
+/* ---------- Rekap Laporan Desa: Form C1 Desa dan Kelurahan ----------
+   Total pengumpulan diambil dari Perhimpunan desa terpilih; persentase dikelola admin (tabel upz_desa_rekap_persen, kunci 'c1'). */
+const UDR = {pct:null,saved:null,failure:'',timer:null};
+const UDR_DEFAULT = {
+  fitrah_non:{dkm:87.5}, fitrah_amil:{dkm:9.5,des:3},
+  bis_opz:{dkm:5,des:10,kec:35,kab:50},
+  zakat_mal:{dkm:100}, infak_umum:{dkm:100}, fidyah:{dkm:100}
+};
+const UDR_ROWS = RK_ROWS.map(g=>({...g,label:g.key==='zakat_mal'?'Zakat Mal':g.label,
+  leaves:g.leaves.map(l=>l.id==='bis_opz'?{...l,label:'Penguatan Kelembagaan UPZ'}:l)}));
+const udSumFmt = new Intl.NumberFormat('id-ID',{minimumFractionDigits:1,maximumFractionDigits:2});
+
+function udRkState() {
+  if(UDR.pct) return UDR.pct;
+  const saved = UDR.saved || {};
+  UDR.pct = {};
+  for(const g of UDR_ROWS) for(const l of g.leaves) {
+    UDR.pct[l.id] = {};
+    for(const lv of l.use) {
+      const own = saved[l.id] && Object.prototype.hasOwnProperty.call(saved[l.id],lv);
+      const v = own ? saved[l.id][lv] : UDR_DEFAULT[l.id]?.[lv];
+      UDR.pct[l.id][lv] = typeof v === 'number' && Number.isFinite(v) ? v : null;
+    }
+  }
+  return UDR.pct;
+}
+function udRkStatus(text,bad) {
+  const el = $('udRkSaveStatus'); if(el) {el.textContent = text; el.style.color = bad ? '#b3261e' : '';}
+}
+function udRkPersist(nilai) {
+  if(!admin()) return;
+  UDR.saved = nilai;
+  if(simulated) return;
+  clearTimeout(UDR.timer);
+  udRkStatus('Menyimpan…');
+  UDR.timer = setTimeout(async()=>{
+    try {
+      if(nilai==null) await api('/rest/v1/upz_desa_rekap_persen?kunci=eq.c1',{method:'DELETE',token:session.access_token});
+      else await api('/rest/v1/upz_desa_rekap_persen?on_conflict=kunci',{method:'POST',body:{kunci:'c1',nilai,diubah:new Date().toISOString()},token:session.access_token,extra:{Prefer:'resolution=merge-duplicates,return=minimal'}});
+      udRkStatus('Tersimpan');
+    } catch(error) {
+      udRkStatus('Gagal menyimpan: '+(/row-level security/i.test(error.message)?'akses ditolak, pastikan masuk sebagai admin.':error.message),true);
+    }
+  },500);
+}
+
+function udRkCompute(totals) {
+  const pct = udRkState(), cell = {}, warn = [];
+  const grand = {total:0,sum:0,dkm:0,des:0,kec:0,kab:0};
+  for(const g of UDR_ROWS) {
+    const tot = Math.round(totals[g.key]||0);
+    cell['tot:'+g.key] = rkNum(tot); grand.total += tot;
+    let keyPct = 0, keySum = 0;
+    for(const l of g.leaves) {
+      let sum = 0, p = 0;
+      for(const lv of l.use) {
+        const v = pct[l.id][lv];
+        if(v==null) {cell['amt:'+l.id+':'+lv] = ''; continue;}
+        const amount = Math.round(tot*v/100);
+        cell['amt:'+l.id+':'+lv] = rkNum(amount);
+        sum += amount; grand[lv] += amount; p += v;
+      }
+      p = Math.round(p*100)/100;
+      cell['sum:'+l.id] = rkNum(sum);
+      cell['pct:'+l.id] = p ? udSumFmt.format(p)+'%' : '';
+      keySum += sum; keyPct += p;
+    }
+    cell['key:'+g.key] = rkNum(keySum); grand.sum += keySum;
+    keyPct = Math.round(keyPct*100)/100;
+    if(Math.abs(keyPct-100) > 0.001) warn.push(g.label+': total persentase '+angka.format(keyPct)+'% (seharusnya 100%).');
+  }
+  cell['gt:total'] = rkNum(grand.total); cell['gt:sum'] = rkNum(grand.sum);
+  for(const [lv] of RK_LEVELS) cell['gt:'+lv] = rkNum(grand[lv]);
+  return {cell,warn};
+}
+
+let udRkTotals = {};
+function udRkRefresh() {
+  const {cell,warn} = udRkCompute(udRkTotals);
+  document.querySelectorAll('[data-urk]').forEach(el=>{el.textContent = cell[el.dataset.urk] ?? '';});
+  const box = $('udRkWarn'); if(box) box.innerHTML = admin() ? rkWarnHtml(warn) : '';
+}
+
+function udRkTable(cell) {
+  const pct = udRkState();
+  const td = (id,cls='r') => '<td class="'+cls+'" data-urk="'+id+'">'+esc(cell[id] ?? '')+'</td>';
+  const grey = n => '<td class="g"></td>'.repeat(n);
+  const head = '<colgroup><col style="width:3.5%"><col style="width:15%"><col style="width:12.5%">'+
+    RK_LEVELS.map(()=>'<col style="width:4.5%"><col style="width:8.5%">').join('')+'<col style="width:5%"><col style="width:12%"></colgroup>'+
+    '<thead><tr><th rowspan="3">NO</th><th rowspan="3">URAIAN</th><th rowspan="3">TOTAL<br>PENGUMPULAN<br>(100%)<br>RP</th><th colspan="10">PENDISTRIBUSIAN</th></tr>'+
+    '<tr>'+RK_LEVELS.map(([,label])=>'<th colspan="2">'+label+'</th>').join('')+'<th rowspan="2">%</th><th rowspan="2">Jumlah<br>Pendistribusian<br>Rp.</th></tr>'+
+    '<tr>'+RK_LEVELS.map(()=>'<th>%</th><th>Jumlah<br>Rp.</th>').join('')+'</tr>'+
+    '<tr class="rk-index"><td>1</td><td>2</td><td></td>'+[4,5,6,7,8,9,10,11].map(n=>'<td>'+n+'</td>').join('')+'<td></td><td></td></tr></thead>';
+  const leafCells = (l,g) => RK_LEVELS.map(([lv,label])=>{
+    if(!l.use.includes(lv)) return grey(2);
+    const v = pct[l.id][lv];
+    const field = admin() ? '<input type="number" min="0" max="100" step="0.1" inputmode="decimal" data-urk-pct="'+l.id+':'+lv+'" value="'+(v==null?'':v)+'" aria-label="Persen '+esc((l.label||g.label)+' '+label)+'">' : '';
+    return '<td class="rk-pct">'+field+'<span class="rk-pct-print'+(admin()?'':' rk-pct-view')+'" data-urk-pcttxt="'+l.id+':'+lv+'">'+esc(rkPctText(v))+'</span></td>'+td('amt:'+l.id+':'+lv);
+  }).join('');
+  const body = UDR_ROWS.map(g=>{
+    const single = g.leaves.length===1 && g.leaves[0].label===null;
+    if(single) {
+      const l = g.leaves[0];
+      return '<tr><td class="c"><b>'+g.no+'</b></td><td class="l"><b>'+esc(g.label)+'</b></td>'+td('tot:'+g.key)+leafCells(l,g)+td('pct:'+l.id,'c')+td('sum:'+l.id)+'</tr>';
+    }
+    const multi = g.leaves.length>1;
+    return '<tr><td class="c"><b>'+g.no+'</b></td><td class="l"><b>'+esc(g.label)+'</b></td>'+td('tot:'+g.key)+grey(8)+'<td></td>'+td('key:'+g.key)+'</tr>'+
+      g.leaves.map(l=>'<tr><td></td><td class="l">'+esc(l.label)+'</td>'+(multi?'<td class="g"></td>':'<td></td>')+leafCells(l,g)+td('pct:'+l.id,'c')+td('sum:'+l.id)+'</tr>').join('');
+  }).join('');
+  const foot = '<tr class="rk-total"><td></td><td class="c"><b>JUMLAH</b></td>'+td('gt:total')+
+    RK_LEVELS.map(([lv])=>'<td></td>'+td('gt:'+lv)).join('')+'<td></td>'+td('gt:sum')+'</tr>';
+  return '<table class="rk-table udc1-table">'+head+'<tbody>'+body+foot+'</tbody></table>';
+}
+
+function udRekapPage() {
+  const c = udCurrent('ph'), {desa,year,years,total} = c;
+  const heading = `<div class="ph-heading"><p class="crumb">UPZ DESA / Rekap Laporan</p><h1>Rekap Laporan UPZ Desa</h1><p class="muted">Pengumpulan dan pendistribusian zakat · Form C1 Desa dan Kelurahan${desa?' · '+esc(desa.nama_desa)+' · Tahun '+esc(year):''}</p></div>`;
+  let content;
+  if(UD.loading) content = skeletonRows(6);
+  else if(UD.failure) content = `<p class="empty" role="alert">Data perhimpunan gagal dimuat. ${esc(UD.failure)}${udSqlHint()}</p>`;
+  else if(!desa) content = emptyState('Belum ada UPZ Desa',admin()?'Isi dulu identitas di menu UPZ DESA › Data UPZ Desa.':'Data UPZ Desa belum tersedia.');
+  else {
+    udRkTotals = Object.fromEntries(UDR_ROWS.map(g=>[g.key,total[g.key]||0]));
+    const {cell,warn} = udRkCompute(udRkTotals);
+    const e = v => v==null ? '' : esc(v);
+    const kades = UD.kades!==null ? UD.kades : (desa.nama_kades||'');
+    const date = phLongDate(UD.date || today());
+    const sumJiwa = rows => rows.filter(x=>String(x.upz_desa_id)===String(desa.id)&&String(x.tahun)===year).reduce((s,x)=>s+Number(x.jumlah_jiwa||0),0);
+    const muzaki = rkNum(sumJiwa(UD.ph));
+    const mustahik = UD.pdFailure ? '-' : rkNum(sumJiwa(UD.pd));
+    const phone = desa.no_hp ? ' / '+e(desa.no_hp) : '';
+    const opt = (v,l,sel)=>`<option value="${esc(v)}" ${sel?'selected':''}>${esc(l)}</option>`;
+    const toolbar = `<div class="toolbar no-print"><label class="ph-year">Desa/Kelurahan <select id="udDesaSel">${UD.desa.map(d=>opt(d.id,d.nama_desa,String(d.id)===String(desa.id))).join('')}</select></label>`+
+      `<label class="ph-year">Tahun <select id="udYear">${years.map(y=>opt(y,y,y===year)).join('')}</select></label>`+
+      `<label class="ph-year">Kepala Desa / Lurah <input id="udKades" maxlength="100" placeholder="Nama untuk tanda tangan" value="${esc(kades)}"></label>`+
+      `<label class="ph-year">Jumlah Munfiq <input id="udMunfiq" inputmode="numeric" maxlength="12" placeholder="Opsional" value="${esc(UD.munfiq)}"></label>`+
+      `<label class="ph-year">Tanggal laporan <input id="udDate" type="date" max="9999-12-31" value="${esc(UD.date||today())}"></label>`+
+      `<span class="ph-tools">${admin()?'<button type="button" class="secondary" id="udRkReset">Persentase bawaan</button>':''}<button type="button" id="udPrint">Cetak Form C1</button></span></div>`;
+    const note = `<p class="muted no-print rk-note">Total pengumpulan dijumlahkan dari menu Perhimpunan ${esc(desa.nama_desa)} tahun ${esc(year)}. ${admin()?'Persentase pada kolom putih dapat diubah dan tersimpan di server. <span id="udRkSaveStatus" role="status"></span>':'Persentase dikelola oleh admin.'}${UDR.failure?' <b>'+esc(UDR.failure)+'</b>':''}</p>`;
+    const form = `<div class="ph-form ud-form udc1-form"><div class="phf-tag">form C1 Desa dan Kelurahan</div>`+
+      `<div class="udc1-kop"><img src="logo-baznas.png" alt="Logo BAZNAS Kabupaten Subang"><div class="udc1-title">LAPORAN PENGUMPULAN DAN PENDISTRIBUSIAN<br>DANA ZAKAT FITRAH, BIS RAMADHAN, ZAKAT MAL, INFAK UMUM DAN FIDYAH<br>TAHUN ${phHijriYear(year)} H / ${esc(year)} M<br><b>(WAJIB DISAMPAIKAN KEPADA UPZ KECAMATAN)</b></div>`+
+      `<dl class="udc1-meta"><dt>Desa/Kel</dt><dd>: ${e(desa.nama_desa).toUpperCase()}</dd><dt>Kecamatan</dt><dd>: ${e(desa.kecamatan).toUpperCase()}</dd>`+
+      `<dt>Nama/No. HP Ketua UPZ</dt><dd>: ${e(desa.nama_ketua).toUpperCase()}${phone}</dd>`+
+      `<dt>Jumlah Muzaki/Munfiq</dt><dd>: ${muzaki} / <span id="udMunfiqPrint">${e(UD.munfiq)}</span></dd><dt>Jumlah Mustahik</dt><dd>: ${mustahik}</dd></dl></div>`+
+      `<div class="scroll rk-wrap">${udRkTable(cell)}</div>`+
+      `<div class="phf-sign"><div class="phf-left">Mengetahui,<br>Kepala Desa / Lurah<div class="phf-name" id="udKadesPrint">${e(kades)}</div></div>`+
+      `<div class="phf-right"><span id="udDatePrint">Dilaporkan tanggal : ${esc(date)}</span><br>Ketua UPZ,<div class="phf-name">${e(desa.nama_ketua)}</div></div></div></div>`;
+    content = toolbar+note+`<div id="udRkWarn" class="rk-warn no-print" role="status">${admin()?rkWarnHtml(warn):''}</div><h2 class="ud-sub no-print">Pratinjau cetak Form C1</h2><div class="ud-paper udc1-paper">${form}</div>`;
+  }
+  return `<section class="panel ph-panel ud-panel ud-rk">${udTabs()}${heading}${content}</section>`;
+}
+
+function bindUdRk() {
+  $('udRkReset')?.addEventListener('click',()=>{
+    if(!admin()) return;
+    UDR.pct = null; udRkPersist(null);
+    render();
+  });
+  document.querySelectorAll('[data-urk-pct]').forEach(input=>input.addEventListener('input',()=>{
+    if(!admin()) return;
+    const [id,lv] = input.dataset.urkPct.split(':');
+    const raw = input.value.trim();
+    const n = raw==='' ? null : Number(raw);
+    if(n!==null && (!Number.isFinite(n) || n<0 || n>100)) return;
+    udRkState()[id][lv] = n;
+    udRkPersist(UDR.pct);
+    const printed = document.querySelector('[data-urk-pcttxt="'+input.dataset.urkPct+'"]');
+    if(printed) printed.textContent = rkPctText(n);
+    udRkRefresh();
+  }));
+}
