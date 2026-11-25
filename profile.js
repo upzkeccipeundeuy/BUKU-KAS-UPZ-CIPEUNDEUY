@@ -116,6 +116,19 @@ function profilePage() {
   const officers = officersList.map((entry,index)=>'<tr><td>'+(index+1)+'</td><td>'+esc(entry.jabatan)+'</td><td>'+esc(entry.nama)+'</td>'+
     (showPhone?'<td>'+esc(privateContacts[entry.id] || '—')+'</td>':'')+'</tr>').join('');
   const legal = [info.nomor_sk?'SK No. '+esc(info.nomor_sk):'',info.periode?'Periode '+esc(info.periode):''].filter(Boolean).join(' · ');
+  const visionMission = (() => {
+    const raw = String(info.misi || '').trim();
+    if(!raw) return '';
+    const cleaned = raw.replace(/\r/g,'').replace(/^\s*["“”']|["“”']\s*$/g,'');
+    const match = cleaned.match(/(?:^|\n)\s*visi\s*[:：]?\s*([\s\S]*?)(?:\n\s*misi\s*[:：]?\s*([\s\S]*))?$/i);
+    if(match) {
+      const vision = match[1].trim(); const mission = (match[2] || '').trim();
+      return '<div class="institution-vm-grid">'+
+        (vision?'<section class="institution-vm-card vision-card"><h4><span aria-hidden="true">◎</span> Visi</h4><p>'+esc(vision).replace(/\n/g,'<br>')+'</p></section>':'')+
+        (mission?'<section class="institution-vm-card mission-card"><h4><span aria-hidden="true">✧</span> Misi</h4><p>'+esc(mission).replace(/\n/g,'<br>')+'</p></section>':'')+'</div>';
+    }
+    return '<div class="institution-vm-grid"><section class="institution-vm-card vision-card"><h4>Visi &amp; Misi</h4><p>'+esc(cleaned).replace(/\n/g,'<br>')+'</p></section></div>';
+  })();
   const rekening = info.rek_nomor ? '<section class="panel"><div class="toolbar"><h2>Rekening Penyaluran Zakat</h2></div><dl class="profile-facts rek-facts">'+
     fact('Bank',esc(info.rek_bank))+'<div><dt>Nomor rekening</dt><dd><span class="rek-number" id="rekNumber">'+esc(info.rek_nomor)+'</span> <button type="button" class="secondary copy-btn" id="copyRek">Salin</button></dd></div>'+
     fact('Atas nama',esc(info.rek_nama))+'</dl></section>' : '';
@@ -128,7 +141,7 @@ function profilePage() {
     (canEdit?'<button id="editProfile">Edit Identitas</button>':'')+'</div>'+
     '<div class="institution"><div class="institution-photo">'+(photo?'<img src="'+esc(photo)+'" alt="Foto atau logo '+esc(info.nama)+'">':'<span aria-hidden="true">▤</span>')+
     '</div><div><h3>'+esc(info.nama)+'</h3><p class="institution-description">'+esc(info.deskripsi || '')+'</p>'+
-    (info.misi?'<div class="institution-mission"><strong>Visi dan misi</strong><p>'+esc(info.misi).replace(/\n/g,'<br>')+'</p></div>':'')+
+    visionMission+
     (facts?'<dl class="profile-facts">'+facts+'</dl>':'')+(actions?'<div class="profile-actions">'+actions+'</div>':'')+'</div></div></section>'+
     rekening+
     '<section class="panel"><div class="toolbar"><div><h2>Susunan Pengurus</h2>'+(legal?'<p class="muted legal-line">'+legal+'</p>':'')+'</div>'+
