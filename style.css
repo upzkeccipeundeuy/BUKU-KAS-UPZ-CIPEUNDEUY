@@ -1669,3 +1669,30 @@ tr.xl-error td{background:#fff6f5}.xl-note{color:#a23c37;font-size:12.5px;white-
   .menu-back:before{content:"";width:8px;height:8px;margin-left:4px;border-left:2.2px solid currentColor;border-bottom:2.2px solid currentColor;transform:rotate(45deg)}
   .menu-tabs,.sr-tabs{display:none!important}
 }
+
+/* ==========================================================
+   Daftar Surat (HP/tablet): "Surat Terbaru" menjadi kartu baris.
+   Perihal panjang turun ke beberapa baris, halaman tidak melebar.
+   ========================================================== */
+@media(max-width:900px){
+  .surat-page,.sr-sum{min-width:0;max-width:100%}
+  .sr-sum{padding:16px}
+  .sr-card{min-width:0}
+  .sr-card b,.sr-card small{overflow-wrap:anywhere}
+  .sr-filter,.sr-filter input,.sr-filter select{width:100%;min-width:0}
+  .sr-tablewrap{border:0;border-radius:0;overflow:visible}
+  .sr-table,.sr-table tbody{display:block;width:100%;min-width:0}
+  .sr-table thead{display:none}
+  .sr-table tbody{display:grid;gap:10px}
+  .sr-table tr.sr-row{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;gap:6px 10px;
+    padding:12px 14px;border:1px solid var(--line);border-radius:14px;background:#fff;box-shadow:0 2px 8px #153b2b08}
+  .sr-table tr.sr-row:hover,.sr-table tr.sr-row:active{background:#f6fbf8}
+  .sr-table tr.sr-row td{display:block;min-width:0;padding:0;border:0;white-space:normal;overflow-wrap:anywhere}
+  .sr-table td.no{grid-column:1;grid-row:1;font-size:13px}
+  .sr-table td.jn{grid-column:2;grid-row:1;justify-self:end}
+  .sr-table td.ph{grid-column:1/-1;grid-row:2;font-size:14.5px;line-height:1.5}
+  .sr-table td.tg{grid-column:1/-1;grid-row:3;font-size:12.5px}
+  .sr-table tr.sr-row td.ar{display:none}
+  .sr-table tr:not(.sr-row){display:block}
+  .sr-table td.sr-empty{display:block;padding:24px 8px!important}
+}
