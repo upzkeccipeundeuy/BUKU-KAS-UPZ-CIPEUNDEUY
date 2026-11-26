@@ -53,37 +53,42 @@ function srTerbilang(n) {
 }
 const SR_KOSONG = j => ({jenis:j||SR_JENIS[0],penutup:SR_PENUTUP[j||SR_JENIS[0]]||'',acara:'',kn:'',kk:'',ka:'',kp:'',tgl:today(),no:'',lamp:'',hal:'',to:'',isi:'',s1:'Sekretaris',s2:'Ketua UPZ',mk:SR_NONE,cc:'',tempat:'',p1n:'',p1j:'',p2n:'',p2j:'',saksi:'',menimbang:'',dasar:'',hari:'',waktu:'',lokasi:''});
 const SR_DEMO = () => [
-  {id:4,jenis:SR_TUGAS,tanggal:'2026-11-25',nomor:'004/UPZ.CPD/11/2026',perihal:'Tugas Mengikuti Rapat Koordinasi Zakat',tujuan:'Nama Anggota — Anggota Bidang Pengumpulan',isi:'Mengikuti Rapat Koordinasi Pengelolaan Zakat Tingkat Kecamatan',detail:{menimbang:'Bahwa untuk kelancaran pengelolaan zakat, perlu menugaskan anggota UPZ untuk menghadiri rapat koordinasi.',dasar:'Surat Undangan BAZNAS Kabupaten Subang Nomor 123/BAZNAS/XI/2026.',hari:'Senin, 30-11-2026',waktu:'09.00 WIB – selesai',lokasi:'Kantor BAZNAS Kabupaten Subang',s2:'Ketua UPZ'}},
-  {id:3,jenis:SR_BA,tanggal:'2026-11-23',nomor:'003/UPZ.CPD/11/2026',perihal:'Serah Terima Dana Zakat Fitrah',isi:'Telah dilakukan serah terima dana zakat fitrah hasil pengumpulan UPZ Desa Sawangan tahun 2026 kepada UPZ Kecamatan Cipeundeuy sebesar Rp25.000.000,00 (dua puluh lima juta rupiah).\n\nPenyerahan dilakukan secara tunai, telah dihitung bersama oleh kedua belah pihak, dan disaksikan oleh para saksi.',mengetahui:'Camat',detail:{tempat:'Kantor Kecamatan Cipeundeuy',p1n:'Nama Ketua UPZ Desa',p1j:'Ketua UPZ Desa Sawangan',p2n:'Nama Bendahara UPZ',p2j:'Bendahara UPZ Kecamatan Cipeundeuy',saksi:'Nama Sekretaris — Sekretaris UPZ Kecamatan'}},
-  {id:2,jenis:'Surat Undangan',tanggal:'2026-11-20',nomor:'002/UPZ.CPD/11/2026',perihal:'Undangan Rapat Pengurus UPZ',tujuan:'Bapak/Ibu Pengurus UPZ Kecamatan Cipeundeuy\ndi Tempat',isi:'Dengan hormat, sehubungan dengan evaluasi penghimpunan dan pendistribusian zakat tahun 2026, kami mengundang Bapak/Ibu untuk hadir pada rapat pengurus yang akan dilaksanakan pada:\n\nHari/Tanggal : Senin, 30-11-2026\nWaktu : 09.00 WIB – selesai\nTempat : Kantor Kecamatan Cipeundeuy\n\nDemikian undangan ini kami sampaikan. Atas perhatian dan kehadirannya, kami ucapkan terima kasih.',mengetahui:'Camat',tembusan:'Camat Cipeundeuy\nArsip',detail:{s1:'Sekretaris',s2:'Ketua UPZ'}},
-  {id:1,jenis:'Surat Permohonan',tanggal:'2026-11-12',nomor:'001/UPZ.CPD/11/2026',lampiran:'1 (satu) berkas',perihal:'Permohonan Data Mustahik',tujuan:'Kepala Desa Sawangan\ndi Tempat',isi:'Dengan hormat, dalam rangka pendataan mustahik tahun 2026, kami memohon bantuan Bapak untuk menyampaikan data warga yang memenuhi kriteria penerima zakat di wilayah Desa Sawangan.\n\nDemikian permohonan ini kami sampaikan. Atas bantuan dan kerja samanya kami ucapkan terima kasih.',tembusan:'Arsip',detail:{s1:'Sekretaris',s2:'Ketua UPZ'}}
+  {id:4,jenis:SR_TUGAS,tanggal:'2026-11-25',nomor:'004/004/UPZ.CPD/11/2026',perihal:'Tugas Mengikuti Rapat Koordinasi Zakat',tujuan:'Nama Anggota — Anggota Bidang Pengumpulan',isi:'Mengikuti Rapat Koordinasi Pengelolaan Zakat Tingkat Kecamatan',detail:{menimbang:'Bahwa untuk kelancaran pengelolaan zakat, perlu menugaskan anggota UPZ untuk menghadiri rapat koordinasi.',dasar:'Surat Undangan BAZNAS Kabupaten Subang Nomor 123/BAZNAS/XI/2026.',hari:'Senin, 30-11-2026',waktu:'09.00 WIB – selesai',lokasi:'Kantor BAZNAS Kabupaten Subang',s2:'Ketua UPZ'}},
+  {id:3,jenis:SR_BA,tanggal:'2026-11-23',nomor:'003/003/UPZ.CPD/11/2026',perihal:'Serah Terima Dana Zakat Fitrah',isi:'Telah dilakukan serah terima dana zakat fitrah hasil pengumpulan UPZ Desa Sawangan tahun 2026 kepada UPZ Kecamatan Cipeundeuy sebesar Rp25.000.000,00 (dua puluh lima juta rupiah).\n\nPenyerahan dilakukan secara tunai, telah dihitung bersama oleh kedua belah pihak, dan disaksikan oleh para saksi.',mengetahui:'Camat',detail:{tempat:'Kantor Kecamatan Cipeundeuy',p1n:'Nama Ketua UPZ Desa',p1j:'Ketua UPZ Desa Sawangan',p2n:'Nama Bendahara UPZ',p2j:'Bendahara UPZ Kecamatan Cipeundeuy',saksi:'Nama Sekretaris — Sekretaris UPZ Kecamatan'}},
+  {id:2,jenis:'Surat Undangan',tanggal:'2026-11-20',nomor:'002/002/UPZ.CPD/11/2026',perihal:'Undangan Rapat Pengurus UPZ',tujuan:'Bapak/Ibu Pengurus UPZ Kecamatan Cipeundeuy\ndi Tempat',isi:'Dengan hormat, sehubungan dengan evaluasi penghimpunan dan pendistribusian zakat tahun 2026, kami mengundang Bapak/Ibu untuk hadir pada rapat pengurus yang akan dilaksanakan pada:\n\nHari/Tanggal : Senin, 30-11-2026\nWaktu : 09.00 WIB – selesai\nTempat : Kantor Kecamatan Cipeundeuy\n\nDemikian undangan ini kami sampaikan. Atas perhatian dan kehadirannya, kami ucapkan terima kasih.',mengetahui:'Camat',tembusan:'Camat Cipeundeuy\nArsip',detail:{s1:'Sekretaris',s2:'Ketua UPZ'}},
+  {id:1,jenis:'Surat Permohonan',tanggal:'2026-11-12',nomor:'001/001/UPZ.CPD/11/2026',lampiran:'1 (satu) berkas',perihal:'Permohonan Data Mustahik',tujuan:'Kepala Desa Sawangan\ndi Tempat',isi:'Dengan hormat, dalam rangka pendataan mustahik tahun 2026, kami memohon bantuan Bapak untuk menyampaikan data warga yang memenuhi kriteria penerima zakat di wilayah Desa Sawangan.\n\nDemikian permohonan ini kami sampaikan. Atas bantuan dan kerja samanya kami ucapkan terima kasih.',tembusan:'Arsip',detail:{s1:'Sekretaris',s2:'Ketua UPZ'}}
 ];
 
-/* ---------- Nomor otomatis: no urut/UPZ.CPD/bulan/tahun (urut per bulan) ---------- */
-const srNomorFormat = (urut,y,m) => String(urut).padStart(3,'0')+'/UPZ.CPD/'+m+'/'+y;
+/* ---------- Nomor otomatis: urut tahun/urut bulan/UPZ.CPD/bulan/tahun ----------
+   Contoh: 005/002/UPZ.CPD/11/2026 = surat ke-5 tahun 2026, ke-2 pada bulan November.
+   Nomor format lama (002/UPZ.CPD/11/2026) tetap dikenali sebagai urut bulan. */
+const srNomorFormat = (urutTahun,urutBulan,y,m) => String(urutTahun).padStart(3,'0')+'/'+String(urutBulan).padStart(3,'0')+'/UPZ.CPD/'+m+'/'+y;
+function srNomorHitung(rows, y, m, exceptId) {
+  let maxTahun = 0, maxBulan = 0, jumlahTahun = 0;
+  for(const r of (rows||[])) {
+    if(r.id===exceptId) continue;
+    const baru = /^(\d+)\/(\d+)\/UPZ\.CPD\/(\d{2})\/(\d{4})$/.exec(r.nomor||'');
+    const lama = /^(\d+)\/UPZ\.CPD\/(\d{2})\/(\d{4})$/.exec(r.nomor||'');
+    const [ry,rm,ut,ub] = baru ? [baru[4],baru[3],Number(baru[1]),Number(baru[2])] : lama ? [lama[3],lama[2],0,Number(lama[1])] : [];
+    if(ry!==y) continue;
+    jumlahTahun++;
+    maxTahun = Math.max(maxTahun,ut);
+    if(rm===m) maxBulan = Math.max(maxBulan,ub);
+  }
+  // surat berformat lama tidak punya urut tahun, jadi pakai jumlah surat pada tahun itu sebagai pembanding
+  return srNomorFormat(Math.max(maxTahun,jumlahTahun)+1,maxBulan+1,y,m);
+}
 function srAutoNo(tgl, exceptId) {
   const [y,m] = String(tgl||'').split('-');
   if(!y||!m) return '';
-  let max = 0;
-  for(const r of SR.rows) {
-    if(r.id===exceptId) continue;
-    const x = /^(\d+)\/UPZ\.CPD\/(\d{2})\/(\d{4})$/.exec(r.nomor||'');
-    if(x&&x[2]===m&&x[3]===y) max = Math.max(max,Number(x[1]));
-  }
-  return srNomorFormat(max+1,y,m);
+  return srNomorHitung(SR.rows,y,m,exceptId);
 }
 /* Saat menyimpan, nomor dihitung ulang dari data terbaru di server agar tidak bentrok. */
 async function srNomorBaru(tgl, exceptId) {
   if(simulated) return srAutoNo(tgl,exceptId);
   const [y,m] = tgl.split('-');
-  const list = await api('/rest/v1/surat?select=id,nomor&nomor=like.'+encodeURIComponent('*/UPZ.CPD/'+m+'/'+y)+'&limit=1000',{token:session.access_token});
-  let max = 0;
-  for(const r of (list||[])) {
-    if(r.id===exceptId) continue;
-    const x = /^(\d+)\//.exec(r.nomor||'');
-    if(x) max = Math.max(max,Number(x[1]));
-  }
-  return srNomorFormat(max+1,y,m);
+  const list = await api('/rest/v1/surat?select=id,nomor&nomor=like.'+encodeURIComponent('*/UPZ.CPD/*/'+y)+'&limit=1000',{token:session.access_token});
+  return srNomorHitung(list,y,m,exceptId);
 }
 
 /* ---------- Penandatangan (nama diambil dari Profil, disimpan saat surat disimpan) ---------- */
