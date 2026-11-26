@@ -1489,3 +1489,12 @@ tr.xl-error td{background:#fff6f5}.xl-note{color:#a23c37;font-size:12.5px;white-
 
 /* Surat Tugas: tabel Kepada/Untuk selalu selebar kertas agar sejajar dengan Menimbang/Dasar */
 .surat-paper .sr-tg{width:100%;table-layout:fixed}
+
+/* ---------- Surat: seluruh font Arial 11 pt ---------- */
+.surat-paper,.surat-paper *{font-family:Arial,Helvetica,sans-serif!important;font-size:11pt!important}
+.surat-paper .sr-tg2{width:100%}
+.surat-paper .sr-tg2 td.l{width:38%;white-space:nowrap}
+.surat-paper .sr-tg2 td.c{width:6%}
+/* ---------- Surat: teks isi rata kiri-kanan (justify) ---------- */
+.surat-paper .sr-body p,.surat-paper .sr-tg td.v,.surat-paper .sr-tg td.v p,.surat-paper .sr-to{text-align:justify!important}
+.surat-paper .sr-tg2 td,.surat-paper .sr-tg2 td p,.surat-paper .sr-meta td,.surat-paper .sr-cc{text-align:left!important}
