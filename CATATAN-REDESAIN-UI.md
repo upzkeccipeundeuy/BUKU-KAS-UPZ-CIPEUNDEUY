@@ -46,3 +46,4 @@ Catatan: data transaksi tidak dimigrasikan atau diubah. Grafik memakai ringkasan
 - Menu **Surat** kini punya sub menu: **Daftar Surat** (kartu ringkasan per jenis + tabel surat terbaru dengan pencarian dan filter), **Surat Undangan**, **Surat Permohonan**, **Surat Pemberitahuan**, **Surat Keterangan**, **Surat Tugas**, dan **Berita Acara**.
 - Tiap sub menu jenis hanya menampilkan surat sejenis; formulir admin otomatis memakai jenis tersebut.
 - Perubahan di `app.js`, `surat.js`, `style.css`. Tidak ada perubahan tabel Supabase.
+- Formulir isian dipisah per sub menu: tiap jenis surat punya isian sendiri (Undangan: acara/hari/waktu/tempat + penutup; Permohonan dan Pemberitahuan: penutup; Keterangan: identitas yang diterangkan; Tugas dan Berita Acara seperti sebelumnya). Jenis **Surat Keterangan** kini punya tata letak cetak sendiri. Data tetap disimpan di tabel `surat` (kolom `detail`), tanpa perubahan SQL.
