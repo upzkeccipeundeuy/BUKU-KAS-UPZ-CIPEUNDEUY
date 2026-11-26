@@ -41,3 +41,8 @@ Catatan: data transaksi tidak dimigrasikan atau diubah. Grafik memakai ringkasan
 ## Menu UPZ DESA (baru)
 - Menu **UPZ DESA** (tampil untuk publik; pengelolaan hanya admin) dengan sub menu **Data UPZ Desa** (identitas: desa/kelurahan, kecamatan, kabupaten, ketua UPZ, no. Hp, kepala desa/lurah) dan **Perhimpunan** (data per UPZ DKM/RT/RW + pratinjau dan cetak **Form A1 Desa dan Kelurahan**).
 - Berkas baru: `upzdesa.js`, `setup-upz-desa-supabase.sql` (jalankan sekali di Supabase SQL Editor). Perubahan kecil di `index.html`, `app.js`, `style.css`.
+
+## Sub menu Surat (baru)
+- Menu **Surat** kini punya sub menu: **Daftar Surat** (kartu ringkasan per jenis + tabel surat terbaru dengan pencarian dan filter), **Surat Undangan**, **Surat Permohonan**, **Surat Pemberitahuan**, **Surat Keterangan**, **Surat Tugas**, dan **Berita Acara**.
+- Tiap sub menu jenis hanya menampilkan surat sejenis; formulir admin otomatis memakai jenis tersebut.
+- Perubahan di `app.js`, `surat.js`, `style.css`. Tidak ada perubahan tabel Supabase.

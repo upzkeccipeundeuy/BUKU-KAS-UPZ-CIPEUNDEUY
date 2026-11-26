@@ -1468,3 +1468,21 @@ tr.xl-error td{background:#fff6f5}.xl-note{color:#a23c37;font-size:12.5px;white-
  .sr-tg2{width:75%}
  .sr-ttd-r{margin-top:9mm}
 }
+
+/* ---------- Surat: sub menu, kartu ringkasan, Daftar Surat ---------- */
+.sr-form .srhide{display:none}
+.sr-cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:12px;margin:18px 0}
+.sr-card{display:block;text-align:left;border:1px solid var(--line);border-radius:14px;padding:14px;background:#fff;color:var(--ink);box-shadow:var(--shadow-sm)}
+.sr-card:hover{transform:none;filter:none;border-color:var(--green);background:var(--mint)}
+.sr-card .n{display:block;font-size:30px;font-weight:800;color:var(--green);line-height:1.1}
+.sr-card b{display:block;margin-top:2px}.sr-card small{display:block;color:var(--muted);margin-top:4px}
+.sr-card .go{display:block;margin-top:8px;color:var(--green);font-weight:700;font-size:12px}
+.sr-filter{display:flex;gap:8px;flex-wrap:wrap}
+.sr-tablewrap{overflow-x:auto}.sr-table{width:100%;border-collapse:collapse}
+.sr-table th,.sr-table td{text-align:left;padding:9px 10px;border-bottom:1px solid var(--line);white-space:nowrap}
+.sr-table th{font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.04em}
+.sr-row{cursor:pointer}.sr-row:hover{background:var(--mint)}
+.sr-tabs{display:none;gap:4px;overflow-x:auto;background:#e9f1ed;padding:4px;border-radius:12px;margin:0 0 14px}
+.sr-tabs button{flex:none;padding:9px 12px;border-radius:9px;background:transparent;color:#4b6a5d;font-size:12px;font-weight:600;box-shadow:none;white-space:nowrap}
+.sr-tabs button:hover{filter:none;transform:none}.sr-tabs button.on{background:#fff;color:#126142;box-shadow:0 1px 4px #0f3a2a1f}
+@media(max-width:900px){.sr-tabs{display:flex}}

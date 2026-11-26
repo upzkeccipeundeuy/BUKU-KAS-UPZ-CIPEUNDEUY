@@ -62,6 +62,8 @@ const bkuGroup = ['BKU','Pemasukan','Pengeluaran','Cetak Laporan'];
 let bkuOpen = false;
 const rekapGroup = ['Form C2A','Form C2B'];
 let rekapOpen = false;
+const suratGroup = ['Daftar Surat','Surat Undangan','Surat Permohonan','Surat Pemberitahuan','Surat Keterangan','Surat Tugas','Berita Acara'];
+let suratOpen = false;
 const upzkecGroup = ['Perhimpunan','Pendistribusian','Form C2A','Form C2B'];
 let upzkecOpen = false;
 ICON['Form C2A'] = ICON['Form C2B'] = ICON['Rekap Laporan'];
@@ -169,13 +171,15 @@ async function refresh() {
 }
 
 function go(name) {
+  if(name==='Surat') name='Daftar Surat';
   screen=name;
   loadPrivateContacts();
   if(bkuGroup.includes(name)) bkuOpen=true;
   if(rekapGroup.includes(name)) rekapOpen=true;
   if(upzkecGroup.includes(name)) upzkecOpen=true;
   if(udGroup.includes(name)) udOpen=true;
-  if(name==='Surat') {loadProfile();loadSurat();}
+  if(suratGroup.includes(name)) suratOpen=true;
+  if(suratGroup.includes(name)) {loadProfile();loadSurat();}
   else if(name==='Profil'||name==='Cetak Laporan') loadProfile();
   else if(PH_KINDS[name]) loadPh(name);
   else if(udGroup.includes(name)) loadUd();
@@ -719,6 +723,11 @@ function render() {
   const inBku = bkuGroup.includes(screen);
   $('nav').innerHTML = items.map(([name])=>{
     if(name==='Pemasukan'||name==='Pengeluaran'||name==='Cetak Laporan') return '';
+    if(name==='Surat') {
+      const inSr = suratGroup.includes(screen);
+      return '<button type="button" id="suratParent" class="nav-parent'+(inSr?' in-group active':'')+(suratOpen?' open':'')+'" '+(inSr?'aria-current="page" ':'')+'aria-expanded="'+suratOpen+'" aria-controls="suratSub"><span class="nav-icon" aria-hidden="true">'+svgIcon('Surat')+'</span><span class="nav-label">Surat</span><span class="nav-chevron" aria-hidden="true"></span></button>'+
+        '<div class="nav-sub'+(suratOpen?' show':'')+'" id="suratSub">'+suratGroup.map(n=>navButton(n,n,'Surat')).join('')+'</div>';
+    }
     if(name==='UPZ DESA') {
       const inUd = udGroup.includes(screen);
       return '<button type="button" id="udParent" class="nav-parent'+(inUd?' in-group active':'')+(udOpen?' open':'')+'" '+(inUd?'aria-current="page" ':'')+'aria-expanded="'+udOpen+'" aria-controls="udSub"><span class="nav-icon" aria-hidden="true">'+svgIcon('UPZ DESA')+'</span><span class="nav-label">UPZ DESA</span><span class="nav-chevron" aria-hidden="true"></span></button>'+
@@ -750,7 +759,7 @@ function render() {
     content = profilePage();
   } else if(screen==='Login') {
     content = '<div class="login-shell"><div class="login-side"><img src="logo-baznas.png" alt="" width="72" height="72"><h2>BKU UPZ Cipeundeuy</h2><p>Sistem informasi buku kas umum yang transparan dan akuntabel.</p><blockquote>“Ambillah zakat dari sebagian harta mereka…”<small>QS. At-Taubah: 103</small></blockquote></div><section class="panel login"><h1>Login Admin</h1><p class="muted">Gunakan akun yang terdaftar di Supabase Auth.</p><form id="login"><label>Email<input type="email" name="email" autocomplete="username" required></label><label>Kata sandi<input type="password" name="password" autocomplete="current-password" required></label><div id="loginError" role="alert"></div><button>Masuk</button><button type="button" class="secondary" id="demo">Coba Admin Demo</button></form></section></div>';
-  } else if(screen==='Surat') {
+  } else if(suratGroup.includes(screen)) {
     content = suratPage();
   } else if(PH_KINDS[screen]) {
     content = phPage(screen);
@@ -805,7 +814,7 @@ function render() {
   document.querySelectorAll('[data-goto]').forEach(b=>b.addEventListener('click',()=>go(b.dataset.goto)));
   if(screen==='Cetak Laporan') bindReportFilters();
   if(screen==='Profil') bindProfile();
-  if(screen==='Surat') bindSurat();
+  if(suratGroup.includes(screen)) bindSurat();
   if(udGroup.includes(screen)) bindUd();
   if(screen==='Form C2A') bindRekap();
   if(screen==='Form C2B') bindRekapC2B();
@@ -986,6 +995,18 @@ $('nav').addEventListener('click',event=>{
     upzkecParent.classList.toggle('open',upzkecOpen);
     upzkecParent.setAttribute('aria-expanded',String(upzkecOpen));
     $('upzkecSub')?.classList.toggle('show',upzkecOpen);
+    return;
+  }
+  const suratParent=event.target.closest('#suratParent');
+  if(suratParent) {
+    if(window.matchMedia('(max-width:900px)').matches) {
+      if(!suratGroup.includes(screen)) go('Daftar Surat');
+      return;
+    }
+    suratOpen=!suratOpen;
+    suratParent.classList.toggle('open',suratOpen);
+    suratParent.setAttribute('aria-expanded',String(suratOpen));
+    $('suratSub')?.classList.toggle('show',suratOpen);
     return;
   }
   const udParent=event.target.closest('#udParent');

@@ -14,7 +14,10 @@ const SR_ROLES = {
   'Kepala KUA':[/^(kepala\s+)?kua/i,'penasehat'],
   'Ketua MUI':[/^(ketua\s+)?mui/i,'penasehat']
 };
-const SR = {rows:[],loading:false,failure:'',gen:0,cur:null,draft:null,saving:false};
+const SR = {rows:[],loading:false,failure:'',gen:0,cur:null,draft:null,saving:false,want:null,q:'',f:''};
+const SR_MENU = ['Daftar Surat',...SR_JENIS];
+const srJenisNow = () => SR_JENIS.includes(screen) ? screen : '';
+const srRowsNow = () => {const j=srJenisNow(); return j ? SR.rows.filter(r=>r.jenis===j) : SR.rows;};
 const srEsc = s => String(s ?? '').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'})[c]);
 const srBulan = ['Januari','Februari','Maret','April','Mei','Juni','Juli','Agustus','September','Oktober','November','Desember'];
 const srHari = ['Minggu','Senin','Selasa','Rabu','Kamis','Jumat','Sabtu'];
@@ -149,7 +152,15 @@ const srRowToDraft = r => {
 function srNew() {
   SR.cur = null;
   SR.draft = SR_KOSONG();
+  if(srJenisNow()) SR.draft.jenis = srJenisNow();
   SR.draft.no = srAutoNo(SR.draft.tgl,null);
+}
+/* Dipanggil setelah data dimuat atau saat pindah sub menu: pilih surat yang diminta, atau siapkan formulir baru */
+function srEnter() {
+  const want = SR.want!=null ? SR.rows.find(r=>String(r.id)===String(SR.want)) : null;
+  SR.want = null;
+  if(want) {SR.cur = want.id; if(admin()) SR.draft = srRowToDraft(want); return;}
+  if(admin()) srNew(); else SR.cur = srRowsNow()[0]?.id ?? null;
 }
 async function loadSurat() {
   const stamp = ++SR.gen;
@@ -164,7 +175,7 @@ async function loadSurat() {
   } finally {
     if(stamp===SR.gen) {
       SR.loading = false;
-      if(admin()) srNew(); else SR.cur = SR.rows[0]?.id ?? null;
+      srEnter();
       render();
     }
   }
@@ -232,7 +243,7 @@ function srForm(d) {
   const inp = (id,ph='',type='text') => '<input id="sr_'+id+'" type="'+type+'" maxlength="200" placeholder="'+srEsc(ph)+'" value="'+srEsc(d[id])+'">';
   const ta = (id,ph='',h='') => '<textarea id="sr_'+id+'" maxlength="20000" placeholder="'+srEsc(ph)+'"'+(h?' style="min-height:'+h+'px"':'')+'>'+srEsc(d[id])+'</textarea>';
   return '<form id="srForm" class="sr-form'+(d.jenis===SR_BA?' isba':'')+(d.jenis===SR_TUGAS?' istg':'')+'" autocomplete="off" onsubmit="return false">'+
-    L('Jenis surat','<select id="sr_jenis">'+opt(SR_JENIS,d.jenis)+'</select>')+
+    L('Jenis surat','<select id="sr_jenis">'+opt(SR_JENIS,d.jenis)+'</select>',srJenisNow()?'srhide':'')+
     L('Tanggal surat','<input id="sr_tgl" type="date" max="9999-12-31" required value="'+srEsc(d.tgl)+'">')+
     L('Nomor surat (otomatis)','<input id="sr_no" readonly value="'+srEsc(d.no)+'"><span class="sr-hint">Urut per bulan, mengikuti tanggal surat.</span>','full')+
     L('Lampiran',inp('lamp','1 (satu) berkas, atau kosongkan'),'full nba ntg')+
@@ -253,20 +264,38 @@ function srForm(d) {
     L('Tembusan (satu per baris)',ta('cc','','62'),'full')+
     '<div class="sr-actions"><button type="button" id="srSave">Simpan Surat</button><button type="button" class="secondary" id="srPrint2">Cetak / PDF</button>'+(SR.cur!=null?'<button type="button" class="danger" id="srDel">Hapus</button>':'')+'</div></form>';
 }
+const srTabs = () => '<div class="sr-tabs no-print" role="tablist">'+SR_MENU.map(n=>'<button type="button" data-page="'+srEsc(n)+'" class="'+(n===screen?'on':'')+'">'+srEsc(n.replace('Surat ',''))+'</button>').join('')+'</div>';
+function srSummaryRows() {
+  const q = SR.q.trim().toLowerCase();
+  const list = SR.rows.filter(r=>(!SR.f||r.jenis===SR.f)&&(!q||(String(r.nomor||'')+' '+String(r.perihal||'')).toLowerCase().includes(q)));
+  return list.length ? list.map(r=>'<tr class="sr-row" data-sr-go="'+srEsc(r.jenis)+'" data-sr-want="'+srEsc(r.id)+'"><td>'+srEsc(r.nomor)+'</td><td>'+srTgl(r.tanggal)+'</td><td><span class="sr-tag">'+srEsc(String(r.jenis).replace('Surat ',''))+'</span></td><td>'+srEsc(r.perihal)+'</td></tr>').join('') : '<tr><td colspan="4" class="muted">Tidak ada surat yang cocok.</td></tr>';
+}
+function srSummaryPage(head) {
+  const cards = SR_JENIS.map(j=>{
+    const l = SR.rows.filter(r=>r.jenis===j);
+    return '<button type="button" class="sr-card" data-page="'+srEsc(j)+'"><span class="n">'+l.length+'</span><b>'+srEsc(j)+'</b><small>'+(l[0]?'Terakhir: '+srEsc(l[0].perihal)+' · '+srTgl(l[0].tanggal):'Belum ada surat')+'</small><span class="go">Buka →</span></button>';
+  }).join('');
+  return '<div class="surat-page">'+head+srTabs()+'<div class="sr-cards no-print">'+cards+'</div>'+
+    '<section class="panel no-print"><div class="toolbar"><h2>Surat Terbaru ('+SR.rows.length+' surat)</h2><div class="sr-filter"><input id="srQ" type="search" placeholder="Cari nomor / perihal" value="'+srEsc(SR.q)+'"><select id="srF"><option value="">Semua jenis</option>'+SR_JENIS.map(j=>'<option'+(j===SR.f?' selected':'')+'>'+srEsc(j)+'</option>').join('')+'</select></div></div>'+
+    '<div class="sr-tablewrap"><table class="sr-table"><thead><tr><th>Nomor</th><th>Tanggal</th><th>Jenis</th><th>Perihal</th></tr></thead><tbody id="srTb">'+srSummaryRows()+'</tbody></table></div></section></div>';
+}
 function suratPage() {
-  const adm = admin();
-  const head = '<div class="no-print"><p class="crumb">Surat</p><h1>Surat Menyurat</h1><p class="muted">'+(adm?'Ketik dan kelola surat resmi UPZ. Nomor surat dibuat otomatis.':'Daftar surat resmi UPZ. Pilih surat untuk melihat dan mencetak.')+'</p></div>';
+  const adm = admin(), jn = srJenisNow();
+  const title = jn || (screen==='Daftar Surat' ? 'Daftar Surat' : 'Surat Menyurat');
+  const head = '<div class="no-print"><p class="crumb">Surat'+(screen==='Daftar Surat'||jn?' / '+srEsc(title):'')+'</p><h1>'+srEsc(title)+'</h1><p class="muted">'+(screen==='Daftar Surat'?'Ringkasan surat UPZ per jenis. Pilih kartu atau baris untuk membuka suratnya.':jn?(adm?'Ketik dan kelola '+srEsc(jn.toLowerCase())+'. Nomor surat dibuat otomatis.':'Daftar '+srEsc(jn.toLowerCase())+'. Pilih surat untuk melihat dan mencetak.'):'')+'</p></div>';
   if(SR.loading) return '<section class="panel">'+head+skeletonRows(4)+'</section>';
   if(SR.failure) return '<section class="panel">'+head+emptyState('Surat belum dapat dimuat',esc(SR.failure))+'</section>';
+  if(screen==='Daftar Surat') return srSummaryPage(head);
   if(adm&&!SR.draft) srNew();
-  if(!adm&&SR.cur==null&&SR.rows[0]) SR.cur = SR.rows[0].id;
-  const row = SR.rows.find(r=>r.id===SR.cur) || null;
+  const rows = srRowsNow();
+  if(!adm&&!rows.some(r=>r.id===SR.cur)) SR.cur = rows[0]?.id ?? null;
+  const row = rows.find(r=>r.id===SR.cur) || null;
   let paper = '';
   if(adm) paper = srPaper(SR.draft,srTtd(SR.draft,row?.detail?.ttd));
   else if(row) {const d=srRowToDraft(row); paper = srPaper(d,row.detail?.ttd||srTtd(d));}
-  const list = SR.rows.length ? SR.rows.map(r=>'<button type="button" class="sr-item'+(r.id===SR.cur?' on':'')+'" data-sr-id="'+srEsc(r.id)+'"><span><b>'+srEsc(r.perihal)+'</b><small>'+srEsc(r.nomor)+' · '+srTgl(r.tanggal)+'</small></span><span class="sr-tag">'+srEsc(String(r.jenis).replace('Surat ',''))+'</span></button>').join('') : emptyState('Belum ada surat',adm?'Ketik surat pertama pada formulir di bawah.':'');
-  return '<div class="surat-page">'+head+'<div class="sr-grid">'+
-    '<section class="panel no-print"><div class="toolbar"><h2>Daftar Surat</h2>'+(adm?'<button type="button" id="srNew">+ Surat Baru</button>':'')+'</div><div class="sr-list">'+list+'</div>'+(adm?'<div class="toolbar"><h2>'+(SR.cur!=null?'Ubah Surat':'Ketik Surat Baru')+'</h2></div>'+srForm(SR.draft):'')+'</section>'+
+  const list = rows.length ? rows.map(r=>'<button type="button" class="sr-item'+(r.id===SR.cur?' on':'')+'" data-sr-id="'+srEsc(r.id)+'"><span><b>'+srEsc(r.perihal)+'</b><small>'+srEsc(r.nomor)+' · '+srTgl(r.tanggal)+'</small></span><span class="sr-tag">'+srEsc(String(r.jenis).replace('Surat ',''))+'</span></button>').join('') : emptyState('Belum ada '+srEsc(jn.toLowerCase()),adm?'Ketik surat pertama pada formulir di bawah.':'');
+  return '<div class="surat-page">'+head+srTabs()+'<div class="sr-grid">'+
+    '<section class="panel no-print"><div class="toolbar"><h2>Daftar '+srEsc(jn)+'</h2>'+(adm?'<button type="button" id="srNew">+ Surat Baru</button>':'')+'</div><div class="sr-list">'+list+'</div>'+(adm?'<div class="toolbar"><h2>'+(SR.cur!=null?'Ubah Surat':'Ketik Surat Baru')+'</h2></div>'+srForm(SR.draft):'')+'</section>'+
     '<section class="panel"><div class="toolbar no-print"><h2>Pratinjau Surat</h2><button type="button" class="secondary" id="srPrint">Cetak / PDF</button></div><div class="sr-stage"><div class="surat-paper" id="srPaper">'+(paper||emptyState('Pilih surat dari daftar'))+'</div></div></section>'+
     '</div></div>';
 }
@@ -276,7 +305,14 @@ function srSetNo() {
   SR.draft.no = old && old.tanggal.slice(0,7)===SR.draft.tgl.slice(0,7) ? old.nomor : srAutoNo(SR.draft.tgl,SR.cur);
   $('sr_no').value = SR.draft.no;
 }
+function srBindRows() {
+  document.querySelectorAll('tr[data-sr-go]').forEach(r=>r.onclick=()=>{SR.want=r.dataset.srWant; go(r.dataset.srGo);});
+}
 function bindSurat() {
+  srBindRows();
+  const redraw = () => {const tb=$('srTb'); if(tb) {tb.innerHTML=srSummaryRows(); srBindRows();}};
+  $('srQ')?.addEventListener('input',e=>{SR.q=e.target.value; redraw();});
+  $('srF')?.addEventListener('change',e=>{SR.f=e.target.value; redraw();});
   document.querySelectorAll('[data-sr-id]').forEach(b=>b.onclick=()=>{
     const row = SR.rows.find(r=>String(r.id)===b.dataset.srId);
     if(!row) return;
