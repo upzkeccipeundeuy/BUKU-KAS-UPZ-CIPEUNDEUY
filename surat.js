@@ -40,6 +40,7 @@ const srBulan = ['Januari','Februari','Maret','April','Mei','Juni','Juli','Agust
 const srHari = ['Minggu','Senin','Selasa','Rabu','Kamis','Jumat','Sabtu'];
 const srSatuan = ['','satu','dua','tiga','empat','lima','enam','tujuh','delapan','sembilan','sepuluh','sebelas'];
 const srTgl = iso => {const [y,m,d]=String(iso||'').split('-');return y&&m&&d?Number(d)+' '+srBulan[m-1]+' '+y:'…';};
+const srTglCetak = iso => {const [y,m,d]=String(iso||'').split('-');return y&&m&&d?String(d).padStart(2,'0')+'-'+String(m).padStart(2,'0')+'-'+y:'…';}; // format cetak: 00-00-0000
 function srTerbilang(n) {
   n = Number(n);
   if(n<12) return srSatuan[n];
@@ -52,9 +53,9 @@ function srTerbilang(n) {
 }
 const SR_KOSONG = j => ({jenis:j||SR_JENIS[0],penutup:SR_PENUTUP[j||SR_JENIS[0]]||'',acara:'',kn:'',kk:'',ka:'',kp:'',tgl:today(),no:'',lamp:'',hal:'',to:'',isi:'',s1:'Sekretaris',s2:'Ketua UPZ',mk:SR_NONE,cc:'',tempat:'',p1n:'',p1j:'',p2n:'',p2j:'',saksi:'',menimbang:'',dasar:'',hari:'',waktu:'',lokasi:''});
 const SR_DEMO = () => [
-  {id:4,jenis:SR_TUGAS,tanggal:'2026-11-25',nomor:'004/UPZ.CPD/11/2026',perihal:'Tugas Mengikuti Rapat Koordinasi Zakat',tujuan:'Nama Anggota — Anggota Bidang Pengumpulan',isi:'Mengikuti Rapat Koordinasi Pengelolaan Zakat Tingkat Kecamatan',detail:{menimbang:'Bahwa untuk kelancaran pengelolaan zakat, perlu menugaskan anggota UPZ untuk menghadiri rapat koordinasi.',dasar:'Surat Undangan BAZNAS Kabupaten Subang Nomor 123/BAZNAS/XI/2026.',hari:'Senin, 30 November 2026',waktu:'09.00 WIB – selesai',lokasi:'Kantor BAZNAS Kabupaten Subang',s2:'Ketua UPZ'}},
+  {id:4,jenis:SR_TUGAS,tanggal:'2026-11-25',nomor:'004/UPZ.CPD/11/2026',perihal:'Tugas Mengikuti Rapat Koordinasi Zakat',tujuan:'Nama Anggota — Anggota Bidang Pengumpulan',isi:'Mengikuti Rapat Koordinasi Pengelolaan Zakat Tingkat Kecamatan',detail:{menimbang:'Bahwa untuk kelancaran pengelolaan zakat, perlu menugaskan anggota UPZ untuk menghadiri rapat koordinasi.',dasar:'Surat Undangan BAZNAS Kabupaten Subang Nomor 123/BAZNAS/XI/2026.',hari:'Senin, 30-11-2026',waktu:'09.00 WIB – selesai',lokasi:'Kantor BAZNAS Kabupaten Subang',s2:'Ketua UPZ'}},
   {id:3,jenis:SR_BA,tanggal:'2026-11-23',nomor:'003/UPZ.CPD/11/2026',perihal:'Serah Terima Dana Zakat Fitrah',isi:'Telah dilakukan serah terima dana zakat fitrah hasil pengumpulan UPZ Desa Sawangan tahun 2026 kepada UPZ Kecamatan Cipeundeuy sebesar Rp25.000.000,00 (dua puluh lima juta rupiah).\n\nPenyerahan dilakukan secara tunai, telah dihitung bersama oleh kedua belah pihak, dan disaksikan oleh para saksi.',mengetahui:'Camat',detail:{tempat:'Kantor Kecamatan Cipeundeuy',p1n:'Nama Ketua UPZ Desa',p1j:'Ketua UPZ Desa Sawangan',p2n:'Nama Bendahara UPZ',p2j:'Bendahara UPZ Kecamatan Cipeundeuy',saksi:'Nama Sekretaris — Sekretaris UPZ Kecamatan'}},
-  {id:2,jenis:'Surat Undangan',tanggal:'2026-11-20',nomor:'002/UPZ.CPD/11/2026',perihal:'Undangan Rapat Pengurus UPZ',tujuan:'Bapak/Ibu Pengurus UPZ Kecamatan Cipeundeuy\ndi Tempat',isi:'Dengan hormat, sehubungan dengan evaluasi penghimpunan dan pendistribusian zakat tahun 2026, kami mengundang Bapak/Ibu untuk hadir pada rapat pengurus yang akan dilaksanakan pada:\n\nHari/Tanggal : Senin, 30 November 2026\nWaktu : 09.00 WIB – selesai\nTempat : Kantor Kecamatan Cipeundeuy\n\nDemikian undangan ini kami sampaikan. Atas perhatian dan kehadirannya, kami ucapkan terima kasih.',mengetahui:'Camat',tembusan:'Camat Cipeundeuy\nArsip',detail:{s1:'Sekretaris',s2:'Ketua UPZ'}},
+  {id:2,jenis:'Surat Undangan',tanggal:'2026-11-20',nomor:'002/UPZ.CPD/11/2026',perihal:'Undangan Rapat Pengurus UPZ',tujuan:'Bapak/Ibu Pengurus UPZ Kecamatan Cipeundeuy\ndi Tempat',isi:'Dengan hormat, sehubungan dengan evaluasi penghimpunan dan pendistribusian zakat tahun 2026, kami mengundang Bapak/Ibu untuk hadir pada rapat pengurus yang akan dilaksanakan pada:\n\nHari/Tanggal : Senin, 30-11-2026\nWaktu : 09.00 WIB – selesai\nTempat : Kantor Kecamatan Cipeundeuy\n\nDemikian undangan ini kami sampaikan. Atas perhatian dan kehadirannya, kami ucapkan terima kasih.',mengetahui:'Camat',tembusan:'Camat Cipeundeuy\nArsip',detail:{s1:'Sekretaris',s2:'Ketua UPZ'}},
   {id:1,jenis:'Surat Permohonan',tanggal:'2026-11-12',nomor:'001/UPZ.CPD/11/2026',lampiran:'1 (satu) berkas',perihal:'Permohonan Data Mustahik',tujuan:'Kepala Desa Sawangan\ndi Tempat',isi:'Dengan hormat, dalam rangka pendataan mustahik tahun 2026, kami memohon bantuan Bapak untuk menyampaikan data warga yang memenuhi kriteria penerima zakat di wilayah Desa Sawangan.\n\nDemikian permohonan ini kami sampaikan. Atas bantuan dan kerja samanya kami ucapkan terima kasih.',tembusan:'Arsip',detail:{s1:'Sekretaris',s2:'Ketua UPZ'}}
 ];
 
@@ -130,12 +131,12 @@ function srPaperKeterangan(d, t) {
     '<div class="sr-bat"><b><u>SURAT KETERANGAN</u></b><br>Nomor : '+srEsc(d.no||'…')+'</div>'+
     '<div class="sr-body"><p class="n">Yang bertanda tangan di bawah ini:</p>'+yang+'<p class="n" style="margin-top:.6em">Menerangkan bahwa:</p>'+(dia||'')+
     '<div style="height:.4em"></div>'+(srParas(d.isi)||'<p>…</p>')+srParas(d.penutup)+'</div>'+
-    '<div class="sr-ttd-r">Cipeundeuy, '+srTgl(d.tgl)+'<br>'+(t.kanan?srEsc(t.kanan.j)+',':'')+'<i></i>'+(t.kanan&&t.kanan.n?'<u>'+srEsc(t.kanan.n)+'</u>':'<span>………………………</span>')+'</div>'+
+    '<div class="sr-ttd-r">Cipeundeuy, '+srTglCetak(d.tgl)+'<br>'+(t.kanan?srEsc(t.kanan.j)+',':'')+'<i></i>'+(t.kanan&&t.kanan.n?'<u>'+srEsc(t.kanan.n)+'</u>':'<span>………………………</span>')+'</div>'+
     srMengetahui(t)+srTembusan(d);
 }
 function srPaperSurat(d, t) {
   return srKop()+
-    '<div class="sr-meta"><table><tr><td>Nomor</td><td>: '+srEsc(d.no||'…')+'</td></tr><tr><td>Lampiran</td><td>: '+srEsc(d.lamp.trim()||'–')+'</td></tr><tr><td>Perihal</td><td>: <b>'+srEsc(d.hal||'…')+'</b></td></tr></table><div>Cipeundeuy, '+srTgl(d.tgl)+'</div></div>'+
+    '<div class="sr-meta"><table><tr><td>Nomor</td><td>: '+srEsc(d.no||'…')+'</td></tr><tr><td>Lampiran</td><td>: '+srEsc(d.lamp.trim()||'–')+'</td></tr><tr><td>Perihal</td><td>: <b>'+srEsc(d.hal||'…')+'</b></td></tr></table><div>Cipeundeuy, '+srTglCetak(d.tgl)+'</div></div>'+
     '<div class="sr-to">Kepada Yth.<br>'+(d.to.trim()?srLines(d.to).map(srEsc).join('<br>'):'…')+'</div>'+
     '<div class="sr-body"><p class="n">Assalamu’alaikum Wr. Wb.</p>'+(srParas(d.isi)||'<p>…</p>')+srAcara(d)+srParas(d.penutup)+'<p class="n">Wassalamu’alaikum Wr. Wb.</p></div>'+
     '<div class="sr-sign">'+(t.kiri?srSig('',t.kiri.j,t.kiri.n):'<div></div>')+(t.kanan?srSig('',t.kanan.j,t.kanan.n):'<div></div>')+'</div>'+
@@ -143,7 +144,7 @@ function srPaperSurat(d, t) {
 }
 function srPaperBA(d, t) {
   const [y,m,day] = String(d.tgl||'').split('-');
-  const when = d.tgl ? 'Pada hari ini '+srHari[new Date(y,m-1,day).getDay()]+' tanggal '+srTerbilang(day)+' bulan '+srBulan[m-1]+' tahun '+srTerbilang(y)+' ('+srTgl(d.tgl)+')' : 'Pada hari ini …';
+  const when = d.tgl ? 'Pada hari ini '+srHari[new Date(y,m-1,day).getDay()]+' tanggal '+srTerbilang(day)+' bulan '+srBulan[m-1]+' tahun '+srTerbilang(y)+' ('+srTglCetak(d.tgl)+')' : 'Pada hari ini …';
   const tempat = d.tempat.trim() ? ', bertempat di '+srEsc(d.tempat.trim()) : '';
   const dua = d.p2n.trim()||d.p2j.trim();
   const pihak = (n,j,i,ket) => '<table class="sr-pk"><tr><td>'+i+'.</td><td>Nama</td><td>: '+srEsc(n||'…')+'</td></tr><tr><td></td><td>Jabatan</td><td>: '+srEsc(j||'…')+'</td></tr></table><p class="n" style="margin:0 0 .4em 2.3em">'+ket+'</p>';
@@ -171,7 +172,7 @@ function srPaperTugas(d, t) {
     '<table class="sr-tg"><tbody>'+(d.menimbang.trim()?row('Menimbang',lines(d.menimbang)):'')+(d.dasar.trim()?row('Dasar',lines(d.dasar)):'')+'</tbody></table>'+
     '<div class="sr-mt">Memberi Tugas</div>'+
     '<table class="sr-tg"><tbody>'+row('Kepada',kepada)+row('Untuk',kegiatan+sub+penutup)+'</tbody></table>'+
-    '<div class="sr-ttd-r">Cipeundeuy, '+srTgl(d.tgl)+'<br>'+(t.kanan?srEsc(t.kanan.j)+',':'')+'<i></i>'+(t.kanan&&t.kanan.n?'<u>'+srEsc(t.kanan.n)+'</u>':'<span>………………………</span>')+'</div>'+
+    '<div class="sr-ttd-r">Cipeundeuy, '+srTglCetak(d.tgl)+'<br>'+(t.kanan?srEsc(t.kanan.j)+',':'')+'<i></i>'+(t.kanan&&t.kanan.n?'<u>'+srEsc(t.kanan.n)+'</u>':'<span>………………………</span>')+'</div>'+
     srMengetahui(t)+srTembusan(d);
 }
 const srPaper = (d,t) => d.jenis===SR_BA ? srPaperBA(d,t) : d.jenis===SR_TUGAS ? srPaperTugas(d,t) : d.jenis===SR_KET ? srPaperKeterangan(d,t) : srPaperSurat(d,t);
@@ -284,7 +285,7 @@ function srForm(d) {
     dasar:()=>L('Dasar',ta('dasar','Dasar penugasan, misalnya surat undangan atau SK (opsional)','62'),'full'),
     isi:()=>L(tg?'Untuk (tugas yang dilaksanakan)':ba?'Isi berita acara':kt?'Isi keterangan':j==='Surat Undangan'?'Isi undangan (paragraf pembuka)':'Isi surat',ta('isi',kt?'Uraian keterangan tentang yang bersangkutan.':'Pisahkan paragraf dengan satu baris kosong.')+(tg?'':hint(ba?'Tulis uraian atau kesepakatan. Kalimat pembuka dan penutup berita acara ditambahkan otomatis.':kt?'Judul, identitas, dan tanda tangan ditambahkan otomatis.':'Salam pembuka dan penutup ditambahkan otomatis.')),'full'),
     acara:()=>L('Acara',inp('acara','Contoh: Rapat evaluasi zakat'),'full'),
-    hari:()=>L('Hari/Tanggal',inp('hari','Senin, 30 November 2026')),
+    hari:()=>L('Hari/Tanggal',inp('hari','Senin, 30-11-2026')),
     waktu:()=>L('Waktu',inp('waktu','09.00 WIB – selesai')),
     lokasi:()=>L('Tempat',inp('lokasi','Kantor Kecamatan Cipeundeuy'),'full'),
     penutup:()=>L('Kalimat penutup',ta('penutup','Kosongkan jika tidak diperlukan','62'),'full'),
