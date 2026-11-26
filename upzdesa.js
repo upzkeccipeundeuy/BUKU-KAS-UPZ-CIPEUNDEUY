@@ -9,7 +9,7 @@ const UD_TXT = {
   ph:{crumb:'Perhimpunan',h1:'Perhimpunan UPZ Desa',desc:'Pengumpulan per UPZ DKM/RT/RW',form:'A1',title:'DATA PENGUMPULAN',group:'PENGUMPULAN',noun:'perhimpunan'},
   pd:{crumb:'Pendistribusian',h1:'Pendistribusian UPZ Desa',desc:'Pendistribusian per UPZ DKM/RT/RW',form:'B1',title:'DATA PENDISTRIBUSIAN',group:'PENDISTRIBUSIAN',noun:'pendistribusian'}
 };
-const udTabs = () => '<div class="bku-tabs no-print" role="tablist">'+[['Data UPZ Desa','Data UPZ Desa'],['Perhimpunan Desa','Perhimpunan'],['Pendistribusian Desa','Pendistribusian'],['Rekap Laporan Desa','Rekap Laporan']].map(([page,label])=>'<button type="button" role="tab" data-goto="'+page+'" aria-selected="'+(screen===page)+'" class="'+(screen===page?'on':'')+'">'+label+'</button>').join('')+'</div>';
+const udTabs = () => '<div class="bku-tabs menu-tabs no-print" role="tablist">'+[['Data UPZ Desa','Data UPZ Desa'],['Perhimpunan Desa','Perhimpunan'],['Pendistribusian Desa','Pendistribusian'],['Rekap Laporan Desa','Rekap Laporan']].map(([page,label])=>'<button type="button" role="tab" data-goto="'+page+'" aria-selected="'+(screen===page)+'" class="'+(screen===page?'on':'')+'">'+label+'</button>').join('')+'</div>';
 const udRows = kind => kind==='desa' ? UD.desa : kind==='pd' ? UD.pd : UD.ph;
 const udSqlFile = msg => /pendistribusian/i.test(msg||'') ? UD_PD_SQL : UD_SQL;
 let udOpen = false;

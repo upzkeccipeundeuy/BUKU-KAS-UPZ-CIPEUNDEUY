@@ -1643,3 +1643,29 @@ tr.xl-error td{background:#fff6f5}.xl-note{color:#a23c37;font-size:12.5px;white-
   .sr-sum .toolbar h2{width:auto}
   .sr-actions button{flex:1 1 auto}
 }
+
+
+/* ==========================================================
+   Mode HP: menu induk membuka halaman daftar submenu
+   (desktop tidak berubah; tab submenu lama disembunyikan di HP)
+   ========================================================== */
+.menu-back{display:none}
+.menu-list-page h1{margin:0;font-size:clamp(24px,6.5vw,30px);letter-spacing:-.03em;color:#143627}
+.menu-list-page .muted{margin:4px 0 16px}
+.menu-list{display:grid;gap:10px}
+.menu-row{display:flex;align-items:center;gap:14px;width:100%;min-height:64px;padding:12px 14px;text-align:left;
+  background:#fff;color:var(--ink);border:1px solid var(--line);border-radius:14px;box-shadow:0 2px 8px #153b2b08;font-weight:400}
+.menu-row:hover{transform:none;filter:none;background:var(--mint);border-color:#bfdccb}
+.menu-row:active{background:var(--mint)}
+.menu-ic{flex:none;display:grid;place-items:center;width:40px;height:40px;border-radius:12px;background:var(--mint);color:var(--green)}
+.menu-tx{flex:1;min-width:0}
+.menu-tx b{display:block;font-size:15px;font-weight:650;color:#143627}
+.menu-tx small{display:block;margin-top:1px;font-size:12.5px;line-height:1.35;color:var(--muted)}
+.menu-ch{flex:none;width:8px;height:8px;margin-right:4px;border-right:2px solid #aebfb6;border-top:2px solid #aebfb6;transform:rotate(45deg)}
+@media(max-width:900px){
+  .menu-back{display:inline-flex;align-items:center;gap:6px;margin:0 0 12px;padding:8px 14px 8px 10px;min-height:40px;
+    border-radius:99px;background:var(--mint);color:var(--green);font-size:14px;font-weight:700;box-shadow:none}
+  .menu-back:hover{filter:none;transform:none;background:#dcefe4}
+  .menu-back:before{content:"";width:8px;height:8px;margin-left:4px;border-left:2.2px solid currentColor;border-bottom:2.2px solid currentColor;transform:rotate(45deg)}
+  .menu-tabs,.sr-tabs{display:none!important}
+}

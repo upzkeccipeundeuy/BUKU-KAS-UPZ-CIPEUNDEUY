@@ -70,6 +70,62 @@ ICON['Form C2A'] = ICON['Form C2B'] = ICON['Rekap Laporan'];
 ICON['UPZ KEC'] = '<path d="M4 5.5h16v13H4z"/><path d="M8 9h8M8 12.5h8M8 16h4"/>';
 ICON['UPZ DESA'] = ICON['Data UPZ Desa'] = '<path d="M3 11.5 12 4l9 7.5"/><path d="M5.5 10v9.5h13V10"/><path d="M9 19.5v-5h6v5"/>';
 ICON['Perhimpunan Desa'] = ICON.Perhimpunan;
+
+/* ===== Mode HP: menu induk membuka halaman daftar submenu ===== */
+Object.assign(ICON,{
+  'Daftar Surat':'<path d="M8 6.5h11M8 12h11M8 17.5h11"/><path d="M4.5 6.5h.01M4.5 12h.01M4.5 17.5h.01"/>',
+  'Surat Undangan':'<path d="m4 10 8-5.5 8 5.5v8.5a1.5 1.5 0 0 1-1.5 1.5h-13A1.5 1.5 0 0 1 4 18.5z"/><path d="m4 10 8 5.5 8-5.5"/>',
+  'Surat Permohonan':'<path d="M6 3.5h9l3.5 3.5v13.5H6z"/><path d="M14.5 3.5V7h4M9 12h6.5M9 15.5h6.5"/>',
+  'Surat Pemberitahuan':'<path d="M6 16.5V11a6 6 0 0 1 12 0v5.5l1.5 2h-15z"/><path d="M10 20.5h4"/>',
+  'Surat Keterangan':'<rect x="3.5" y="5" width="17" height="11" rx="1.5"/><path d="M8 9h8M8 12h4M9 16v4l3-1.5 3 1.5v-4"/>',
+  'Surat Tugas':'<rect x="3.5" y="7.5" width="17" height="12" rx="2"/><path d="M9 7.5v-2h6v2M3.5 13h17"/>',
+  'Surat Rekomendasi':'<circle cx="12" cy="12" r="8.5"/><path d="m8.5 12.2 2.4 2.4 4.6-4.8"/>',
+  'Berita Acara':'<rect x="5.5" y="4.5" width="13" height="16" rx="2"/><path d="M9.5 4.5h5v2h-5zM9 11h6M9 14.5h6"/>'
+});
+/* item: [halaman, label, deskripsi singkat, kunci ikon] */
+function menuLists() {
+  return {
+    surat:{title:'Surat',desc:'Ketik dan kelola surat UPZ.',group:suratGroup,first:'Daftar Surat',items:[
+      ['Daftar Surat','Daftar Surat','Ringkasan semua surat','Daftar Surat'],
+      ['Surat Undangan','Surat Undangan','Undangan rapat dan acara','Surat Undangan'],
+      ['Surat Permohonan','Surat Permohonan','Permohonan resmi','Surat Permohonan'],
+      ['Surat Pemberitahuan','Surat Pemberitahuan','Pemberitahuan kegiatan','Surat Pemberitahuan'],
+      ['Surat Keterangan','Surat Keterangan','Keterangan resmi','Surat Keterangan'],
+      ['Surat Tugas','Surat Tugas','Penugasan pengurus','Surat Tugas'],
+      ['Surat Rekomendasi','Surat Rekomendasi','Rekomendasi penerima','Surat Rekomendasi'],
+      ['Berita Acara','Berita Acara','Berita acara kegiatan','Berita Acara']]},
+    bku:{title:'BKU',desc:'Buku Kas Umum UPZ.',group:bkuGroup,first:'BKU',items:[
+      ['BKU','Ringkasan','Saldo dan rincian kas per bulan','BKU'],
+      ['Pemasukan','Pemasukan','Catatan uang masuk','Pemasukan'],
+      ['Pengeluaran','Pengeluaran','Catatan uang keluar','Pengeluaran'],
+      ['Cetak Laporan','Cetak Laporan','Laporan siap cetak','Cetak Laporan']]},
+    ud:{title:'UPZ DESA',desc:'Data dan laporan UPZ tingkat desa dan kelurahan.',group:udGroup,first:'Data UPZ Desa',items:[
+      ['Data UPZ Desa','Data UPZ Desa','Identitas UPZ desa dan kelurahan','Data UPZ Desa'],
+      ['Perhimpunan Desa','Perhimpunan','Dana zakat yang dikumpulkan','Perhimpunan Desa'],
+      ['Pendistribusian Desa','Pendistribusian','Dana zakat yang disalurkan','Pendistribusian Desa'],
+      ['Rekap Laporan Desa','Rekap Laporan','Rekap laporan per desa','Rekap Laporan Desa']]},
+    upzkec:{title:'UPZ KEC',desc:'Data dan laporan UPZ tingkat kecamatan.',group:upzkecGroup,first:'Perhimpunan',items:[
+      ['Perhimpunan','Perhimpunan','Dana zakat yang dikumpulkan','Perhimpunan'],
+      ['Pendistribusian','Pendistribusian','Dana zakat yang disalurkan','Pendistribusian'],
+      ['Form C2A','Rekap Laporan','Form C2A dan C2B','Rekap Laporan']]}
+  };
+}
+function menuKeyOf(name) {
+  const m = menuLists();
+  return Object.keys(m).find(k=>m[k].group.includes(name)) || '';
+}
+function menuListPage(key) {
+  const m = menuLists()[key];
+  if(!m) return '<section class="panel"><p class="muted">Menu tidak ditemukan.</p></section>';
+  return '<section class="menu-list-page"><h1>'+esc(m.title)+'</h1><p class="muted">'+esc(m.desc)+'</p><div class="menu-list">'+
+    m.items.map(([page,label,desc,icon])=>'<button type="button" class="menu-row" data-goto="'+esc(page)+'"><span class="menu-ic" aria-hidden="true">'+svgIcon(icon)+'</span><span class="menu-tx"><b>'+esc(label)+'</b><small>'+esc(desc)+'</small></span><span class="menu-ch" aria-hidden="true"></span></button>').join('')+
+    '</div></section>';
+}
+function menuBack(name) {
+  const key = menuKeyOf(name);
+  if(!key) return '';
+  return '<button type="button" class="menu-back no-print" data-goto="Menu:'+key+'" aria-label="Kembali ke daftar menu '+esc(menuLists()[key].title)+'">'+esc(menuLists()[key].title)+'</button>';
+}
 ICON['Pendistribusian Desa'] = ICON.Pendistribusian;
 ICON['Rekap Laporan Desa'] = ICON['Rekap Laporan'];
 ICON.Surat = '<rect x="3.5" y="5.5" width="17" height="13" rx="2"/><path d="m4 7.5 8 6 8-6"/>';
@@ -172,6 +228,7 @@ async function refresh() {
 
 function go(name) {
   if(name==='Surat') name='Daftar Surat';
+  if(String(name).startsWith('Menu:')) window.scrollTo(0,0);
   screen=name;
   loadPrivateContacts();
   if(bkuGroup.includes(name)) bkuOpen=true;
@@ -706,12 +763,12 @@ async function deletePh(kind,record) {
 
 function kecTabs() {
   const cur=rekapGroup.includes(screen)?'Form C2A':screen;
-  return '<div class="bku-tabs no-print" role="tablist">'+[['Perhimpunan','Perhimpunan'],['Pendistribusian','Pendistribusian'],['Form C2A','Rekap Laporan']].map(([page,label])=>
+  return '<div class="bku-tabs menu-tabs no-print" role="tablist">'+[['Perhimpunan','Perhimpunan'],['Pendistribusian','Pendistribusian'],['Form C2A','Rekap Laporan']].map(([page,label])=>
     '<button type="button" role="tab" data-goto="'+page+'" aria-selected="'+(cur===page)+'" class="'+(cur===page?'on':'')+'">'+label+'</button>').join('')+'</div>';
 }
 
 function bkuTabs() {
-  return '<div class="bku-tabs no-print" role="tablist">'+[['BKU','Ringkasan'],['Pemasukan','Pemasukan'],['Pengeluaran','Pengeluaran'],['Cetak Laporan','Cetak']].map(([page,label])=>
+  return '<div class="bku-tabs menu-tabs no-print" role="tablist">'+[['BKU','Ringkasan'],['Pemasukan','Pemasukan'],['Pengeluaran','Pengeluaran'],['Cetak Laporan','Cetak']].map(([page,label])=>
     '<button type="button" role="tab" data-goto="'+page+'" aria-selected="'+(screen===page)+'" class="'+(screen===page?'on':'')+'">'+label+'</button>').join('')+'</div>';
 }
 
@@ -720,21 +777,22 @@ function render() {
   $('status').hidden = !failure&&!simulated;
   $('status').textContent = failure || (simulated?'Mode demo · Seluruh perubahan hanya berlaku selama halaman ini terbuka.':'');
   const navButton = (name,label,iconName,extra='')=>'<button type="button" data-page="'+name+'" class="'+(screen===name?'active':'')+extra+'" '+(screen===name?'aria-current="page"':'')+'><span class="nav-icon" aria-hidden="true">'+svgIcon(iconName)+'</span><span class="nav-label">'+label+'</span></button>';
-  const inBku = bkuGroup.includes(screen);
+  const menuKey = String(screen).startsWith('Menu:')?String(screen).slice(5):'';
+  const inBku = bkuGroup.includes(screen)||menuKey==='bku';
   $('nav').innerHTML = items.map(([name])=>{
     if(name==='Pemasukan'||name==='Pengeluaran'||name==='Cetak Laporan') return '';
     if(name==='Surat') {
-      const inSr = suratGroup.includes(screen);
+      const inSr = suratGroup.includes(screen)||menuKey==='surat';
       return '<button type="button" id="suratParent" class="nav-parent'+(inSr?' in-group active':'')+(suratOpen?' open':'')+'" '+(inSr?'aria-current="page" ':'')+'aria-expanded="'+suratOpen+'" aria-controls="suratSub"><span class="nav-icon" aria-hidden="true">'+svgIcon('Surat')+'</span><span class="nav-label">Surat</span><span class="nav-chevron" aria-hidden="true"></span></button>'+
         '<div class="nav-sub'+(suratOpen?' show':'')+'" id="suratSub">'+suratGroup.map(n=>navButton(n,n,'Surat')).join('')+'</div>';
     }
     if(name==='UPZ DESA') {
-      const inUd = udGroup.includes(screen);
+      const inUd = udGroup.includes(screen)||menuKey==='ud';
       return '<button type="button" id="udParent" class="nav-parent'+(inUd?' in-group active':'')+(udOpen?' open':'')+'" '+(inUd?'aria-current="page" ':'')+'aria-expanded="'+udOpen+'" aria-controls="udSub"><span class="nav-icon" aria-hidden="true">'+svgIcon('UPZ DESA')+'</span><span class="nav-label">UPZ DESA</span><span class="nav-chevron" aria-hidden="true"></span></button>'+
         '<div class="nav-sub'+(udOpen?' show':'')+'" id="udSub">'+navButton('Data UPZ Desa','Data UPZ Desa','Data UPZ Desa')+navButton('Perhimpunan Desa','Perhimpunan','Perhimpunan Desa')+navButton('Pendistribusian Desa','Pendistribusian','Pendistribusian Desa')+navButton('Rekap Laporan Desa','Rekap Laporan','Rekap Laporan Desa')+'</div>';
     }
     if(name==='UPZ KEC') {
-      const inUpzKec = upzkecGroup.includes(screen);
+      const inUpzKec = upzkecGroup.includes(screen)||menuKey==='upzkec';
       const rekapActive = rekapGroup.includes(screen);
       return '<button type="button" id="upzkecParent" class="nav-parent'+(inUpzKec?' in-group active':'')+(upzkecOpen?' open':'')+'" '+(inUpzKec?'aria-current="page" ':'')+'aria-expanded="'+upzkecOpen+'" aria-controls="upzkecSub"><span class="nav-icon" aria-hidden="true">'+svgIcon('UPZ KEC')+'</span><span class="nav-label">UPZ KEC</span><span class="nav-chevron" aria-hidden="true"></span></button>'+
         '<div class="nav-sub'+(upzkecOpen?' show':'')+'" id="upzkecSub">'+navButton('Perhimpunan','Perhimpunan','Perhimpunan')+navButton('Pendistribusian','Pendistribusian','Pendistribusian')+'<button type="button" data-page="Form C2A" class="'+(rekapActive?'active':'')+'" '+(rekapActive?'aria-current="page"':'')+'><span class="nav-icon" aria-hidden="true">'+svgIcon('Rekap Laporan')+'</span><span class="nav-label">Rekap Laporan</span></button></div>';
@@ -751,7 +809,9 @@ function render() {
   const data = summary.filter(r=>!month||r.bulan.startsWith(month));
   const list = rows.filter(r=>!month||r.tanggal.startsWith(month));
   let content;
-  if(screen==='Dashboard') {
+  if(String(screen).startsWith('Menu:')) {
+    content = menuListPage(String(screen).slice(5));
+  } else if(screen==='Dashboard') {
     phDashEnsure();
     const saldo = totals(summary)[2];
     content = dashboardPage();
@@ -793,6 +853,7 @@ function render() {
       (admin()?'<button id="add">Tambah '+esc(type?screen:'Transaksi')+'</button>':'')+
       '</div>'+(admin()?transactionFilters(type?list.filter(r=>Number(r[type])>0):list)+ledger(selection,true):publicLedger(data,screen))+'</section>';
   }
+  content = menuBack(screen)+content;
   $('page').innerHTML = content;
   $('period')?.addEventListener('change',e=>{month=e.target.value;render();});
   $('dashPhYear')?.addEventListener('change',e=>{phState.Perhimpunan.year=phState.Pendistribusian.year=e.target.value;render();});
@@ -994,7 +1055,7 @@ $('nav').addEventListener('click',event=>{
   const upzkecParent=event.target.closest('#upzkecParent');
   if(upzkecParent) {
     if(window.matchMedia('(max-width:900px)').matches) {
-      if(!upzkecGroup.includes(screen)) go('Perhimpunan');
+      go('Menu:upzkec');
       return;
     }
     upzkecOpen=!upzkecOpen;
@@ -1006,7 +1067,7 @@ $('nav').addEventListener('click',event=>{
   const suratParent=event.target.closest('#suratParent');
   if(suratParent) {
     if(window.matchMedia('(max-width:900px)').matches) {
-      if(!suratGroup.includes(screen)) go('Daftar Surat');
+      go('Menu:surat');
       return;
     }
     suratOpen=!suratOpen;
@@ -1018,7 +1079,7 @@ $('nav').addEventListener('click',event=>{
   const udParent=event.target.closest('#udParent');
   if(udParent) {
     if(window.matchMedia('(max-width:900px)').matches) {
-      if(!udGroup.includes(screen)) go('Data UPZ Desa');
+      go('Menu:ud');
       return;
     }
     udOpen=!udOpen;
@@ -1042,7 +1103,7 @@ $('nav').addEventListener('click',event=>{
   const parent=event.target.closest('#bkuParent');
   if(parent) {
     if(window.matchMedia('(max-width:900px)').matches) {
-      if(!bkuGroup.includes(screen)) go('BKU');
+      go('Menu:bku');
       return;
     }
     bkuOpen=!bkuOpen;
@@ -1065,6 +1126,12 @@ $('nav').addEventListener('click',event=>{
     return;
   }
   go(button.dataset.page);
+});
+window.matchMedia('(max-width:900px)').addEventListener?.('change',e=>{
+  if(!e.matches&&String(screen).startsWith('Menu:')) {
+    const m=menuLists()[String(screen).slice(5)];
+    go(m?m.first:'Dashboard');
+  }
 });
 refresh();
 loadProfile();
