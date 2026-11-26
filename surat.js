@@ -329,19 +329,23 @@ function srForm(d) {
     '<div class="sr-actions"><button type="button" id="srSave">Simpan Surat</button><button type="button" class="secondary" id="srPrint2">Cetak / PDF</button>'+(SR.cur!=null?'<button type="button" class="danger" id="srDel">Hapus</button>':'')+'</div></form>';
 }
 const srTabs = () => '<div class="sr-tabs no-print" role="tablist">'+SR_MENU.map(n=>'<button type="button" data-page="'+srEsc(n)+'" class="'+(n===screen?'on':'')+'">'+srEsc(n.replace('Surat ',''))+'</button>').join('')+'</div>';
+/* Warna tiap jenis surat (dipakai untuk label dan kartu ringkasan) */
+const SR_WARNA = {'Surat Undangan':'und','Surat Permohonan':'per','Surat Pemberitahuan':'pem','Surat Keterangan':'ket','Surat Tugas':'tug','Berita Acara':'ba'};
+const srWarna = j => 't-'+(SR_WARNA[j]||'tug');
+const SR_IKON = '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 3.5h9l3.5 3.5v13.5H6z"/><path d="M14.5 3.5V7h4M9 12h6.5M9 15.5h6.5"/></svg>';
 function srSummaryRows() {
   const q = SR.q.trim().toLowerCase();
   const list = SR.rows.filter(r=>(!SR.f||r.jenis===SR.f)&&(!q||(String(r.nomor||'')+' '+String(r.perihal||'')).toLowerCase().includes(q)));
-  return list.length ? list.map(r=>'<tr class="sr-row" data-sr-go="'+srEsc(r.jenis)+'" data-sr-want="'+srEsc(r.id)+'"><td>'+srEsc(r.nomor)+'</td><td>'+srTgl(r.tanggal)+'</td><td><span class="sr-tag">'+srEsc(String(r.jenis).replace('Surat ',''))+'</span></td><td>'+srEsc(r.perihal)+'</td></tr>').join('') : '<tr><td colspan="4" class="muted">Tidak ada surat yang cocok.</td></tr>';
+  return list.length ? list.map(r=>'<tr class="sr-row" data-sr-go="'+srEsc(r.jenis)+'" data-sr-want="'+srEsc(r.id)+'"><td class="no">'+srEsc(r.nomor)+'</td><td class="tg">'+srTgl(r.tanggal)+'</td><td class="jn"><span class="sr-tag '+srWarna(r.jenis)+'">'+srEsc(String(r.jenis).replace('Surat ',''))+'</span></td><td class="ph">'+srEsc(r.perihal)+'</td><td class="ar" aria-hidden="true">›</td></tr>').join('') : '<tr><td colspan="5" class="sr-empty">Tidak ada surat yang cocok dengan pencarian.</td></tr>';
 }
 function srSummaryPage(head) {
   const cards = SR_JENIS.map(j=>{
     const l = SR.rows.filter(r=>r.jenis===j);
-    return '<button type="button" class="sr-card" data-page="'+srEsc(j)+'"><span class="n">'+l.length+'</span><b>'+srEsc(j)+'</b><small>'+(l[0]?'Terakhir: '+srEsc(l[0].perihal)+' · '+srTgl(l[0].tanggal):'Belum ada surat')+'</small><span class="go">Buka →</span></button>';
+    return '<button type="button" class="sr-card '+srWarna(j)+(l.length?'':' zero')+'" data-page="'+srEsc(j)+'"><span class="sr-card-top"><span class="ic">'+SR_IKON+'</span><span class="n">'+l.length+'</span></span><b>'+srEsc(j)+'</b><small>'+(l[0]?'Terakhir: '+srEsc(l[0].perihal)+'<em>'+srTgl(l[0].tanggal)+'</em>':'Belum ada surat')+'</small><span class="go">Buka <i>→</i></span></button>';
   }).join('');
   return '<div class="surat-page">'+head+srTabs()+'<div class="sr-cards no-print">'+cards+'</div>'+
-    '<section class="panel no-print"><div class="toolbar"><h2>Surat Terbaru ('+SR.rows.length+' surat)</h2><div class="sr-filter"><input id="srQ" type="search" placeholder="Cari nomor / perihal" value="'+srEsc(SR.q)+'"><select id="srF"><option value="">Semua jenis</option>'+SR_JENIS.map(j=>'<option'+(j===SR.f?' selected':'')+'>'+srEsc(j)+'</option>').join('')+'</select></div></div>'+
-    '<div class="sr-tablewrap"><table class="sr-table"><thead><tr><th>Nomor</th><th>Tanggal</th><th>Jenis</th><th>Perihal</th></tr></thead><tbody id="srTb">'+srSummaryRows()+'</tbody></table></div></section></div>';
+    '<section class="panel sr-sum no-print"><div class="toolbar"><h2>Surat Terbaru<span class="sr-count">'+SR.rows.length+' surat</span></h2><div class="sr-filter"><input id="srQ" type="search" placeholder="Cari nomor / perihal" value="'+srEsc(SR.q)+'"><select id="srF"><option value="">Semua jenis</option>'+SR_JENIS.map(j=>'<option'+(j===SR.f?' selected':'')+'>'+srEsc(j)+'</option>').join('')+'</select></div></div>'+
+    '<div class="sr-tablewrap"><table class="sr-table"><thead><tr><th>Nomor</th><th>Tanggal</th><th>Jenis</th><th>Perihal</th><th></th></tr></thead><tbody id="srTb">'+srSummaryRows()+'</tbody></table></div></section></div>';
 }
 function suratPage() {
   const adm = admin(), jn = srJenisNow();
