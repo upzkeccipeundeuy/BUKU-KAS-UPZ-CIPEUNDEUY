@@ -1505,3 +1505,13 @@ tr.xl-error td{background:#fff6f5}.xl-note{color:#a23c37;font-size:12.5px;white-
 
 /* Kop surat berupa gambar: tidak terpengaruh ukuran font */
 .surat-paper .sr-kop.sr-kop-img,.surat-paper .sr-kop.sr-kop-img *{font-size:inherit!important}
+
+/* ---------- Pratinjau surat berukuran A4 (210 x 297 mm) ---------- */
+@media screen{
+  .sr-stage{overflow-x:auto;display:flex;justify-content:flex-start}
+  .surat-page .surat-paper{box-sizing:border-box;flex:none;width:210mm;min-width:210mm;max-width:210mm;min-height:297mm;aspect-ratio:auto;margin:0 auto;padding:20mm;background:#fff}
+}
+@media screen and (max-width:1200px){.surat-page .surat-paper{zoom:.8}}
+@media screen and (max-width:900px){.surat-page .surat-paper{zoom:.7}}
+@media screen and (max-width:700px){.surat-page .surat-paper{zoom:.55}}
+@media screen and (max-width:480px){.surat-page .surat-paper{zoom:.4}}
