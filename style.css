@@ -1626,3 +1626,20 @@ tr.xl-error td{background:#fff6f5}.xl-note{color:#a23c37;font-size:12.5px;white-
 }
 @media screen and (max-width:700px){.surat-page .surat-paper{zoom:calc(.55 / var(--ui-zoom-hp))}}
 @media screen and (max-width:480px){.surat-page .surat-paper{zoom:calc(.4 / var(--ui-zoom-hp))}}
+
+
+/* ==========================================================
+   Surat (HP): tab submenu rapi, bisa digeser, dan mudah disentuh
+   ========================================================== */
+@media(max-width:900px){
+  .sr-tabs{display:flex;flex-wrap:nowrap;gap:6px;padding:5px;margin:0 0 16px;overflow-x:auto;overflow-y:hidden;
+    scroll-snap-type:x proximity;-webkit-overflow-scrolling:touch;overscroll-behavior-x:contain;scrollbar-width:none;touch-action:pan-x}
+  .sr-tabs::-webkit-scrollbar{display:none}
+  .sr-tabs button{flex:0 0 auto;min-height:40px;padding:9px 15px;font-size:13px;line-height:1.2;border-radius:9px;scroll-snap-align:center}
+  .sr-tabs button.on{background:var(--green);color:#fff;box-shadow:0 2px 6px #176b4a33}
+  .surat-page h1{font-size:clamp(22px,6vw,28px)}
+  .surat-page .muted{font-size:13.5px}
+  .sr-sum .toolbar{display:grid;gap:10px}
+  .sr-sum .toolbar h2{width:auto}
+  .sr-actions button{flex:1 1 auto}
+}

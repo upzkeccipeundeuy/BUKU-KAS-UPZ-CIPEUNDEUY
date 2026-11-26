@@ -364,7 +364,7 @@ function srForm(d) {
     (SR_LAYOUT[j]||SR_LAYOUT[SR_JENIS[0]]).map(k=>F[k]()).join('')+
     '<div class="sr-actions"><button type="button" id="srSave">Simpan Surat</button><button type="button" class="secondary" id="srPrint2">Cetak / PDF</button>'+(SR.cur!=null?'<button type="button" class="danger" id="srDel">Hapus</button>':'')+'</div></form>';
 }
-const srTabs = () => '<div class="sr-tabs no-print" role="tablist">'+SR_MENU.map(n=>'<button type="button" data-page="'+srEsc(n)+'" class="'+(n===screen?'on':'')+'">'+srEsc(n.replace('Surat ',''))+'</button>').join('')+'</div>';
+const srTabs = () => '<div class="sr-tabs no-print" role="tablist">'+SR_MENU.map(n=>'<button type="button" role="tab" data-goto="'+srEsc(n)+'" aria-selected="'+(n===screen)+'" class="'+(n===screen?'on':'')+'">'+srEsc(n.replace('Surat ',''))+'</button>').join('')+'</div>';
 /* Warna tiap jenis surat (dipakai untuk label dan kartu ringkasan) */
 const SR_WARNA = {'Surat Undangan':'und','Surat Permohonan':'per','Surat Pemberitahuan':'pem','Surat Keterangan':'ket','Surat Tugas':'tug','Surat Rekomendasi':'rek','Berita Acara':'ba'};
 const srWarna = j => 't-'+(SR_WARNA[j]||'tug');
@@ -377,7 +377,7 @@ function srSummaryRows() {
 function srSummaryPage(head) {
   const cards = SR_JENIS.map(j=>{
     const l = SR.rows.filter(r=>r.jenis===j);
-    return '<button type="button" class="sr-card '+srWarna(j)+(l.length?'':' zero')+'" data-page="'+srEsc(j)+'"><span class="sr-card-top"><span class="ic">'+SR_IKON+'</span><span class="n">'+l.length+'</span></span><b>'+srEsc(j)+'</b><small>'+(l[0]?'Terakhir: '+srEsc(l[0].perihal)+'<em>'+srTgl(l[0].tanggal)+'</em>':'Belum ada surat')+'</small><span class="go">Buka <i>→</i></span></button>';
+    return '<button type="button" class="sr-card '+srWarna(j)+(l.length?'':' zero')+'" data-goto="'+srEsc(j)+'"><span class="sr-card-top"><span class="ic">'+SR_IKON+'</span><span class="n">'+l.length+'</span></span><b>'+srEsc(j)+'</b><small>'+(l[0]?'Terakhir: '+srEsc(l[0].perihal)+'<em>'+srTgl(l[0].tanggal)+'</em>':'Belum ada surat')+'</small><span class="go">Buka <i>→</i></span></button>';
   }).join('');
   return '<div class="surat-page">'+head+srTabs()+'<div class="sr-cards no-print">'+cards+'</div>'+
     '<section class="panel sr-sum no-print"><div class="toolbar"><h2>Surat Terbaru<span class="sr-count">'+SR.rows.length+' surat</span></h2><div class="sr-filter"><input id="srQ" type="search" placeholder="Cari nomor / perihal" value="'+srEsc(SR.q)+'"><select id="srF"><option value="">Semua jenis</option>'+SR_JENIS.map(j=>'<option'+(j===SR.f?' selected':'')+'>'+srEsc(j)+'</option>').join('')+'</select></div></div>'+
@@ -414,6 +414,9 @@ function srBindRows() {
 }
 function bindSurat() {
   srBindRows();
+  // Tab aktif digeser ke tengah agar terlihat di HP
+  const srTb=document.querySelector('.sr-tabs'), srOn=srTb&&srTb.querySelector('.on');
+  if(srOn) srTb.scrollLeft=srOn.offsetLeft-(srTb.clientWidth-srOn.offsetWidth)/2;
   const redraw = () => {const tb=$('srTb'); if(tb) {tb.innerHTML=srSummaryRows(); srBindRows();}};
   $('srQ')?.addEventListener('input',e=>{SR.q=e.target.value; redraw();});
   $('srF')?.addEventListener('change',e=>{SR.f=e.target.value; redraw();});
