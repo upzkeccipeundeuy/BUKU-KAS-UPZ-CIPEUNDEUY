@@ -1491,7 +1491,7 @@ tr.xl-error td{background:#fff6f5}.xl-note{color:#a23c37;font-size:12.5px;white-
 .surat-paper .sr-tg{width:100%;table-layout:fixed}
 
 /* ---------- Surat: seluruh font Arial 11 pt ---------- */
-.surat-paper,.surat-paper *{font-family:Arial,Helvetica,sans-serif!important;font-size:11pt!important}
+.surat-paper,.surat-paper *{font-family:Arial,Helvetica,sans-serif!important;font-size:12pt!important}
 .surat-paper .sr-tg2{width:100%}
 .surat-paper .sr-tg2 td.l{width:38%;white-space:nowrap}
 .surat-paper .sr-tg2 td.c{width:6%}
@@ -1502,3 +1502,6 @@ tr.xl-error td{background:#fff6f5}.xl-note{color:#a23c37;font-size:12.5px;white-
 /* ---------- Kop surat berupa gambar (kop-surat.png) ---------- */
 .surat-paper .sr-kop.sr-kop-img{display:block;border:0;padding:0;margin:0 0 3mm;text-align:center}
 .surat-paper .sr-kop.sr-kop-img img{display:block;width:100%;height:auto;max-width:100%;object-fit:contain}
+
+/* Kop surat berupa gambar: tidak terpengaruh ukuran font */
+.surat-paper .sr-kop.sr-kop-img,.surat-paper .sr-kop.sr-kop-img *{font-size:inherit!important}
