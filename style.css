@@ -1589,3 +1589,21 @@ tr.xl-error td{background:#fff6f5}.xl-note{color:#a23c37;font-size:12.5px;white-
   .sr-table td.ph{grid-column:1/-1;grid-row:2;min-width:0}.sr-table td.tg{grid-column:1/-1;grid-row:3;font-size:12.5px}
   .sr-table td.ar{display:none}
 }
+
+/* Surat Rekomendasi */
+.t-rek{--c:#0b6e8a;--bg:#e1f3f8}
+.sr-sec{margin:6px 0 0;font-size:14px;font-weight:700;color:#234438;padding-bottom:6px;border-bottom:1px solid var(--line)}
+.sr-cbs{display:grid;grid-template-columns:1fr 1fr;gap:8px 14px}
+.sr-form .sr-chk{display:flex;flex-direction:row;align-items:center;gap:8px;font-weight:500;color:var(--ink)}
+.sr-form .sr-chk input{width:auto;flex:none;margin:0;accent-color:var(--green)}
+@media(max-width:600px){.sr-cbs{grid-template-columns:1fr}}
+.surat-paper .sr-gap{margin-top:5mm}
+.surat-paper table.sr-tg2.ind{width:calc(100% - 9mm);margin-left:9mm}
+.surat-paper .sr-cb{display:grid;grid-template-columns:1fr 1fr;gap:0 6mm;margin:3mm 0 0 9mm}
+.surat-paper .sr-cbi{display:flex;align-items:flex-start;gap:4mm;margin-bottom:3.5mm;line-height:1.25}
+.surat-paper .sr-cbi .bx{flex:none;width:6mm;height:5mm;border:1.4px solid #000;box-sizing:border-box;position:relative}
+.surat-paper .sr-cbi .bx.on:after{content:"";position:absolute;left:1.9mm;top:.2mm;width:1.5mm;height:3.4mm;border:solid #000;border-width:0 .5mm .5mm 0;transform:rotate(45deg)}
+.surat-paper .sr-cbi .tx{display:block;padding-top:.3mm}
+.surat-paper .sr-cbi small{display:block;font-size:8.5pt;line-height:1.2}
+.surat-paper table.sr-tg2 tr,.surat-paper table.sr-tg2 tr:hover{background:transparent!important}
+.sr-form>label{align-content:start}
