@@ -1379,3 +1379,70 @@ tr.xl-error td{background:#fff6f5}.xl-note{color:#a23c37;font-size:12.5px;white-
   .surat-paper{font-size:12pt;width:100%;max-width:none;min-width:0;aspect-ratio:auto;padding:0;margin:0;box-shadow:none}
   .sr-sign,.sr-cc,.sr-meta{break-inside:avoid}
 }
+
+/* Perbaikan layout pratinjau dan cetak surat: A4 proporsional, tidak terpotong */
+.surat-paper{aspect-ratio:auto;min-height:297mm;padding:18mm 20mm;display:block;line-height:1.45;font-size:11.5pt;overflow:visible}
+.sr-kop{grid-template-columns:24mm minmax(0,1fr);gap:5mm;padding-bottom:4mm;border-bottom:3px double #111;text-align:center}
+.sr-kop img{width:23mm;height:23mm}
+.sr-kop b{font-size:12pt;line-height:1.25}
+.sr-kop span{font-size:9.5pt;line-height:1.3}
+.sr-bat{margin:8mm 0 6mm;line-height:1.4}
+.sr-tg{width:100%;table-layout:fixed;margin:3mm 0}
+.sr-tg td{padding:1.5mm 1mm;vertical-align:top}
+.sr-tg td.l{width:25%;white-space:normal}
+.sr-tg td.c{width:5%;text-align:center}
+.sr-tg td.v{width:70%;overflow-wrap:anywhere}
+.sr-mt{margin:4mm 0 2mm}
+.sr-tg2{width:100%;margin:3mm 0 1mm}
+.sr-tg2 td.l{width:26%}
+.sr-tg2 td.c{width:5%;text-align:center}
+.sr-ttd-r{width:55%;margin:10mm 0 0 auto;text-align:center;break-inside:avoid}
+.sr-ttd-r i{display:block;height:22mm}
+.sr-sign{gap:12mm;break-inside:avoid}
+.sr-sign>div{min-width:40%;max-width:50%}
+.sr-cc{margin-top:8mm}
+@media screen{
+ .sr-stage{padding:22px}
+ .surat-paper{width:min(100%,210mm);min-width:0;margin:0 auto;box-shadow:0 8px 26px #0002;border:1px solid #e5e5e5;border-radius:2px}
+}
+@media print{
+ .surat-page .sr-grid{display:block}
+ .surat-page .panel{padding:0!important}
+ .surat-paper{width:100%;min-height:0;margin:0;padding:0;box-shadow:none;border:0;border-radius:0;font-size:11pt}
+ .sr-kop{grid-template-columns:25mm 1fr}
+ .sr-kop img{width:24mm;height:24mm}
+ .sr-tg td{padding:1.5mm 0}
+ .sr-ttd-r i{height:20mm}
+}
+
+/* === PATCH LAYOUT SURAT: Undangan/Permohonan/Pemberitahuan/Keterangan, Tugas, BA === */
+.surat-paper{box-sizing:border-box;color:#111;background:#fff;font-family:"Times New Roman",Times,serif;font-size:11pt;line-height:1.45;overflow-wrap:break-word}
+.surat-paper *{box-sizing:border-box}
+.sr-kop{align-items:center;padding-bottom:4mm;margin-bottom:2mm}
+.sr-kop img{object-fit:contain}
+.sr-kop b{font-weight:700}
+.sr-meta table{border-collapse:collapse}
+.sr-meta td{padding:0 2mm 0 0}
+.sr-to,.sr-body{line-height:1.5}
+.sr-body p{margin:0 0 3mm;text-align:justify}
+.sr-body p.n{text-indent:0}
+.sr-tg,.sr-tg2{border-collapse:collapse}
+.sr-tg td,.sr-tg2 td{border:0;background:transparent}
+.sr-tg td.l{width:27%}
+.sr-tg td.c{width:4%;text-align:center}
+.sr-tg td.v{width:69%}
+.sr-sign{align-items:flex-start}
+.sr-sign>div{flex:1 1 0;min-width:0}
+.sr-ttd-r{margin-top:12mm}
+.sr-cc{font-size:10pt}
+@media screen{.surat-paper{min-height:297mm}}
+@media print{
+ @page srsurat{size:A4 portrait;margin:15mm 18mm}
+ .surat-page{page:srsurat}
+ .surat-page .sr-stage{padding:0!important;background:none!important;overflow:visible}
+ .surat-page .surat-paper{width:auto;min-width:0;max-width:none;min-height:0;padding:0!important;margin:0!important;border:0!important;border-radius:0!important;box-shadow:none!important;font-size:11pt;line-height:1.45}
+ .sr-kop{grid-template-columns:25mm minmax(0,1fr);gap:5mm}
+ .sr-kop img{width:24mm;height:24mm}
+ .sr-meta,.sr-sign,.sr-ttd-r,.sr-pk{break-inside:avoid}
+ .sr-tg td{padding:1.2mm 0}
+}
