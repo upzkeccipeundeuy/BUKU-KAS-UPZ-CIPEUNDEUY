@@ -101,10 +101,8 @@ const srSavedTtd = () => SR.rows.find(r=>r.id===SR.cur)?.detail?.ttd;
 
 /* ---------- Tampilan kertas surat (dipakai untuk pratinjau dan cetak) ---------- */
 function srKop() {
-  const i = profile?.identitas || {};
-  const logo = (typeof profileImage==='function'&&profileImage(i.foto)) || 'logo-baznas.png';
-  const kontak = [i.alamat?profileAddress(i.alamat):'',[i.telepon?'Telp. '+i.telepon:'',i.email].filter(Boolean).join(' · ')].filter(Boolean);
-  return '<div class="sr-kop"><img src="'+srEsc(logo)+'" alt=""><div><b>UNIT PENGUMPUL ZAKAT (UPZ)<br>KECAMATAN CIPEUNDEUY</b><span>BAZNAS Kabupaten Subang</span>'+kontak.map(x=>'<span>'+srEsc(x)+'</span>').join('')+'</div></div>';
+  // Kop surat berupa gambar resmi (sudah memuat logo, nama UPZ, alamat, kontak, dan garis ganda)
+  return '<div class="sr-kop sr-kop-img"><img src="kop-surat.png" alt="Kop surat BAZNAS Kabupaten Subang — UPZ Kecamatan Cipeundeuy"></div>';
 }
 const srLines = s => String(s||'').split('\n').filter(x=>x.trim());
 function srParas(text) {
