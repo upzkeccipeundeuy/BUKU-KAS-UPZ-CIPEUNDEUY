@@ -1607,3 +1607,22 @@ tr.xl-error td{background:#fff6f5}.xl-note{color:#a23c37;font-size:12.5px;white-
 .surat-paper .sr-cbi small{display:block;font-size:8.5pt;line-height:1.2}
 .surat-paper table.sr-tg2 tr,.surat-paper table.sr-tg2 tr:hover{background:transparent!important}
 .sr-form>label{align-content:start}
+
+/* ==========================================================
+   Skala tampilan mode HP (<=900px). Desktop dan cetak tidak terpengaruh.
+   Ubah --ui-zoom-hp: 1 = ukuran asli, .9 = 90%, .85 = 85%, .8 = 80%.
+   ========================================================== */
+:root{--ui-zoom-hp:.85}
+@media screen and (max-width:900px){
+  html{zoom:var(--ui-zoom-hp)}
+  /* satuan tinggi layar ikut dikompensasi agar halaman tetap setinggi layar */
+  body{min-height:calc(100vh / var(--ui-zoom-hp))}
+  #modal{max-height:calc(90vh / var(--ui-zoom-hp))}
+  dialog{max-height:calc(90dvh / var(--ui-zoom-hp))}
+  .scroll:has(.ledger-table){max-height:calc(72vh / var(--ui-zoom-hp))}
+  .xl-scroll{max-height:calc(55vh / var(--ui-zoom-hp))}
+  /* pratinjau kertas surat sudah punya zoom sendiri; dikompensasi agar ukurannya tetap */
+  .surat-page .surat-paper{zoom:calc(.7 / var(--ui-zoom-hp))}
+}
+@media screen and (max-width:700px){.surat-page .surat-paper{zoom:calc(.55 / var(--ui-zoom-hp))}}
+@media screen and (max-width:480px){.surat-page .surat-paper{zoom:calc(.4 / var(--ui-zoom-hp))}}

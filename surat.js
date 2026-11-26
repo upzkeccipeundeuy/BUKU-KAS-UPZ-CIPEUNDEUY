@@ -52,6 +52,7 @@ const srBulan = ['Januari','Februari','Maret','April','Mei','Juni','Juli','Agust
 const srHari = ['Minggu','Senin','Selasa','Rabu','Kamis','Jumat','Sabtu'];
 const srSatuan = ['','satu','dua','tiga','empat','lima','enam','tujuh','delapan','sembilan','sepuluh','sebelas'];
 const srTgl = iso => {const [y,m,d]=String(iso||'').split('-');return y&&m&&d?Number(d)+' '+srBulan[m-1]+' '+y:'…';};
+const srTitimangsa = iso => {const [y,m,d]=String(iso||'').split('-');return y&&m&&d?String(d).padStart(2,'0')+' '+srBulan[m-1]+' '+y:'…';}; // titimangsa: 01 Januari 1999
 const srTglCetak = iso => {const [y,m,d]=String(iso||'').split('-');return y&&m&&d?String(d).padStart(2,'0')+'-'+String(m).padStart(2,'0')+'-'+y:'…';}; // format cetak: 00-00-0000
 function srTerbilang(n) {
   n = Number(n);
@@ -146,12 +147,12 @@ function srPaperKeterangan(d, t) {
     '<div class="sr-bat"><b><u>SURAT KETERANGAN</u></b><br>Nomor : '+srEsc(d.no||'…')+'</div>'+
     '<div class="sr-body"><p class="n">Yang bertanda tangan di bawah ini:</p>'+yang+'<p class="n" style="margin-top:.6em">Menerangkan bahwa:</p>'+(dia||'')+
     '<div style="height:.4em"></div>'+(srParas(d.isi)||'<p>…</p>')+srParas(d.penutup)+'</div>'+
-    '<div class="sr-ttd-r">Cipeundeuy, '+srTglCetak(d.tgl)+'<br>'+(t.kanan?srEsc(t.kanan.j)+',':'')+'<i></i>'+(t.kanan&&t.kanan.n?'<u>'+srEsc(t.kanan.n)+'</u>':'<span>………………………</span>')+'</div>'+
+    '<div class="sr-ttd-r">Cipeundeuy, '+srTitimangsa(d.tgl)+'<br>'+(t.kanan?srEsc(t.kanan.j)+',':'')+'<i></i>'+(t.kanan&&t.kanan.n?'<u>'+srEsc(t.kanan.n)+'</u>':'<span>………………………</span>')+'</div>'+
     srMengetahui(t)+srTembusan(d);
 }
 function srPaperSurat(d, t) {
   return srKop()+
-    '<div class="sr-meta"><table><tr><td>Nomor</td><td>: '+srEsc(d.no||'…')+'</td></tr><tr><td>Lampiran</td><td>: '+srEsc(d.lamp.trim()||'–')+'</td></tr><tr><td>Perihal</td><td>: <b>'+srEsc(d.hal||'…')+'</b></td></tr></table><div>Cipeundeuy, '+srTglCetak(d.tgl)+'</div></div>'+
+    '<div class="sr-meta"><table><tr><td>Nomor</td><td>: '+srEsc(d.no||'…')+'</td></tr><tr><td>Lampiran</td><td>: '+srEsc(d.lamp.trim()||'–')+'</td></tr><tr><td>Perihal</td><td>: <b>'+srEsc(d.hal||'…')+'</b></td></tr></table><div>Cipeundeuy, '+srTitimangsa(d.tgl)+'</div></div>'+
     '<div class="sr-to">Kepada Yth.<br>'+(d.to.trim()?srLines(d.to).map(srEsc).join('<br>'):'…')+'</div>'+
     '<div class="sr-body"><p class="n">Assalamu’alaikum Wr. Wb.</p>'+(srParas(d.isi)||'<p>…</p>')+srAcara(d)+srParas(d.penutup)+'<p class="n">Wassalamu’alaikum Wr. Wb.</p></div>'+
     '<div class="sr-sign">'+(t.kiri?srSig('',t.kiri.j,t.kiri.n):'<div></div>')+(t.kanan?srSig('',t.kanan.j,t.kanan.n):'<div></div>')+'</div>'+
@@ -196,7 +197,7 @@ function srPaperRek(d, t) {
     '<p class="n sr-gap">Direkomendasikan untuk mengajukan bantuan :</p>'+
     '<div class="sr-cb"><div>'+SR_BANTUAN.kiri.map(kotak).join('')+'</div><div>'+SR_BANTUAN.kanan.map(kotak).join('')+'</div></div>'+
     '<p class="sr-gap">Demikian surat rekomendasi ini saya buat dengan harapan akan dikabulkan.</p></div>'+
-    '<div class="sr-ttd-r">Cipeundeuy, '+srTglCetak(d.tgl)+'<br>'+(d.rj.trim()?srEsc(d.rj.trim())+',':'')+'<i></i>'+(d.rn.trim()?'<u>'+srEsc(d.rn.trim())+'</u>':'<span>………………………</span>')+'</div>'+
+    '<div class="sr-ttd-r">Cipeundeuy, '+srTitimangsa(d.tgl)+'<br>'+(d.rj.trim()?srEsc(d.rj.trim())+',':'')+'<i></i>'+(d.rn.trim()?'<u>'+srEsc(d.rn.trim())+'</u>':'<span>………………………</span>')+'</div>'+
     srMengetahui(t);
 }
 function srPaperTugas(d, t) {
@@ -213,7 +214,7 @@ function srPaperTugas(d, t) {
     '<table class="sr-tg"><tbody>'+(d.menimbang.trim()?row('Menimbang',lines(d.menimbang)):'')+(d.dasar.trim()?row('Dasar',lines(d.dasar)):'')+'</tbody></table>'+
     '<div class="sr-mt">Memberi Tugas</div>'+
     '<table class="sr-tg"><tbody>'+row('Kepada',kepada)+row('Untuk',kegiatan+sub+penutup)+'</tbody></table>'+
-    '<div class="sr-ttd-r">Cipeundeuy, '+srTglCetak(d.tgl)+'<br>'+(t.kanan?srEsc(t.kanan.j)+',':'')+'<i></i>'+(t.kanan&&t.kanan.n?'<u>'+srEsc(t.kanan.n)+'</u>':'<span>………………………</span>')+'</div>'+
+    '<div class="sr-ttd-r">Cipeundeuy, '+srTitimangsa(d.tgl)+'<br>'+(t.kanan?srEsc(t.kanan.j)+',':'')+'<i></i>'+(t.kanan&&t.kanan.n?'<u>'+srEsc(t.kanan.n)+'</u>':'<span>………………………</span>')+'</div>'+
     srMengetahui(t)+srTembusan(d);
 }
 const srPaper = (d,t) => d.jenis===SR_REK ? srPaperRek(d,t) : d.jenis===SR_BA ? srPaperBA(d,t) : d.jenis===SR_TUGAS ? srPaperTugas(d,t) : d.jenis===SR_KET ? srPaperKeterangan(d,t) : srPaperSurat(d,t);
