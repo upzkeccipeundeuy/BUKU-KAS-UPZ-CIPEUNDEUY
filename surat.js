@@ -364,8 +364,14 @@ function bindSurat() {
     $('srPaper')?.scrollIntoView({block:'nearest'});
   });
   $('srNew')?.addEventListener('click',()=>{srNew();render();});
-  $('srPrint')?.addEventListener('click',()=>window.print());
-  $('srPrint2')?.addEventListener('click',()=>window.print());
+  // Nama file unduhan: "Jenis - Perihal"
+  const srPrintNamed = () => {
+    const row = SR.rows.find(r=>String(r.id)===String(SR.cur));
+    const d = SR.draft || (row ? srRowToDraft(row) : null);
+    printNamed(d&&d.jenis, d&&d.hal);
+  };
+  $('srPrint')?.addEventListener('click',srPrintNamed);
+  $('srPrint2')?.addEventListener('click',srPrintNamed);
   const form = $('srForm');
   if(!form) return;
   for(const key of SR_FIELDS) {

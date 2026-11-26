@@ -92,3 +92,11 @@ function reportPage() {
     '<div class="report-signatures"><div><span>Mengetahui,</span><br>Ketua UPZ<strong>'+esc(officer('ketua')||'(____________________)')+'</strong></div>'+
     '<div><span>Cipeundeuy, '+esc(date)+'</span><br>Bendahara UPZ<strong>'+esc(officer('bendahara')||'(____________________)')+'</strong></div></div></section>';
 }
+
+function reportPrintName() {
+  const today10 = today();
+  const m = reportMonth||today10.slice(0,7), y = reportYear||today10.slice(0,4);
+  const judul = admin()?'Laporan Buku Kas Umum':'Laporan Ringkasan Kas';
+  const periode = reportPeriod==='month'?monthName.format(new Date(m+'-01T00:00:00Z')):reportPeriod==='year'?'Tahun '+y:'Semua Periode';
+  return [judul,periode];
+}

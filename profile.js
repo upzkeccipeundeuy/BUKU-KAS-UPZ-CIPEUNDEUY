@@ -1,3 +1,14 @@
+// Cetak dengan nama file unduhan (Simpan sebagai PDF mengikuti document.title).
+// Bagian nama dipisah " - ", bagian kosong dilewati, karakter terlarang diganti "-".
+function printNamed(...bagian) {
+  const nama = bagian.map(t=>String(t==null?'':t).replace(/[\\/:*?"<>|]+/g,'-').replace(/\s+/g,' ').trim()).filter(Boolean).join(' - ');
+  const lama = document.title;
+  if(nama) document.title = nama;
+  const pulih = () => {document.title = lama; window.removeEventListener('afterprint',pulih);};
+  window.addEventListener('afterprint',pulih);
+  window.print();
+}
+
 const defaultProfile = {
   identitas: {
     nama: 'UPZ Cipeundeuy',

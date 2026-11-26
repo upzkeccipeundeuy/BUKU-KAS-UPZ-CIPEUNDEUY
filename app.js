@@ -800,10 +800,16 @@ function render() {
   $('transactionSearch')?.addEventListener('change',e=>{transactionSearch=e.target.value;render();});
   $('transactionCategory')?.addEventListener('change',e=>{transactionCategory=e.target.value;render();});
   $('all')?.addEventListener('click',()=>{month='';render();});
-  $('print')?.addEventListener('click',()=>window.print());
+  $('print')?.addEventListener('click',()=>printNamed(...reportPrintName()));
   $('phYear')?.addEventListener('change',e=>{phState[screen].year=e.target.value;render();});
   $('phAdd')?.addEventListener('click',()=>editPh());
-  $('phPrint')?.addEventListener('click',()=>window.print());
+  $('phPrint')?.addEventListener('click',()=>{
+    const th = phState.Perhimpunan.year || today().slice(0,4);
+    if(screen==='Form C2A') return printNamed('Rekap Laporan Form C2A','Tahun '+th);
+    if(screen==='Form C2B') return printNamed('Rencana Program Form C2B','Tahun '+th);
+    const K = PH_KINDS[screen];
+    printNamed(K?'Form '+K.form+' '+screen:screen, 'Tahun '+((phState[screen]&&phState[screen].year)||today().slice(0,4)));
+  });
   $('phCamat')?.addEventListener('input',e=>{phCamat=e.target.value;const t=$('phCamatPrint');if(t)t.textContent=camatName();});
   $('phReportDate')?.addEventListener('input',e=>{
     if(!e.target.value) return;

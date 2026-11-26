@@ -158,7 +158,12 @@ function bindUd() {
   $('udKades')?.addEventListener('input',e=>{UD.kades=e.target.value;const t=$('udKadesPrint');if(t)t.textContent=e.target.value;});
   $('udDate')?.addEventListener('input',e=>{if(!e.target.value)return;UD.date=e.target.value;const t=$('udDatePrint');if(t)t.textContent='Dilaporkan tanggal : '+phLongDate(UD.date);});
   $('udMunfiq')?.addEventListener('input',e=>{UD.munfiq=e.target.value;const t=$('udMunfiqPrint');if(t)t.textContent=e.target.value;});
-  $('udPrint')?.addEventListener('click',()=>window.print());
+  $('udPrint')?.addEventListener('click',()=>{
+    const kind = screen==='Pendistribusian Desa'?'pd':'ph';
+    const {desa,year} = udCurrent(kind);
+    const jenis = screen==='Rekap Laporan Desa' ? 'Rekap Laporan UPZ Desa Form C1' : UD_TXT[kind].crumb+' UPZ Desa Form '+UD_TXT[kind].form;
+    printNamed(jenis, desa&&desa.nama_desa, year?'Tahun '+year:'');
+  });
   bindUdExcel();
   bindUdRk();
 }
