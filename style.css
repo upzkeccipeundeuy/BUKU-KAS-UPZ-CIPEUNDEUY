@@ -1515,3 +1515,7 @@ tr.xl-error td{background:#fff6f5}.xl-note{color:#a23c37;font-size:12.5px;white-
 @media screen and (max-width:900px){.surat-page .surat-paper{zoom:.7}}
 @media screen and (max-width:700px){.surat-page .surat-paper{zoom:.55}}
 @media screen and (max-width:480px){.surat-page .surat-paper{zoom:.4}}
+
+/* Titimangsa kanan atas selalu satu baris */
+.surat-paper .sr-meta{grid-template-columns:minmax(0,1fr) max-content;column-gap:6mm}
+.surat-paper .sr-meta>div{white-space:nowrap;text-align:right}
