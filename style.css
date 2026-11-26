@@ -1446,3 +1446,25 @@ tr.xl-error td{background:#fff6f5}.xl-note{color:#a23c37;font-size:12.5px;white-
  .sr-meta,.sr-sign,.sr-ttd-r,.sr-pk{break-inside:avoid}
  .sr-tg td{padding:1.2mm 0}
 }
+
+/* PATCH STRUKTUR SURAT TUGAS: mengikuti contoh pengguna (layout label/isi, judul, dan tanda tangan) */
+.sr-bat:has(+ .sr-tg){margin:7mm 0 8mm;text-align:center;line-height:1.35}
+.sr-bat:has(+ .sr-tg) b{font-size:12pt}
+.sr-bat:has(+ .sr-tg) br+text{font-size:11pt}
+.sr-tg{table-layout:fixed;margin:2mm 0 0}
+.sr-tg td.l{width:28%!important;padding-right:2mm!important}
+.sr-tg td.c{width:3.5%!important}
+.sr-tg td.v{width:68.5%!important}
+.sr-mt{text-align:center;margin:5mm 0 3mm;font-weight:normal}
+.sr-tg2{table-layout:fixed;width:75%;margin:1.5mm 0 1mm}
+.sr-tg2 td.l{width:29%}
+.sr-tg2 td.c{width:5%;text-align:center}
+.sr-ttd-r{width:50%;margin:10mm 0 0 auto;text-align:center}
+.sr-ttd-r i{height:18mm}
+@media screen{.surat-paper{font-size:10.5pt;line-height:1.4}}
+@media print{
+ .sr-bat:has(+ .sr-tg){margin:7mm 0 8mm}
+ .sr-tg td{padding:1.1mm 0!important}
+ .sr-tg2{width:75%}
+ .sr-ttd-r{margin-top:9mm}
+}
