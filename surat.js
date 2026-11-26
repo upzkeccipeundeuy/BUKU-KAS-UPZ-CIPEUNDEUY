@@ -6,6 +6,10 @@ const SR_KET = 'Surat Keterangan';
 const SR_JENIS = ['Surat Undangan','Surat Permohonan','Surat Pemberitahuan','Surat Keterangan','Surat Tugas',SR_BA];
 const SR_FIELDS = ['jenis','tgl','lamp','hal','to','isi','s1','s2','mk','cc','tempat','p1n','p1j','p2n','p2j','saksi','menimbang','dasar','hari','waktu','lokasi','acara','penutup','kn','kk','ka','kp'];
 const SR_NONE = '(tidak ada)';
+/* Kalimat pembuka Berita Acara (tetap, tidak dapat diubah) dan baris kosong tabel rincian */
+const SR_BA_ISI = 'PIHAK PERTAMA dengan ini menyerahkan uang kepada PIHAK KEDUA, dan PIHAK KEDUA menyatakan telah menerima uang tersebut dalam keadaan cukup dan sesuai dengan rincian berikut :';
+const srRinciKosong = () => ({u:'',j:'',k:''});
+const srRinciJumlah = list => (list||[]).reduce((t,r)=>t+(Number(r.j)||0),0);
 /* Kalimat penutup bawaan tiap jenis (dapat diubah admin) */
 const SR_PENUTUP = {
   'Surat Undangan':'Demikian undangan ini kami sampaikan. Atas perhatian dan kehadirannya, kami ucapkan terima kasih.',
@@ -20,7 +24,7 @@ const SR_LAYOUT = {
   'Surat Pemberitahuan':['lamp','hal','to','isi','penutup','s1','s2','mk','cc'],
   'Surat Keterangan':['hal','kn','kk','ka','kp','isi','penutup','s2','mk','cc'],
   'Surat Tugas':['hal','menimbang','dasar','to','isi','hari','waktu','lokasi','s2','mk','cc'],
-  'Berita Acara':['hal','tempat','p1n','p1j','p2n','p2j','saksi','isi','mk','cc']
+  'Berita Acara':['hal','tempat','p1n','p1j','p2n','p2j','saksi','rinci','mk','cc']
 };
 /* Jabatan penandatangan -> [pola jabatan di Profil, bagian susunan pengurus]; nama diambil dari menu Profil */
 const SR_ROLES = {
@@ -51,10 +55,10 @@ function srTerbilang(n) {
   if(n<2000) return 'seribu'+(n%1000?' '+srTerbilang(n%1000):'');
   return srTerbilang(Math.floor(n/1000))+' ribu'+(n%1000?' '+srTerbilang(n%1000):'');
 }
-const SR_KOSONG = j => ({jenis:j||SR_JENIS[0],penutup:SR_PENUTUP[j||SR_JENIS[0]]||'',acara:'',kn:'',kk:'',ka:'',kp:'',tgl:today(),no:'',lamp:'',hal:'',to:'',isi:'',s1:'Sekretaris',s2:'Ketua UPZ',mk:SR_NONE,cc:'',tempat:'',p1n:'',p1j:'',p2n:'',p2j:'',saksi:'',menimbang:'',dasar:'',hari:'',waktu:'',lokasi:''});
+const SR_KOSONG = j => ({jenis:j||SR_JENIS[0],penutup:SR_PENUTUP[j||SR_JENIS[0]]||'',acara:'',kn:'',kk:'',ka:'',kp:'',tgl:today(),no:'',lamp:'',hal:'',to:'',isi:'',s1:'Sekretaris',s2:'Ketua UPZ',mk:SR_NONE,cc:'',tempat:'',p1n:'',p1j:'',p2n:'',p2j:'',saksi:'',menimbang:'',dasar:'',hari:'',waktu:'',lokasi:'',rinci:[srRinciKosong()]});
 const SR_DEMO = () => [
   {id:4,jenis:SR_TUGAS,tanggal:'2026-11-25',nomor:'004/004/UPZ.CPD/11/2026',perihal:'Tugas Mengikuti Rapat Koordinasi Zakat',tujuan:'Nama Anggota — Anggota Bidang Pengumpulan',isi:'Mengikuti Rapat Koordinasi Pengelolaan Zakat Tingkat Kecamatan',detail:{menimbang:'Bahwa untuk kelancaran pengelolaan zakat, perlu menugaskan anggota UPZ untuk menghadiri rapat koordinasi.',dasar:'Surat Undangan BAZNAS Kabupaten Subang Nomor 123/BAZNAS/XI/2026.',hari:'Senin, 30-11-2026',waktu:'09.00 WIB – selesai',lokasi:'Kantor BAZNAS Kabupaten Subang',s2:'Ketua UPZ'}},
-  {id:3,jenis:SR_BA,tanggal:'2026-11-23',nomor:'003/003/UPZ.CPD/11/2026',perihal:'Serah Terima Dana Zakat Fitrah',isi:'Telah dilakukan serah terima dana zakat fitrah hasil pengumpulan UPZ Desa Sawangan tahun 2026 kepada UPZ Kecamatan Cipeundeuy sebesar Rp25.000.000,00 (dua puluh lima juta rupiah).\n\nPenyerahan dilakukan secara tunai, telah dihitung bersama oleh kedua belah pihak, dan disaksikan oleh para saksi.',mengetahui:'Camat',detail:{tempat:'Kantor Kecamatan Cipeundeuy',p1n:'Nama Ketua UPZ Desa',p1j:'Ketua UPZ Desa Sawangan',p2n:'Nama Bendahara UPZ',p2j:'Bendahara UPZ Kecamatan Cipeundeuy',saksi:'Nama Sekretaris — Sekretaris UPZ Kecamatan'}},
+  {id:3,jenis:SR_BA,tanggal:'2026-11-23',nomor:'003/003/UPZ.CPD/11/2026',perihal:'Serah Terima Dana Zakat Fitrah',isi:'Telah dilakukan serah terima dana zakat fitrah hasil pengumpulan UPZ Desa Sawangan tahun 2026 kepada UPZ Kecamatan Cipeundeuy sebesar Rp25.000.000,00 (dua puluh lima juta rupiah).\n\nPenyerahan dilakukan secara tunai, telah dihitung bersama oleh kedua belah pihak, dan disaksikan oleh para saksi.',mengetahui:'Camat',detail:{rinci:[{u:'Zakat fitrah UPZ Desa Sawangan',j:'20000000',k:'Tunai'},{u:'Infak dan sedekah',j:'5000000',k:''}],tempat:'Kantor Kecamatan Cipeundeuy',p1n:'Nama Ketua UPZ Desa',p1j:'Ketua UPZ Desa Sawangan',p2n:'Nama Bendahara UPZ',p2j:'Bendahara UPZ Kecamatan Cipeundeuy',saksi:'Nama Sekretaris — Sekretaris UPZ Kecamatan'}},
   {id:2,jenis:'Surat Undangan',tanggal:'2026-11-20',nomor:'002/002/UPZ.CPD/11/2026',perihal:'Undangan Rapat Pengurus UPZ',tujuan:'Bapak/Ibu Pengurus UPZ Kecamatan Cipeundeuy\ndi Tempat',isi:'Dengan hormat, sehubungan dengan evaluasi penghimpunan dan pendistribusian zakat tahun 2026, kami mengundang Bapak/Ibu untuk hadir pada rapat pengurus yang akan dilaksanakan pada:\n\nHari/Tanggal : Senin, 30-11-2026\nWaktu : 09.00 WIB – selesai\nTempat : Kantor Kecamatan Cipeundeuy\n\nDemikian undangan ini kami sampaikan. Atas perhatian dan kehadirannya, kami ucapkan terima kasih.',mengetahui:'Camat',tembusan:'Camat Cipeundeuy\nArsip',detail:{s1:'Sekretaris',s2:'Ketua UPZ'}},
   {id:1,jenis:'Surat Permohonan',tanggal:'2026-11-12',nomor:'001/001/UPZ.CPD/11/2026',lampiran:'1 (satu) berkas',perihal:'Permohonan Data Mustahik',tujuan:'Kepala Desa Sawangan\ndi Tempat',isi:'Dengan hormat, dalam rangka pendataan mustahik tahun 2026, kami memohon bantuan Bapak untuk menyampaikan data warga yang memenuhi kriteria penerima zakat di wilayah Desa Sawangan.\n\nDemikian permohonan ini kami sampaikan. Atas bantuan dan kerja samanya kami ucapkan terima kasih.',tembusan:'Arsip',detail:{s1:'Sekretaris',s2:'Ketua UPZ'}}
 ];
@@ -145,6 +149,13 @@ function srPaperSurat(d, t) {
     '<div class="sr-sign">'+(t.kiri?srSig('',t.kiri.j,t.kiri.n):'<div></div>')+(t.kanan?srSig('',t.kanan.j,t.kanan.n):'<div></div>')+'</div>'+
     srMengetahui(t)+srTembusan(d);
 }
+function srRinciTabel(list) {
+  const rows = (list||[]).filter(r=>String(r.u||'').trim()||String(r.j||'').trim()||String(r.k||'').trim());
+  const jml = srRinciJumlah(rows);
+  const body = (rows.length?rows:[srRinciKosong()]).map((r,i)=>'<tr><td class="no">'+(i+1)+'</td><td>'+(srEsc(String(r.u||'').trim())||'…')+'</td><td class="jm">'+(String(r.j||'').trim()?srEsc(money(Number(r.j)||0)):'')+'</td><td>'+srEsc(String(r.k||'').trim())+'</td></tr>').join('');
+  return '<table class="sr-rinci"><thead><tr><th>No.</th><th>Uraian</th><th>Jumlah</th><th>Ket.</th></tr></thead><tbody>'+body+'</tbody>'+
+    (rows.length>1?'<tfoot><tr><td colspan="2" class="tt">Total</td><td class="jm">'+srEsc(money(jml))+'</td><td></td></tr></tfoot>':'')+'</table>';
+}
 function srPaperBA(d, t) {
   const [y,m,day] = String(d.tgl||'').split('-');
   const when = d.tgl ? 'Pada hari ini '+srHari[new Date(y,m-1,day).getDay()]+' tanggal '+srTerbilang(day)+' bulan '+srBulan[m-1]+' tahun '+srTerbilang(y)+' ('+srTglCetak(d.tgl)+')' : 'Pada hari ini …';
@@ -152,11 +163,14 @@ function srPaperBA(d, t) {
   const dua = d.p2n.trim()||d.p2j.trim();
   const pihak = (n,j,i,ket) => '<table class="sr-pk"><tr><td>'+i+'.</td><td>Nama</td><td>: '+srEsc(n||'…')+'</td></tr><tr><td></td><td>Jabatan</td><td>: '+srEsc(j||'…')+'</td></tr></table><p class="n" style="margin:0 0 .4em 2.3em">'+ket+'</p>';
   const saksi = srLines(d.saksi).map((x,k)=>{const [n,j]=x.split(/\s[—–-]\s/);return srSig('Saksi '+(k+1),j,n);});
+  // Berita acara lama (tanpa tabel rincian) tetap tampil dengan isi aslinya
+  const lama = !(d.rinci||[]).some(r=>String(r.u||'').trim()) && String(d.isi||'').trim() && d.isi.trim()!==SR_BA_ISI;
+  const isi = lama ? srParas(d.isi) : '<p>'+srEsc(SR_BA_ISI).replace('PIHAK PERTAMA','<b>PIHAK PERTAMA</b>').replace('PIHAK KEDUA','<b>PIHAK KEDUA</b>').replace('PIHAK KEDUA','<b>PIHAK KEDUA</b>')+'</p>'+srRinciTabel(d.rinci);
   return srKop()+
     '<div class="sr-bat"><b><u>BERITA ACARA</u></b><br><b>'+srEsc((d.hal||'…').toUpperCase())+'</b><br>Nomor : '+srEsc(d.no||'…')+'</div>'+
     '<div class="sr-body"><p>'+when+tempat+', kami yang bertanda tangan di bawah ini:</p>'+
     pihak(d.p1n,d.p1j,1,'selanjutnya disebut <b>PIHAK PERTAMA</b>'+(dua?',':'.'))+(dua?pihak(d.p2n,d.p2j,2,'selanjutnya disebut <b>PIHAK KEDUA</b>.'):'')+
-    (srParas(d.isi)||'<p>…</p>')+'<p>Demikian Berita Acara ini dibuat dengan sebenarnya untuk dipergunakan sebagaimana mestinya.</p></div>'+
+    isi+'<p style="margin-top:.8em">Demikian Berita Acara ini dibuat dengan sebenarnya untuk dipergunakan sebagaimana mestinya.</p></div>'+
     '<div class="sr-sign" style="flex-wrap:wrap">'+srSig('PIHAK PERTAMA',d.p1j,d.p1n)+(dua?srSig('PIHAK KEDUA',d.p2j,d.p2n):'')+'</div>'+
     (saksi.length?'<div class="sr-sign" style="flex-wrap:wrap;margin-top:.5em">'+saksi.join('')+'</div>':'')+
     srMengetahui(t)+srTembusan(d);
@@ -183,7 +197,7 @@ const srPaper = (d,t) => d.jenis===SR_BA ? srPaperBA(d,t) : d.jenis===SR_TUGAS ?
 /* ---------- Data ---------- */
 const srRowToDraft = r => {
   const dt = r.detail || {};
-  return {jenis:r.jenis,tgl:r.tanggal,no:r.nomor,lamp:r.lampiran||'',hal:r.perihal||'',to:r.tujuan||'',isi:r.isi||'',s1:dt.s1||'Sekretaris',s2:dt.s2||'Ketua UPZ',mk:r.mengetahui||SR_NONE,cc:r.tembusan||'',tempat:dt.tempat||'',p1n:dt.p1n||'',p1j:dt.p1j||'',p2n:dt.p2n||'',p2j:dt.p2j||'',saksi:dt.saksi||'',menimbang:dt.menimbang||'',dasar:dt.dasar||'',hari:dt.hari||'',waktu:dt.waktu||'',lokasi:dt.lokasi||'',acara:dt.acara||'',penutup:dt.penutup||'',kn:dt.kn||'',kk:dt.kk||'',ka:dt.ka||'',kp:dt.kp||''};
+  return {jenis:r.jenis,tgl:r.tanggal,no:r.nomor,lamp:r.lampiran||'',hal:r.perihal||'',to:r.tujuan||'',isi:r.isi||'',s1:dt.s1||'Sekretaris',s2:dt.s2||'Ketua UPZ',mk:r.mengetahui||SR_NONE,cc:r.tembusan||'',tempat:dt.tempat||'',p1n:dt.p1n||'',p1j:dt.p1j||'',p2n:dt.p2n||'',p2j:dt.p2j||'',saksi:dt.saksi||'',menimbang:dt.menimbang||'',dasar:dt.dasar||'',hari:dt.hari||'',waktu:dt.waktu||'',lokasi:dt.lokasi||'',acara:dt.acara||'',penutup:dt.penutup||'',kn:dt.kn||'',kk:dt.kk||'',ka:dt.ka||'',kp:dt.kp||'',rinci:Array.isArray(dt.rinci)&&dt.rinci.length?dt.rinci.map(r=>({u:r.u||'',j:r.j||'',k:r.k||''})):[srRinciKosong()]};
 };
 function srNew() {
   SR.cur = null;
@@ -221,7 +235,9 @@ async function srSave() {
   const fail = msg => toast(msg,'error');
   if(!d.tgl) return fail('Tanggal surat wajib diisi.');
   if(!d.hal.trim()) return fail('Perihal wajib diisi.');
-  if(!d.isi.trim()) return fail('Isi surat wajib diisi.');
+  const rinci = (d.rinci||[]).filter(r=>String(r.u).trim()||String(r.j).trim()||String(r.k).trim()).map(r=>({u:String(r.u).trim(),j:String(r.j).replace(/\D/g,''),k:String(r.k).trim()}));
+  if(!ba&&!d.isi.trim()) return fail('Isi surat wajib diisi.');
+  if(ba&&!rinci.some(r=>r.u)) return fail('Rincian berita acara wajib diisi (minimal satu uraian).');
   if(ba&&!d.p1n.trim()&&!d.p1j.trim()) return fail('Pihak pertama wajib diisi.');
   if(tg&&!d.to.trim()) return fail('Penerima tugas (Kepada) wajib diisi.');
   if(kt&&!d.kn.trim()) return fail('Nama yang diterangkan wajib diisi.');
@@ -231,8 +247,8 @@ async function srSave() {
     const old = SR.cur!=null ? SR.rows.find(r=>r.id===SR.cur) : null;
     const body = {
       jenis:d.jenis, tanggal:d.tgl, lampiran:ba||tg||kt?null:(d.lamp.trim()||null), perihal:d.hal.trim(), tujuan:ba||kt?null:(d.to.trim()||null),
-      isi:d.isi.trim(), tembusan:d.cc.trim()||null, mengetahui:d.mk===SR_NONE?null:d.mk, diubah:new Date().toISOString(),
-      detail:{s1:d.s1,s2:d.s2,tempat:d.tempat.trim(),p1n:d.p1n.trim(),p1j:d.p1j.trim(),p2n:d.p2n.trim(),p2j:d.p2j.trim(),saksi:d.saksi.trim(),menimbang:d.menimbang.trim(),dasar:d.dasar.trim(),hari:d.hari.trim(),waktu:d.waktu.trim(),lokasi:d.lokasi.trim(),acara:d.acara.trim(),penutup:d.penutup.trim(),kn:d.kn.trim(),kk:d.kk.trim(),ka:d.ka.trim(),kp:d.kp.trim(),ttd:srTtd(d,old?.detail?.ttd)}
+      isi:ba?SR_BA_ISI:d.isi.trim(), tembusan:d.cc.trim()||null, mengetahui:d.mk===SR_NONE?null:d.mk, diubah:new Date().toISOString(),
+      detail:{rinci:ba?rinci:[],s1:d.s1,s2:d.s2,tempat:d.tempat.trim(),p1n:d.p1n.trim(),p1j:d.p1j.trim(),p2n:d.p2n.trim(),p2j:d.p2j.trim(),saksi:d.saksi.trim(),menimbang:d.menimbang.trim(),dasar:d.dasar.trim(),hari:d.hari.trim(),waktu:d.waktu.trim(),lokasi:d.lokasi.trim(),acara:d.acara.trim(),penutup:d.penutup.trim(),kn:d.kn.trim(),kk:d.kk.trim(),ka:d.ka.trim(),kp:d.kp.trim(),ttd:srTtd(d,old?.detail?.ttd)}
     };
     const samePeriod = old && old.tanggal.slice(0,7)===d.tgl.slice(0,7);
     let saved = null;
@@ -286,6 +302,9 @@ function srForm(d) {
     to:()=>L(tg?'Kepada — satu orang per baris, format: Nama — Jabatan':'Kepada Yth.',ta('to',tg?'Nama — Jabatan':'Bapak/Ibu …\ndi Tempat','62'),'full'),
     menimbang:()=>L('Menimbang',ta('menimbang','Pertimbangan penugasan (opsional)','62'),'full'),
     dasar:()=>L('Dasar',ta('dasar','Dasar penugasan, misalnya surat undangan atau SK (opsional)','62'),'full'),
+    rinci:()=>'<div class="full sr-ri"><span class="sr-ri-t">Isi berita acara</span><div class="sr-ri-fix">'+srEsc(SR_BA_ISI)+'</div><span class="sr-ri-t" style="margin-top:6px">Rincian</span>'+
+      d.rinci.map((r,i)=>'<div class="sr-ri-row"><span class="no">'+(i+1)+'</span><input data-ri="'+i+'" data-rf="u" maxlength="200" placeholder="Uraian" value="'+srEsc(r.u)+'"><input data-ri="'+i+'" data-rf="j" inputmode="numeric" maxlength="15" placeholder="Jumlah (Rp)" value="'+srEsc(r.j)+'"><input data-ri="'+i+'" data-rf="k" maxlength="100" placeholder="Ket." value="'+srEsc(r.k)+'"><button type="button" class="secondary sr-ri-del" data-ri-del="'+i+'" aria-label="Hapus baris '+(i+1)+'">×</button></div>').join('')+
+      '<button type="button" class="secondary sr-ri-add" id="srRiAdd">+ Tambah baris</button>'+hint('Nomor urut dan total dibuat otomatis. Kalimat pembuka dan penutup ditambahkan otomatis.')+'</div>',
     isi:()=>L(tg?'Untuk (tugas yang dilaksanakan)':ba?'Isi berita acara':kt?'Isi keterangan':j==='Surat Undangan'?'Isi undangan (paragraf pembuka)':'Isi surat',ta('isi',kt?'Uraian keterangan tentang yang bersangkutan.':'Pisahkan paragraf dengan satu baris kosong.')+(tg?'':hint(ba?'Tulis uraian atau kesepakatan. Kalimat pembuka dan penutup berita acara ditambahkan otomatis.':kt?'Judul, identitas, dan tanda tangan ditambahkan otomatis.':'Salam pembuka dan penutup ditambahkan otomatis.')),'full'),
     acara:()=>L('Acara',inp('acara','Contoh: Rapat evaluasi zakat'),'full'),
     hari:()=>L('Hari/Tanggal',inp('hari','Senin, 30-11-2026')),
@@ -386,6 +405,18 @@ function bindSurat() {
       srRefresh();
     });
   }
+  form.querySelectorAll('[data-ri]').forEach(el=>el.addEventListener('input',()=>{
+    const f = el.dataset.rf;
+    if(f==='j') {const v=el.value.replace(/\D/g,''); if(v!==el.value) el.value=v;}
+    SR.draft.rinci[Number(el.dataset.ri)][f] = el.value;
+    srRefresh();
+  }));
+  $('srRiAdd')?.addEventListener('click',()=>{SR.draft.rinci.push(srRinciKosong()); render();});
+  form.querySelectorAll('[data-ri-del]').forEach(b=>b.onclick=()=>{
+    SR.draft.rinci.splice(Number(b.dataset.riDel),1);
+    if(!SR.draft.rinci.length) SR.draft.rinci.push(srRinciKosong());
+    render();
+  });
   $('srSave').addEventListener('click',srSave);
   $('srDel')?.addEventListener('click',srDelete);
 }

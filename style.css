@@ -1519,3 +1519,23 @@ tr.xl-error td{background:#fff6f5}.xl-note{color:#a23c37;font-size:12.5px;white-
 /* Titimangsa kanan atas selalu satu baris */
 .surat-paper .sr-meta{grid-template-columns:minmax(0,1fr) max-content;column-gap:6mm}
 .surat-paper .sr-meta>div{white-space:nowrap;text-align:right}
+
+/* Berita Acara: rincian penyerahan uang */
+.sr-ri{display:grid;gap:8px}
+.sr-ri-t{font-weight:600}
+.sr-ri-fix{background:#f3f7f5;border:1px solid #d4e1d9;border-radius:10px;padding:10px 12px;font-size:13px;line-height:1.5;color:var(--muted)}
+.sr-ri-row{display:grid;grid-template-columns:24px minmax(0,2fr) minmax(0,1.1fr) minmax(0,1fr) 36px;gap:6px;align-items:center}
+.sr-ri-row .no{text-align:center;font-weight:600;color:var(--muted)}
+.sr-ri-del{padding:0;height:36px;min-width:36px;font-size:18px;line-height:1}
+.sr-ri-add{justify-self:start}
+@media(max-width:600px){.sr-ri-row{grid-template-columns:24px minmax(0,1fr) minmax(0,1fr) 36px}.sr-ri-row input[data-rf="u"]{grid-column:2/4}.sr-ri-row .sr-ri-del{grid-row:1;grid-column:4}.sr-ri-row input[data-rf="j"]{grid-column:2}.sr-ri-row input[data-rf="k"]{grid-column:3/5}}
+.surat-paper table.sr-rinci{width:100%;table-layout:fixed;margin:2mm 0 1mm;border-collapse:collapse}
+.surat-paper table.sr-rinci th,.surat-paper table.sr-rinci td{border:1px solid #000;padding:1.2mm 2mm;text-align:left;vertical-align:top;overflow-wrap:anywhere}
+.surat-paper table.sr-rinci th{text-align:center;font-weight:700}
+.surat-paper table.sr-rinci th:nth-child(1),.surat-paper table.sr-rinci td.no{width:11%;text-align:center}
+.surat-paper table.sr-rinci th:nth-child(3),.surat-paper table.sr-rinci td.jm{width:26%}
+.surat-paper table.sr-rinci th:nth-child(4){width:20%}
+.surat-paper table.sr-rinci td.jm{text-align:right;white-space:nowrap}
+.surat-paper table.sr-rinci td.tt{text-align:right;font-weight:700}
+.surat-paper table.sr-rinci tfoot td{font-weight:700}
+.surat-paper table.sr-rinci{break-inside:auto}.surat-paper table.sr-rinci tr{break-inside:avoid}
