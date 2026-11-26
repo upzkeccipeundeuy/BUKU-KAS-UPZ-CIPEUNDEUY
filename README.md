@@ -84,3 +84,13 @@ Tabel rekap pengumpulan dan pendistribusian per jenis dana (Zakat Fitrah, BIS Ra
 - Susunan pengurus kini dibagi menjadi **Penasehat** (Camat, Kepala KUA, Ketua MUI), **Pelaksana** (Ketua, Sekretaris, Bendahara UPZ), dan tiga **Bidang** (Pengumpulan; Pendistribusian dan Pendayagunaan; Administrasi dan Umum).
 - Tiap entri menyimpan kolom tambahan `bagian` di dalam JSON `pengurus` yang sudah ada — tidak perlu mengubah tabel Supabase. Data lama tanpa `bagian` ditempatkan otomatis (Camat/KUA/MUI → Penasehat, selainnya → Pelaksana).
 - Nama boleh dikosongkan; pencarian Ketua/Bendahara/Camat untuk formulir cetak tetap berjalan (Ketua MUI tidak akan tertukar dengan Ketua UPZ).
+
+## Menu Surat
+
+Menu **Surat** untuk mengetik dan mengelola surat resmi UPZ. Admin dapat menambah, mengubah, dan menghapus; publik hanya melihat dan mencetak. Berkas: `surat.js`.
+
+- Jalankan `setup-surat-supabase.sql` sekali di Supabase SQL Editor untuk membuat tabel `surat` beserta kebijakan RLS-nya. Di dalam berkas tersedia pilihan kebijakan jika surat hanya boleh dibaca admin.
+- **Nomor surat otomatis**: `no urut/UPZ.CPD/bulan/tahun`, contoh `003/UPZ.CPD/11/2026`. Nomor urut dihitung per bulan mengikuti tanggal surat, dan tidak dapat diketik manual.
+- Jenis surat: Undangan, Permohonan, Pemberitahuan, Keterangan, Tugas, dan **Berita Acara** (format khusus: tanggal terbilang, Pihak Pertama/Kedua, saksi).
+- Tanda tangan: dua penandatangan (surat biasa) dan **Mengetahui** opsional (Camat, Kepala KUA, atau Ketua MUI). Nama diambil dari Profil › Susunan Pengurus dan disimpan saat surat disimpan, sehingga surat lama tidak berubah bila pengurus berganti.
+- Kop mengikuti Profil lembaga (logo, alamat, telepon, email). Cetak/PDF memakai kertas A4 potret.

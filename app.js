@@ -57,7 +57,7 @@ const ICON = {
   Keluar:'<path d="M10 4.5H5.5A1.5 1.5 0 0 0 4 6v12a1.5 1.5 0 0 0 1.5 1.5H10"/><path d="M20 12H10M16.5 8.5 20 12l-3.5 3.5"/>'
 };
 const svgIcon = n => '<svg class="ico" viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">'+(ICON[n]||'')+'</svg>';
-const items = [['Dashboard'],['Profil'],['UPZ DESA'],['UPZ KEC'],['Pemasukan'],['Pengeluaran'],['BKU'],['Cetak Laporan'],['Login']];
+const items = [['Dashboard'],['Profil'],['UPZ DESA'],['UPZ KEC'],['Surat'],['Pemasukan'],['Pengeluaran'],['BKU'],['Cetak Laporan'],['Login']];
 const bkuGroup = ['BKU','Pemasukan','Pengeluaran','Cetak Laporan'];
 let bkuOpen = false;
 const rekapGroup = ['Form C2A','Form C2B'];
@@ -70,6 +70,7 @@ ICON['UPZ DESA'] = ICON['Data UPZ Desa'] = '<path d="M3 11.5 12 4l9 7.5"/><path 
 ICON['Perhimpunan Desa'] = ICON.Perhimpunan;
 ICON['Pendistribusian Desa'] = ICON.Pendistribusian;
 ICON['Rekap Laporan Desa'] = ICON['Rekap Laporan'];
+ICON.Surat = '<rect x="3.5" y="5.5" width="17" height="13" rx="2"/><path d="m4 7.5 8 6 8-6"/>';
 
 /* ---------- Perhimpunan (pengumpulan per UPZ desa/kelurahan) ---------- */
 let phCamat = '', phReportDate = '';
@@ -174,7 +175,8 @@ function go(name) {
   if(rekapGroup.includes(name)) rekapOpen=true;
   if(upzkecGroup.includes(name)) upzkecOpen=true;
   if(udGroup.includes(name)) udOpen=true;
-  if(name==='Profil'||name==='Cetak Laporan') loadProfile();
+  if(name==='Surat') {loadProfile();loadSurat();}
+  else if(name==='Profil'||name==='Cetak Laporan') loadProfile();
   else if(PH_KINDS[name]) loadPh(name);
   else if(udGroup.includes(name)) loadUd();
   else if(rekapGroup.includes(name)) {loadPh('Pendistribusian');loadPh('Perhimpunan');loadRekapPct();}
@@ -748,6 +750,8 @@ function render() {
     content = profilePage();
   } else if(screen==='Login') {
     content = '<div class="login-shell"><div class="login-side"><img src="logo-baznas.png" alt="" width="72" height="72"><h2>BKU UPZ Cipeundeuy</h2><p>Sistem informasi buku kas umum yang transparan dan akuntabel.</p><blockquote>“Ambillah zakat dari sebagian harta mereka…”<small>QS. At-Taubah: 103</small></blockquote></div><section class="panel login"><h1>Login Admin</h1><p class="muted">Gunakan akun yang terdaftar di Supabase Auth.</p><form id="login"><label>Email<input type="email" name="email" autocomplete="username" required></label><label>Kata sandi<input type="password" name="password" autocomplete="current-password" required></label><div id="loginError" role="alert"></div><button>Masuk</button><button type="button" class="secondary" id="demo">Coba Admin Demo</button></form></section></div>';
+  } else if(screen==='Surat') {
+    content = suratPage();
   } else if(PH_KINDS[screen]) {
     content = phPage(screen);
   } else if(screen==='Data UPZ Desa') {
@@ -801,6 +805,7 @@ function render() {
   document.querySelectorAll('[data-goto]').forEach(b=>b.addEventListener('click',()=>go(b.dataset.goto)));
   if(screen==='Cetak Laporan') bindReportFilters();
   if(screen==='Profil') bindProfile();
+  if(screen==='Surat') bindSurat();
   if(udGroup.includes(screen)) bindUd();
   if(screen==='Form C2A') bindRekap();
   if(screen==='Form C2B') bindRekapC2B();
